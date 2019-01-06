@@ -1,0 +1,439 @@
+package com.lzz.aspp.vo;
+
+import java.util.Date;
+
+import org.apache.solr.client.solrj.beans.Field;
+
+public class CarSourceFavoriteVO {
+
+	/**
+	 * 收藏Id
+	 */
+	private Integer favoriteId;
+	/**
+	 * 用户Id
+	 */
+	private Integer userId;
+	/**
+	 * 车源Id
+	 */
+	private Integer carSourceId;
+	/**
+	 * 出发地名称
+	 */
+	private String fromPlace;
+	/**
+	 * 目的地名称
+	 */
+	private String toPlace;
+	/**
+	 * 车源类型
+	 */
+	private String sourceType;
+	/**
+	 * 车源类型名称
+	 */
+	private String sourceTypeName;
+	/**
+	 * 发布人
+	 */
+	private String publisher;
+	/**
+	 * 联系电话
+	 */
+	private String linkMobile1;
+	/**
+	 * 身份证号码
+	 */
+	private String idcardNo;
+	/**
+	 * 用户类型
+	 */
+	private String userType;
+	/**
+	 * 内容描述
+	 */
+	private String infoContent;
+	/**
+	 * 车牌号
+	 */
+	private String carNo;
+	/**
+	 * 车型
+	 */
+	private String carType;
+	/**
+	 * 车型
+	 */
+	private String carTypeName;
+	/**
+	 * 车长
+	 */
+	private String carLength;
+	/**
+	 * 车长
+	 */
+	private String carLengthName;
+	/**
+	 * 载重
+	 */
+	private Double loadWeight;
+	/**
+	 * 是否认证
+	 */
+	private String isAuth;
+	/**
+	 * 车头照
+	 */
+	private Integer carPhoto;
+	/**
+	 * 行驶证照
+	 */
+	private String drivingLicensePhoto;
+	/**
+	 * 驾龄
+	 */
+	private Integer driveAge;
+	/**
+	 * 最新定位
+	 */
+	private String driverLocationName;
+	/**
+	 * 最新定位经度
+	 */
+	private String longitude;
+	/**
+	 * 最新定位纬度
+	 */
+	private String latitude;
+	/**
+	 * 最新定位时间
+	 */
+	private Date driverLocationTime;
+	/**
+	 * 定位url
+	 */
+	private String locationUrl;
+	
+	private Date returnBackDate;
+	
+	private Integer ppiUserId;
+	
+	private String linkMan;
+	
+	/**两地距离/km*/
+	@Field
+	private String placeKilometre;
+	
+	/**
+	 * 自定义车型
+	 */
+	private String defineCarType;
+	
+	/**
+	 * 车型编码第一字段
+	 */
+	private Integer carTypeFirstCode;
+	
+	/**
+	 * 车型编码第二字段
+	 */
+	private Integer carTypeSecondCode;
+	
+	/**
+	 * 车型编码第三字段
+	 */
+	private Integer carTypeThirdCode;
+	
+	/** 车型图片code */
+	private String carTypeCode;
+	
+	public String getCarTypeCode() {
+		return carTypeCode;
+	}
+
+	public void setCarTypeCode(String carTypeCode) {
+		this.carTypeCode = carTypeCode;
+	}
+
+	public Integer getCarTypeFirstCode() {
+		return carTypeFirstCode;
+	}
+
+	public void setCarTypeFirstCode(Integer carTypeFirstCode) {
+		this.carTypeFirstCode = carTypeFirstCode;
+	}
+
+	public Integer getCarTypeSecondCode() {
+		return carTypeSecondCode;
+	}
+
+	public void setCarTypeSecondCode(Integer carTypeSecondCode) {
+		this.carTypeSecondCode = carTypeSecondCode;
+	}
+
+	public Integer getCarTypeThirdCode() {
+		return carTypeThirdCode;
+	}
+
+	public void setCarTypeThirdCode(Integer carTypeThirdCode) {
+		this.carTypeThirdCode = carTypeThirdCode;
+	}
+
+	public String getDefineCarType() {
+		return defineCarType;
+	}
+
+	public void setDefineCarType(String defineCarType) {
+		this.defineCarType = defineCarType;
+	}
+
+	public String getPlaceKilometre() {
+		return placeKilometre;
+	}
+
+	public void setPlaceKilometre(String placeKilometre) {
+		this.placeKilometre = placeKilometre;
+	}
+
+	public String getLinkMan() {
+		return linkMan;
+	}
+
+	public void setLinkMan(String linkMan) {
+		this.linkMan = linkMan;
+	}
+
+	public Integer getPpiUserId() {
+		return ppiUserId;
+	}
+
+	public void setPpiUserId(Integer ppiUserId) {
+		this.ppiUserId = ppiUserId;
+	}
+
+	public Date getReturnBackDate() {
+		return returnBackDate;
+	}
+
+	public void setReturnBackDate(Date returnBackDate) {
+		this.returnBackDate = returnBackDate;
+	}
+
+	public Integer getFavoriteId() {
+		return favoriteId;
+	}
+
+	public void setFavoriteId(Integer favoriteId) {
+		this.favoriteId = favoriteId;
+	}
+
+	public Integer getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Integer userId) {
+		this.userId = userId;
+	}
+
+	public Integer getCarSourceId() {
+		return carSourceId;
+	}
+
+	public void setCarSourceId(Integer carSourceId) {
+		this.carSourceId = carSourceId;
+	}
+
+	public String getFromPlace() {
+		return fromPlace;
+	}
+
+	public void setFromPlace(String fromPlace) {
+		this.fromPlace = fromPlace;
+	}
+
+	public String getToPlace() {
+		return toPlace;
+	}
+
+	public void setToPlace(String toPlace) {
+		this.toPlace = toPlace;
+	}
+
+	public String getSourceType() {
+		return sourceType;
+	}
+
+	public void setSourceType(String sourceType) {
+		this.sourceType = sourceType;
+	}
+
+	public String getSourceTypeName() {
+		return sourceTypeName;
+	}
+
+	public void setSourceTypeName(String sourceTypeName) {
+		this.sourceTypeName = sourceTypeName;
+	}
+
+	public String getPublisher() {
+		return publisher;
+	}
+
+	public void setPublisher(String publisher) {
+		this.publisher = publisher;
+	}
+
+	public String getLinkMobile1() {
+		return linkMobile1;
+	}
+
+	public void setLinkMobile1(String linkMobile1) {
+		this.linkMobile1 = linkMobile1;
+	}
+
+	public String getIdcardNo() {
+		return idcardNo;
+	}
+
+	public void setIdcardNo(String idcardNo) {
+		this.idcardNo = idcardNo;
+	}
+
+	public String getUserType() {
+		return userType;
+	}
+
+	public void setUserType(String userType) {
+		this.userType = userType;
+	}
+
+	public String getInfoContent() {
+		return infoContent;
+	}
+
+	public void setInfoContent(String infoContent) {
+		this.infoContent = infoContent;
+	}
+
+	public String getCarNo() {
+		return carNo;
+	}
+
+	public void setCarNo(String carNo) {
+		this.carNo = carNo;
+	}
+
+	public String getCarType() {
+		return carType;
+	}
+
+	public void setCarType(String carType) {
+		this.carType = carType;
+	}
+
+	public String getCarLength() {
+		return carLength;
+	}
+
+	public void setCarLength(String carLength) {
+		this.carLength = carLength;
+	}
+
+	public String getCarTypeName() {
+		return carTypeName;
+	}
+
+	public void setCarTypeName(String carTypeName) {
+		this.carTypeName = carTypeName;
+	}
+
+	public String getCarLengthName() {
+		return carLengthName;
+	}
+
+	public void setCarLengthName(String carLengthName) {
+		this.carLengthName = carLengthName;
+	}
+
+	public Double getLoadWeight() {
+		return loadWeight;
+	}
+
+	public void setLoadWeight(Double loadWeight) {
+		this.loadWeight = loadWeight;
+	}
+
+	public String getIsAuth() {
+		return isAuth;
+	}
+
+	public void setIsAuth(String isAuth) {
+		this.isAuth = isAuth;
+	}
+
+	public Integer getCarPhoto() {
+		return carPhoto;
+	}
+
+	public void setCarPhoto(Integer carPhoto) {
+		this.carPhoto = carPhoto;
+	}
+
+	public String getDrivingLicensePhoto() {
+		return drivingLicensePhoto;
+	}
+
+	public void setDrivingLicensePhoto(String drivingLicensePhoto) {
+		this.drivingLicensePhoto = drivingLicensePhoto;
+	}
+
+	public Integer getDriveAge() {
+		return driveAge;
+	}
+
+	public void setDriveAge(Integer driveAge) {
+		this.driveAge = driveAge;
+	}
+
+	public String getDriverLocationName() {
+		return driverLocationName;
+	}
+
+	public void setDriverLocationName(String driverLocationName) {
+		this.driverLocationName = driverLocationName;
+	}
+
+	public String getLongitude() {
+		return longitude;
+	}
+
+	public void setLongitude(String longitude) {
+		this.longitude = longitude;
+	}
+
+	public String getLatitude() {
+		return latitude;
+	}
+
+	public void setLatitude(String latitude) {
+		this.latitude = latitude;
+	}
+
+	public Date getDriverLocationTime() {
+		return driverLocationTime;
+	}
+
+	public void setDriverLocationTime(Date driverLocationTime) {
+		this.driverLocationTime = driverLocationTime;
+	}
+
+	public String getLocationUrl() {
+		return locationUrl;
+	}
+
+	public void setLocationUrl(String locationUrl) {
+		this.locationUrl = locationUrl;
+	}
+	
+}

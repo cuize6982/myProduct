@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.trade.dao.TradeDAO">
+	<resultMap type="TradeRec" id="tradeRecMap">
+		<result property="tradeNo" column="TRADE_NO" />
+		<result property="userId" column="USER_ID" />
+		<result property="account" column="ACCOUNT" />
+		<result property="tradeCode" column="TRADE_CODE" />
+		<result property="tradeName" column="TRADE_NAME" />
+		<result property="tradeType" column="TRADE_TYPE" />
+		<result property="tradeMoney" column="TRADE_MONEY" />
+		<result property="tradeTime" column="TRADE_TIME" />
+		<result property="payWay" column="PAY_WAY" />
+		<result property="tradeStatus" column="TRADE_STATUS" />
+		<result property="payRecNo" column="PAY_REC_NO" />
+		<result property="voucherPhoto" column="VOUCHER_PHOTO"/>
+		<result property="mobilePhone" column="MOBILE_PHONE"/>
+		<result property="mark" column="MARK"/>
+	</resultMap>
+
+	<select id="queryUserTradeRecs" parameterType="TradeRecQuery" resultMap="tradeRecMap">
+	    select * FROM pisp_user_trade_rec putr 
+			<where>
+			    <if test="null != userId">
+			        AND putr.USER_ID = #{userId}
+			    </if>
+			    <if test="null != tradeType">
+			    	AND putr.TRADE_TYPE = #{tradeType}
+			    </if>
+			    <if test="null != startDate and '' != startDate">
+			        AND putr.TRADE_TIME &gt;= #{startDate}
+			    </if>
+			    <if test="null != payWay and payWay.length > 0">
+			        AND putr.PAY_WAY in
+			        <foreach collection="payWay" separator="," item="item" open="(" close=")">
+			            #{item}
+			        </foreach>
+			    </if>
+			    <if test="null != tradeStatus">
+			        AND putr.TRADE_STATUS = #{tradeStatus}
+			    </if>
+			    <if test="null != tradeNo and '' != tradeNo">
+			        AND putr.TRADE_NO = #{tradeNo}
+			    </if>
+			    <if test="null != fillDate and '' != fillDate">
+			        AND TO_DAYS(putr.TRADE_TIME) = TO_DAYS(#{fillDate})
+			    </if>
+			</where>
+		    
+	    ORDER BY putr.TRADE_TIME DESC
+	</select>
+	
+	<select id="getTradeRecByTradeNo" parameterType="java.lang.String" resultMap="tradeRecMap">
+	    SELECT * FROM pisp_user_trade_rec putr WHERE putr.TRADE_NO = #{tradeNo}
+	</select>
+	
+	<insert id="addTradeRec" parameterType="tradeRec">
+		INSERT INTO
+		pisp_user_trade_rec ( TRADE_NO, USER_ID, ACCOUNT, TRADE_CODE,
+		TRADE_NAME, TRADE_TYPE, TRADE_MONEY, TRADE_TIME, PAY_WAY, TRADE_STATUS
+		)VALUES( #{tradeNo}, #{userId}, #{account}, #{tradeCode},
+		#{tradeName}, #{tradeType}, #{tradeMoney}, #{tradeTime}, #{payWay},
+		#{tradeStatus})
+	</insert>
+	
+	<update id="updateTradeRec" parameterType="tradeRec">
+	    UPDATE pisp_user_trade_rec 
+	    <set>
+	        <if test="null != tradeStatus and '' != tradeStatus">
+	        	TRADE_STATUS = #{tradeStatus},
+	    	</if>
+	    	 <if test="null != payRecNo and '' != payRecNo">
+	        	PAY_REC_NO = #{payRecNo},
+	    	</if>
+	        <if test="null != voucherPhoto">
+	            VOUCHER_PHOTO = #{voucherPhoto},
+	        </if>
+	        <if test="null != mobilePhone">
+	            MOBILE_PHONE = #{mobilePhone},
+	        </if>
+	        <if test="null != tradeMoney">
+	            TRADE_MONEY = #{tradeMoney},
+	        </if>
+	        MARK = #{mark}
+	    </set>
+	    WHERE TRADE_NO = #{tradeNo}
+	</update>
+</mapper>

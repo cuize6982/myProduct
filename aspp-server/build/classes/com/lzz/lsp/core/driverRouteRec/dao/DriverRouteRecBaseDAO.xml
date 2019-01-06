@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.driverRouteRec.dao.DriverRouteRecBaseDAO">
+	<resultMap type="DriverRouteRec" id="DriverRouteRecMapper">
+		<id property="routeId" column="ROUTE_ID"/>
+		<result property="driver" column="DRIVER"/>
+		<result property="mobile" column="MOBILE"/>
+		<result property="waybillNo" column="WAYBILL_NO"/>
+		<result property="longitude" column="LONGITUDE"/>
+		<result property="latitude" column="LATITUDE"/>
+		<result property="locationName" column="LOCATION_NAME"/>
+		<result property="locateTime" column="LOCATE_TIME"/>
+	</resultMap>
+	
+	 <select id="queryDriverRouteRecs" parameterType="String" resultMap="DriverRouteRecMapper">
+		SELECT
+			drc.ROUTE_ID,
+			drc.DRIVER,
+			drc.MOBILE,
+			drc.WAYBILL_NO,
+			drc.LONGITUDE,
+			drc.LATITUDE,
+			drc.LOCATION_NAME,
+			drc.LOCATE_TIME
+		FROM
+			pisp_driver_route_rec drc
+		WHERE 1 = 1
+		<if test="mobile != null and mobile != ''">
+			AND drc.MOBILE = #{mobile}
+		</if>
+		<if test="waybillNo != null">
+			AND drc.WAYBILL_NO = #{waybillNo}
+		</if>
+	</select>
+
+
+	
+	 <select id="queryDriverRouteRecsguiji" parameterType="String" resultMap="DriverRouteRecMapper">
+		SELECT
+			drc.ROUTE_ID,
+			drc.DRIVER,
+			drc.MOBILE,
+			drc.WAYBILL_NO,
+			drc.LONGITUDE,
+			drc.LATITUDE,
+			drc.LOCATION_NAME,
+			drc.LOCATE_TIME
+		FROM
+			pisp_driver_route_rec drc
+		WHERE 1 = 1
+			AND drc.WAYBILL_NO = #{waybillno}	order by drc.LOCATE_TIME
+	</select>	
+	
+	
+	
+	<insert id="saveDriverRouteRec" parameterType="DriverRouteRec">
+		INSERT INTO pisp_driver_route_rec (
+			DRIVER,
+			MOBILE,
+			WAYBILL_NO,
+			LONGITUDE,
+			LATITUDE,
+			LOCATION_NAME,
+			LOCATE_TIME
+		)
+		VALUES
+		(
+			#{driver},
+			#{mobile},
+			#{waybillNo},
+			#{longitude},
+			#{latitude},
+			#{locationName},
+			#{locateTime}
+		)
+	</insert>
+	
+	<!--  <update id="updateDriverRouteRec" parameterType="DriverRouteRec">
+		UPDATE pisp_driver_route_rec drc
+		SET drc.USER_ID = #{userId},
+		    drc.WAYBILL_ID = #{waybillId}, 
+		    drc.LONGITUDE = #{longitude}, 
+		    drc.LATITUDE = #{latitude}, 
+			drc.LOCATE_TIME = #{locateTime}, 
+			drc.LOCATION_NAME = #{locationName}, 
+		WHERE
+			drc.MOBILE = #{mobile}
+	</update> -->
+
+</mapper>

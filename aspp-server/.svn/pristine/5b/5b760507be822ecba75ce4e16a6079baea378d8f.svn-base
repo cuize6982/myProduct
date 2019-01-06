@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.favorite.dao.FavoriteBaseDAO">
+	<resultMap type="Favorite" id="favoriteMapper">
+		<id property="id" column="FAVORITE_ID"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="infoId" column="INFO_ID"/>
+		<result property="infoType" column="INFO_TYPE"/>
+		<result property="favoriteTime" column="FAVORITE_TIME"/>
+	</resultMap>
+	
+	<resultMap type="FavoriteVO" id="favoriteVOMap">
+	    <result property="favoriteId" column="FAVORITE_ID"/>
+		<result property="infoId" column="INFO_ID"/>
+		<result property="infoType" column="INFO_TYPE"/>
+		<result property="isAuth" column="IS_AUTH"/>
+		<result property="infoContent" column="INFO_CONTENT"/>
+		<result property="publishFreq" column="PUBLISH_FREQ"/>
+		<result property="repateTimes" column="REPATE_TIMES"/>
+		<result property="publishTime" column="PUBLISH_TIME"/>
+		<result property="displayTime" column="DISPLAY_TIME"/>
+		<result property="status" column="STATUS"/>
+	</resultMap>
+	
+	<select id="queryFavorites" resultMap="favoriteMapper" parameterType="FavoriteQuery">
+		SELECT * FROM pisp_user_favorite uf
+		<where>
+			<if test="userId != null"> AND uf.USER_ID = #{userId}</if>
+			<if test="infoId != null"> AND uf.INFO_ID = #{infoId}</if>
+			<if test="infoType != null"> AND uf.INFO_TYPE = #{infoType}</if>
+		</where>
+	</select>
+	
+	<insert id="saveFavorite" parameterType="Favorite">
+		INSERT INTO pisp_user_favorite(USER_ID, INFO_ID, INFO_TYPE, FAVORITE_TIME)
+		VALUES(#{userId}, #{infoId}, #{infoType}, #{favoriteTime})
+	</insert>
+	
+	<delete id="deleteFavorite" parameterType="java.lang.Integer">
+		DELETE FROM pisp_user_favorite WHERE FAVORITE_ID = #{favoriteId}
+	</delete>
+	
+	<select id="queryCarSourceFavorite" parameterType="CarSourceQuery" resultMap="com.lzz.lsp.core.carsource.dao.CarSourceBaseDAO.carSourceVOMap">
+		SELECT
+			uf.FAVORITE_ID,
+			pi.PUBLISH_ID,
+			pi.DISPLAY_TIME,
+			cs.FROM_PLACE,
+			cs.TO_PLACE,
+			cs.LINKMAN,
+			cs.LINK_MOBILE1,
+			cs.INFO_CONTENT,
+			cs.PUBLISHER,
+			cs.SOURCE_TYPE,
+			c.CAR_ID,
+			dl.LOCATION_NAME,
+			c.LOCATE_TIME,
+			c.LONGITUDE,
+			c.LATITUDE
+		FROM
+			pisp_publish_info pi
+		INNER  JOIN pisp_car_source cs ON pi.INFO_ID = cs.CAR_SOURCE_ID  AND pi.INFO_TYPE = 2 
+    	INNER JOIN pisp_user_favorite uf ON pi.INFO_ID = uf.INFO_ID AND pi.INFO_TYPE = uf.INFO_TYPE
+	  	LEFT JOIN pisp_car c ON cs.CAR_ID = c.CAR_ID
+		LEFT JOIN pisp_driver_location dl ON dl.MOBILE = c.DRIVER_PHONE
+		WHERE
+		 pi.STATUS = 3
+		AND pi.IS_DELETE = 0
+		<if test="fromPCode != null and fromPCode != 0"> AND cs.FROM_P_CODE = #{fromPCode}</if>
+		<if test="fromCCode != null and fromCCode != 0"> AND cs.FROM_C_CODE = #{fromCCode}</if>
+		<if test="fromTCode != null and fromTCode != 0"> AND cs.FROM_T_CODE = #{fromTCode}</if>
+		<if test="toPCode != null and toPCode != 0"> AND cs.TO_P_CODE = #{toPCode}</if>
+		<if test="toCCode != null and toCCode != 0"> AND cs.TO_C_CODE = #{toCCode}</if>
+		<if test="toTCode != null and toTCode != 0"> AND cs.TO_T_CODE = #{toTCode}</if>
+		<if test="userId != null"> AND uf.USER_ID = #{userId}</if>
+		<if test="sourceType != null and sourceType != ''"> AND cs.SOURCE_TYPE = #{sourceType}</if>
+		<if test="carType != null and carType != ''"> AND c.CAR_TYPE = #{carType}</if>
+		ORDER BY uf.FAVORITE_TIME DESC
+	</select>
+	
+	<select id="queryGoodsSourceFavorite" parameterType="GoodsSourceQuery" resultMap="com.lzz.lsp.core.goodssource.dao.GoodsSourceBaseDAO.goodsSourceVOMap">
+		SELECT 
+			uf.FAVORITE_ID,
+			info.PUBLISH_ID,
+			gs.FROM_PLACE,
+			gs.TO_PLACE,
+			gs.INFO_CONTENT,
+			gs.LINKMAN,
+			gs.LINK_MOBILE1,
+			info.DISPLAY_TIME,
+			gs.PUBLISHER,
+			gs.PLACE_KILOMETRE
+		FROM
+			pisp_publish_info info,
+			pisp_goods_source gs,
+			pisp_user_favorite uf
+		WHERE
+			gs.GOODS_SOURCE_ID = uf.INFO_ID
+			AND info.INFO_ID = uf.INFO_ID
+			AND info.INFO_TYPE = uf.INFO_TYPE
+			AND uf.INFO_TYPE = 1
+			AND info.STATUS = 3
+			AND info.IS_DELETE = 0
+		<if test="userId != null"> AND uf.USER_ID = #{userId}</if>
+		<if test="fromPCode != null and fromPCode !=0 "> and  gs.FROM_P_CODE = #{fromPCode}</if>
+		<if test="fromCCode != null and fromCCode !=0"> and  gs.FROM_C_CODE = #{fromCCode}</if>
+		<if test="fromTCode != null and fromTCode !=0"> and  gs.FROM_T_CODE = #{fromTCode}</if>
+		<if test="toPCode != null and toPCode !=0">and gs.TO_P_CODE = #{toPCode}</if>
+		<if test="toCCode != null and toCCode !=0">and gs.TO_C_CODE = #{toCCode}</if>
+		<if test="toTCode != null and toTCode !=0">and gs.TO_T_CODE = #{toTCode}</if>
+		<if test="goodsType != null and goodsType!='' "> AND gs.GOODS_TYPE=#{goodsType}</if>
+		<if test="sourceType != null and sourceType !='' "> and gs.source_type=#{sourceType}</if>
+		ORDER BY uf.FAVORITE_TIME DESC
+	</select>
+	
+	
+	<select id="queryWoleLineFavorite" parameterType="WholeLineQuery" resultMap="com.lzz.lsp.core.wholeline.dao.WholeLineBaseDAO.wholeLineVOMap">
+			SELECT
+				uf.FAVORITE_ID,
+				pub.PUBLISH_ID,
+				wl.DEPART_CAR_ONE,
+				wl.DEPART_CAR_TWO,
+				wl.HAS_CAR_TYPES,
+				wl.HEAVY_PRICE,
+				heavydict.VAL_NAME AS HEAVY_PRICE_UNIT,
+				wl.BULKY_PRICE,
+				bulkydict.VAL_NAME AS BULKY_PRICE_UNIT,
+				wl.RESUME,
+				durationdict.VAL_NAME AS DURATION,
+				pub.DISPLAY_TIME,
+				wl.FROM_PLACE,
+				wl.TO_PLACE,
+				u.USER_TYPE,
+				u.NICKNAME,
+				pu.QQ AS PQQ,
+				eu.QQ AS EQQ,
+				pu.REAL_NAME,
+				pu.MOBILE_PHONE,
+				eu.ENTERPRISE_NAME,
+				eu.ADDRESS
+			FROM
+				pisp_publish_info pub
+			LEFT JOIN pisp_whole_line wl ON pub.INFO_ID = wl.WHOLE_LINE_ID
+			LEFT JOIN pisp_dict_val heavydict ON heavydict.dict_code = 'GOODS_WEIGHT_UNIT'
+			AND heavydict.val_code = wl.HEAVY_PRICE_UNIT
+			LEFT JOIN pisp_dict_val bulkydict ON bulkydict.dict_code = 'GOODS_WEIGHT_UNIT'
+			AND bulkydict.val_code = wl.BULKY_PRICE_UNIT
+			LEFT JOIN pisp_dict_val durationdict ON durationdict.dict_code = 'TRANSPORT_TIME_RANGE'
+			AND durationdict.val_code = wl.DURATION
+
+			LEFT JOIN pisp_user u on u.USER_ID = pub.USER_ID
+			LEFT JOIN pisp_euser eu on eu.USER_ID = u.USER_ID
+			LEFT JOIN pisp_puser pu on pu.USER_ID = u.USER_ID 
+			,pisp_user_favorite uf
+			where 
+			uf.INFO_ID = pub.INFO_ID
+			AND uf.INFO_TYPE = pub.INFO_TYPE
+			AND pub.INFO_TYPE =3
+			AND pub.STATUS = 3
+			AND pub.IS_DELETE = 0
+		<if test="fromPCode != null and fromPCode != 0"> AND wl.FROM_P_CODE = #{fromPCode}</if>
+		<if test="fromCCode != null and fromCCode != 0"> AND wl.FROM_C_CODE = #{fromCCode}</if>
+		<if test="fromTCode != null and fromTCode != 0"> AND wl.FROM_T_CODE = #{fromTCode}</if>
+		<if test="toPCode != null and toPCode != 0"> AND wl.TO_P_CODE = #{toPCode}</if>
+		<if test="toCCode != null and toCCode != 0"> AND wl.TO_C_CODE = #{toCCode}</if>
+		<if test="toTCode != null and toTCode != 0"> AND wl.TO_T_CODE = #{toTCode}</if>
+		<if test="userId != null"> AND uf.USER_ID = #{userId}</if>
+			<if test="hasCarTypes != null and hasCarTypes.length>0">
+				and 
+				<foreach collection="hasCarTypes" item="item" open="(" close=")" separator="or">
+					wl.HAS_CAR_TYPES like '%,${item},%'
+				</foreach>
+			</if>
+			<if test="additionServices != null and additionServices.length>0">
+				and  
+				<foreach collection="additionServices" item="item" open="(" close=")" separator="or">
+					wl.ADDITION_SERVICES like '%,${item},%'
+				</foreach>
+			</if>
+		ORDER BY uf.FAVORITE_TIME DESC
+	</select>
+	
+	
+	<select id="queryTltLineFavorite" parameterType="TltLineQuery" resultMap="com.lzz.lsp.core.tltline.dao.TltLineBaseDAO.tltLineVOMap">
+			SELECT uf.FAVORITE_ID,pub.PUBLISH_ID,tl.DEPART_CAR_ONE,tl.DEPART_CAR_TWO, 
+				 tl.HEAVY_PRICE,heavydict.VAL_NAME as HEAVY_PRICE_UNIT,tl.BULKY_PRICE,bulkydict.VAL_NAME as BULKY_PRICE_UNIT,tl.RESUME,
+				 durationdict.VAL_NAME as DURATION,pub.DISPLAY_TIME,tl.PAY_WAYS,tl.ADDITION_SERVICES,
+				 tl.FROM_PLACE,
+				 tl.TO_PLACE,
+				 u.USER_TYPE,
+				 u.NICKNAME,
+				 pu.QQ AS PQQ,
+				 eu.QQ AS EQQ,
+				 pu.REAL_NAME,
+				 pu.MOBILE_PHONE,
+				 eu.ENTERPRISE_NAME,
+				 eu.ADDRESS
+			from pisp_publish_info pub 
+			LEFT JOIN pisp_tlt_line tl on pub.INFO_ID = tl.TLT_LINE_ID
+			LEFT JOIN pisp_dict_val heavydict on heavydict.dict_code = 'GOODS_WEIGHT_UNIT' and heavydict.val_code = tl.HEAVY_PRICE_UNIT
+			LEFT JOIN pisp_dict_val bulkydict on bulkydict.dict_code = 'GOODS_WEIGHT_UNIT' and bulkydict.val_code = tl.BULKY_PRICE_UNIT
+			LEFT JOIN pisp_dict_val durationdict on durationdict.dict_code = 'TRANSPORT_TIME_RANGE' and durationdict.val_code = tl.DURATION
+			
+			LEFT JOIN pisp_user u on u.USER_ID = pub.USER_ID
+			LEFT JOIN pisp_euser eu on eu.USER_ID = u.USER_ID
+			LEFT JOIN pisp_puser pu on pu.USER_ID = u.USER_ID 
+			,pisp_user_favorite uf
+			where 
+			uf.INFO_ID = pub.INFO_ID
+			AND uf.INFO_TYPE = pub.INFO_TYPE
+			AND pub.INFO_TYPE =4
+			AND pub.STATUS = 3
+			AND pub.IS_DELETE = 0
+		<if test="fromPCode != null and fromPCode != 0"> AND tl.FROM_P_CODE = #{fromPCode}</if>
+		<if test="fromCCode != null and fromCCode != 0"> AND tl.FROM_C_CODE = #{fromCCode}</if>
+		<if test="fromTCode != null and fromTCode != 0"> AND tl.FROM_T_CODE = #{fromTCode}</if>
+		<if test="toPCode != null and toPCode != 0"> AND tl.TO_P_CODE = #{toPCode}</if>
+		<if test="toCCode != null and toCCode != 0"> AND tl.TO_C_CODE = #{toCCode}</if>
+		<if test="toTCode != null and toTCode != 0"> AND tl.TO_T_CODE = #{toTCode}</if>
+		<if test="userId != null"> AND uf.USER_ID = #{userId}</if>
+		
+		<if test="duration != null and duration.length>0">
+				 and tl.DURATION in
+				 <foreach collection="duration" open="(" close=")" item="item" separator=",">
+				 	#{item}
+				 </foreach>
+		</if>
+		<if test="additionServices != null and additionServices.length>0">
+			and  
+			<foreach collection="additionServices" item="item" open="(" close=")" separator="or">
+				tl.ADDITION_SERVICES like '%,${item},%'
+			</foreach>
+		</if>
+		ORDER BY uf.FAVORITE_TIME DESC
+	</select>
+	
+	<select id="getUserFavoriteGoodsSourceCountByUserId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+		SELECT COUNT(uf.FAVORITE_ID)
+		FROM
+			pisp_publish_info info,
+			pisp_goods_source gs,
+			pisp_user_favorite uf
+		WHERE
+			gs.GOODS_SOURCE_ID = uf.INFO_ID
+		AND info.INFO_ID = uf.INFO_ID
+		AND info.INFO_TYPE = uf.INFO_TYPE
+		AND uf.INFO_TYPE = 1
+	  	AND uf.USER_ID = #{userId}
+	  	AND info.IS_DELETE = 0
+	</select>
+	
+	<select id="getUserFavoriteCarSourceCountByUserId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+		SELECT COUNT(uf.FAVORITE_ID)
+		FROM
+			pisp_publish_info info,
+			pisp_car_source cs,
+			pisp_user_favorite uf
+		WHERE
+			cs.CAR_SOURCE_ID = uf.INFO_ID
+		AND info.INFO_ID = uf.INFO_ID
+		AND info.INFO_TYPE = uf.INFO_TYPE
+		AND uf.INFO_TYPE = 2
+	  	AND uf.USER_ID = #{userId}
+	  	AND info.IS_DELETE = 0
+	</select>
+	
+	
+	<select id="getUserFavoriteNum" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+		SELECT COUNT(uf.FAVORITE_ID)
+		FROM
+			pisp_user_favorite uf
+		WHERE
+	    uf.USER_ID = #{userId}
+	</select>
+	
+	<select id="getUserFavoriteByUserIdAndInfoId" parameterType="java.util.Map" resultMap="favoriteMapper">
+		SELECT 
+				uf.FAVORITE_ID,
+				uf.FAVORITE_TIME,
+				uf.INFO_ID,
+				uf.INFO_TYPE,
+				uf.USER_ID
+		FROM
+			pisp_user_favorite uf
+		WHERE
+	    	uf.USER_ID = #{userId}
+	    AND	uf.INFO_ID = #{infoId}
+	    AND	uf.INFO_TYPE = #{infoType}
+	</select>
+	
+	
+	
+	
+	<select id="queryMyGoodsSourceFavoriteInfos" resultMap="favoriteVOMap" parameterType="FavoriteQuery">
+		SELECT
+			uf.FAVORITE_ID,
+			uf.INFO_ID,
+			uf.INFO_TYPE,
+			u.IS_AUTH,
+			gs.INFO_CONTENT,
+			pub.PUBLISH_FREQ,
+			pub.REPATE_TIMES,
+			pub.DISPLAY_TIME,
+			pub.`STATUS`
+		FROM
+			pisp_user_favorite uf
+		INNER JOIN pisp_user u ON u.USER_ID = uf.USER_ID
+		INNER JOIN pisp_publish_info pub ON pub.INFO_ID = uf.INFO_ID and pub.INFO_TYPE = uf.INFO_TYPE
+		INNER JOIN pisp_goods_source gs ON gs.GOODS_SOURCE_ID = pub.INFO_ID
+		WHERE pub.IS_DELETE =0
+			AND pub.STATUS = 3
+			<if test="userId != null"> AND uf.USER_ID = #{userId}</if>
+			<if test="infoType != null"> AND uf.INFO_TYPE = #{infoType}</if>
+		ORDER BY pub.DISPLAY_TIME DESC
+	</select>
+	
+	<select id="queryMyCarSourceFavoriteInfos" resultMap="favoriteVOMap" parameterType="FavoriteQuery">
+		SELECT
+			uf.FAVORITE_ID,
+			uf.INFO_ID,
+			uf.INFO_TYPE,
+			u.IS_AUTH,
+			cs.INFO_CONTENT,
+			pub.PUBLISH_FREQ,
+			pub.REPATE_TIMES,
+			pub.DISPLAY_TIME,
+			pub.`STATUS`
+		FROM
+			pisp_user_favorite uf
+		INNER JOIN pisp_user u ON u.USER_ID = uf.USER_ID
+		INNER JOIN pisp_publish_info pub ON pub.INFO_ID = uf.INFO_ID and pub.INFO_TYPE = uf.INFO_TYPE
+		INNER JOIN pisp_car_source cs ON cs.CAR_SOURCE_ID = pub.INFO_ID
+		WHERE pub.IS_DELETE =0
+			AND pub.STATUS = 3
+			<if test="userId != null"> AND uf.USER_ID = #{userId}</if>
+			<if test="infoType != null"> AND uf.INFO_TYPE = #{infoType}</if>
+		ORDER BY pub.DISPLAY_TIME DESC
+	</select>
+	
+</mapper>

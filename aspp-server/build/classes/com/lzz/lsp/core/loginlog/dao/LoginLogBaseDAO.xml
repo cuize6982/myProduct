@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.loginlog.dao.LoginLogBaseDAO">
+	<resultMap type="LoginLog" id="loginLogMap">
+		<id property="id" column="ID"/>
+		<result property="account" column="ACCOUNT"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="useTerminal" column="USE_TERMINAL"/>
+		<result property="terminalVersion" column="TERMINAL_VERSION"/>
+		<result property="onlineTime" column="ONLINE_TIME"/>
+		<result property="offlineTime" column="OFFLINE_TIME"/>
+		<result property="loginArea" column="LOGIN_AREA"/>
+	</resultMap>
+	
+	
+	<insert id="saveOutInfo" parameterType="LoginLog">
+		INSERT INTO pisp_login_log (
+			ACCOUNT,
+			USER_ID,
+			USE_TERMINAL,
+			TERMINAL_VERSION,
+			ONLINE_TIME,
+			OFFLINE_TIME,
+			LOGIN_AREA
+		)
+		VALUES
+		(
+			#{account},
+			#{userId},
+			#{useTerminal},
+			#{terminalVersion},
+			#{onlineTime},
+			#{offlineTime},
+			#{loginArea}
+		)
+	</insert>
+	
+	<insert id="saveLoginLogBase" parameterType="LoginLog">
+		INSERT INTO pisp_login_log (
+			ACCOUNT,
+			USER_ID,
+			USE_TERMINAL,
+			TERMINAL_VERSION,
+			ONLINE_TIME,
+			OFFLINE_TIME,
+			LOGIN_AREA
+		)
+		VALUES
+		(
+			#{account},
+			#{userId},
+			#{useTerminal},
+			#{terminalVersion},
+			#{onlineTime},
+			#{offlineTime},
+			#{loginArea}
+		)
+	</insert>
+	
+	<select id="queryLoginLogs" parameterType="LoginLogQuery" resultMap="loginLogMap">
+		SELECT
+			pll.ID,
+			pll.ACCOUNT,
+			pll.USER_ID,
+			pll.USE_TERMINAL,
+			pll.ONLINE_TIME,
+			pll.LOGIN_AREA
+		FROM
+			pisp_login_log pll
+		WHERE
+			1 = 1
+		<if test="useTerminal != null and useTerminal != ''">
+			AND pll.USE_TERMINAL = #{useTerminal}
+		</if>
+		
+		<if test="loginArea != null and loginArea != ''">
+			AND pll.LOGIN_AREA = #{loginArea}
+		</if>
+		
+		<if test="account != null and account != ''">
+			AND pll.ACCOUNT = #{account}
+		</if>
+		
+		<if test="startTime != null and startTime != ''">
+			AND pll.ONLINE_TIME &gt;= #{startTime}
+		</if>
+		
+		<if test="endTime != null and endTime != ''">
+			AND pll.ONLINE_TIME &lt;= #{endTime}
+		</if>
+	</select>
+	
+	<!-- 查询上一次的用户登录日志信息 -->
+	<select id="getLastLoginLog" parameterType="java.lang.Integer" resultMap="loginLogMap">
+		SELECT * FROM pisp_login_log AS l WHERE l.USER_ID=#{userId} ORDER BY l.ONLINE_TIME DESC LIMIT 1,1;
+	</select>
+	
+	<!-- 查询本次的用户登录日志信息 -->
+	<select id="getCurrentLoginLog" parameterType="java.lang.Integer" resultMap="loginLogMap">
+		SELECT * FROM pisp_login_log AS l WHERE l.USER_ID=#{userId} ORDER BY l.ONLINE_TIME DESC LIMIT 1;
+	</select>
+	<!-- 查询司机所在城市日志信息 -->
+	<select id="queryCurrentCityDrivers" parameterType="java.lang.Integer" resultMap="loginLogMap">
+		SELECT 
+			ppi.CID,
+			ppi.APP_SYSTEM 
+		FROM pisp_login_log pll
+		LEFT JOIN pisp_user pu ON pll.ACCOUNT = pu.ACCOUNT_NAME
+		LEFT JOIN pisp_push_info ppi ON ppi.USER_ID = pu.USER_ID
+		WHERE pu.IS_AUTH = 1 AND pu.USER_TYPE = 1 AND pll.LOGIN_AREA = #{fromCityCode}
+		GROUP BY pll.USER_ID
+		ORDER BY pll.ONLINE_TIME DESC;
+	</select>
+</mapper>

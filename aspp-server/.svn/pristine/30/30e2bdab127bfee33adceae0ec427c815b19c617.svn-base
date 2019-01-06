@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.aspp.dao.UserFavoriteDAO">
+	<resultMap type="com.lzz.aspp.vo.GoodsSourceFavoriteVO" id="goodsSourceFavoriteVO">
+		<result property="favoriteId" column="FAVORITE_ID"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="goodsSourceId" column="GOODS_SOURCE_ID"/>
+		<result property="fromPlace" column="FROM_PLACE"/>
+		<result property="toPlace" column="TO_PLACE"/>
+		<result property="infoContent" column="INFO_CONTENT"/>
+		<result property="goodsType" column="GOODS_TYPE"/>
+		<result property="goodsTypeName" column="GOODS_TYPE_NAME"/>
+		<result property="goodsName" column="GOODS_NAME"/>
+		<result property="weight" column="WEIGHT"/>
+		<result property="weightUnit" column="WEIGHT_UNIT"/>
+		<result property="weightUnitName" column="WEIGHT_UNIT_NAME"/>
+		<result property="volume" column="VOLUME"/>
+		<result property="volumeUnit" column="VOLUME_UNIT"/>
+		<result property="volumeUnitName" column="VOLUME_UNIT_NAME"/>
+		<result property="carTypeNeedName" column="CAR_TYPE_NEED_NAME"/>
+		<result property="carLengthNeedName" column="CAR_LENGTH_NEED_NAME"/>
+		<result property="carLengthNeed" column="CAR_LENGTH_NEED"/>
+		<result property="price" column="PRICE"/>
+		<result property="priceUnit" column="PRICE_UNIT"/>
+		<result property="priceUnitName" column="PRICE_UNIT_NAME"/>
+		<result property="linkMan" column="LINKMAN"/>
+		<result property="linkMobile1" column="LINK_MOBILE1"/>
+		<result property="linkMobile2" column="LINK_MOBILE2"/>
+		<result property="linkPhone" column="LINK_PHONE"/>
+		<result property="publishTime" column="PUBLISH_TIME"/>
+		<result property="enterpriseName" column="ENTERPRISE_NAME"/>
+		<result property="isStruct" column="IS_STRUCT"/>
+		<result property="goodsClass" column="GOODS_CLASS"/>
+		<result property="isAuth" column="IS_AUTH"/>
+		<result property="userGrad" column="USER_GRAD"/>
+		<result property="placeKilometre" column="PLACE_KILOMETRE"/>
+		<result property="defineCarType" column="DEFINE_CAR_TYPE"/>
+		<result property="address" column="ADDRESS"/>
+		<result property="claimGoodsDays" column="CLAIM_GOODS_DAYS"/>
+		<result property="goodsSourceInfoType" column="GOODS_SOURCE_INFO_TYPE"/>
+	</resultMap>
+	
+	<resultMap type="com.lzz.aspp.vo.CarSourceFavoriteVO" id="carSourceFavoriteVO">
+		<result property="favoriteId" column="FAVORITE_ID"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="carSourceId" column="INFO_ID"/>
+		<result property="fromPlace" column="FROM_PLACE"/>
+		<result property="toPlace" column="TO_PLACE"/>
+		<result property="sourceType" column="SOURCE_TYPE"/>
+		<result property="sourceTypeName" column="SOURCE_TYPE_NAME"/>
+		<result property="publisher" column="PUBLISHER"/>
+		<result property="linkMobile1" column="LINK_MOBILE1"/>
+		<result property="idcardNo" column="IDCARD_NO"/>
+		<result property="userType" column="USER_TYPE"/>
+		<result property="infoContent" column="INFO_CONTENT"/>
+		<result property="carNo" column="CAR_NO"/>
+		<result property="carType" column="CAR_TYPE"/>
+		<result property="carTypeName" column="CAR_TYPE_NAME"/>
+		<result property="carLength" column="CAR_LENGTH"/>
+		<result property="carLengthName" column="CAR_LENGTH_NAME"/>
+		<result property="loadWeight" column="LOAD_WEIGHT"/>
+		<result property="isAuth" column="IS_AUTH"/>
+		<result property="carPhoto" column="CAR_PHOTO"/>
+		<result property="drivingLicensePhoto" column="DRIVING_LICENSE_PHOTO"/>
+		<result property="driveAge" column="DRIVE_AGE"/>
+		<result property="driverLocationName" column="DRIVER_LOCATION_NAME"/>
+		<result property="longitude" column="LONGITUDE"/>
+		<result property="latitude" column="LATITUDE"/>
+		<result property="driverLocationTime" column="DRIVER_LOCATION_TIME"/>
+		<result property="returnBackDate" column="RETURN_BACK_DATE"/>
+		<result property="ppiUserId" column="PPI_USER_ID"/>
+		<result property="linkMan" column="LINKMAN"/>
+		<result property="placeKilometre" column="PLACE_KILOMETRE"/>
+		<result property="defineCarType" column="DEFINE_CAR_TYPE"/>
+		<result property="carTypeFirstCode" column="CAR_TYPE_FIRST_CODE"/>
+		<result property="carTypeSecondCode" column="CAR_TYPE_SECOND_CODE"/>
+		<result property="carTypeThirdCode" column="CAR_TYPE_THIRD_CODE"/>
+		
+	</resultMap>
+	
+	<select id="queryFavoritesCount" parameterType="java.util.Map" resultType="java.lang.Integer">
+		SELECT
+			count(0)
+		FROM
+			pisp_user_favorite puf
+		LEFT JOIN pisp_publish_info ppi ON puf.INFO_ID = ppi.INFO_ID AND ppi.INFO_TYPE = #{infoType}
+		WHERE puf.USER_ID = #{userId}
+		AND puf.INFO_TYPE = #{infoType}
+		AND ppi.IS_DELETE = 0
+		AND ppi.`STATUS` = 3
+	</select>
+	<select id="queryUserGoodsSourceFavorites" parameterType="GoodsSourceQuery" resultMap="goodsSourceFavoriteVO">
+		SELECT 
+		puf.FAVORITE_ID,
+		puf.USER_ID,
+		pgs.GOODS_SOURCE_ID,
+		pgs.FROM_PLACE,
+		pgs.TO_PLACE,
+		pgs.INFO_CONTENT,
+		pgs.GOODS_TYPE,
+		pgs.GOODS_CLASS,
+		(select pdv.VAL_NAME from pisp_dict_val pdv where pdv.DICT_CODE='GOODS_TYPE' and pdv.VAL_CODE=pgs.GOODS_TYPE and IS_VALID=1) AS GOODS_TYPE_NAME,
+		pgs.GOODS_NAME,
+		pgs.WEIGHT,
+		pgs.WEIGHT_UNIT,
+		(select pdv.VAL_NAME from pisp_dict_val pdv where pdv.DICT_CODE='GOODS_WEIGHT_UNIT' and pdv.VAL_CODE=pgs.WEIGHT_UNIT and IS_VALID=1) AS WEIGHT_UNIT_NAME,
+		pgs.VOLUME,
+		pgs.VOLUME_UNIT,
+		(select pdv.VAL_NAME from pisp_dict_val pdv where pdv.DICT_CODE='GOODS_WEIGHT_UNIT' and pdv.VAL_CODE=pgs.VOLUME_UNIT and IS_VALID=1) AS VOLUME_UNIT_NAME,
+		pgs.CAR_TYPE_NEED_NAME,
+		pgs.CAR_LENGTH_NEED_NAME,
+		pgs.CAR_LENGTH_NEED,
+		pgs.PAY_WAY,
+		pgs.PRICE,
+		pgs.PRICE_UNIT,
+		(select pdv.VAL_NAME from pisp_dict_val pdv where pdv.DICT_CODE='TRANSPORT_PRICE_UNIT' and pdv.VAL_CODE=pgs.PRICE_UNIT and IS_VALID=1) AS PRICE_UNIT_NAME,
+		pgs.LINKMAN,
+		pgs.LINK_MOBILE1,
+		pgs.LINK_MOBILE2,
+		pgs.LINK_PHONE,
+		ppi.PUBLISH_TIME,
+		pe.ENTERPRISE_NAME,
+		pe.ADDRESS,
+		ppi.IS_STRUCT,
+		pu.IS_AUTH,
+		pu.USER_GRAD,
+		pgs.PLACE_KILOMETRE,
+		pgs.CLAIM_GOODS_DAYS,
+		pgs.GOODS_SOURCE_INFO_TYPE,
+		pgs.DEFINE_CAR_TYPE
+		From pisp_user_favorite  puf 
+		LEFT JOIN pisp_goods_source pgs on puf.INFO_ID = pgs.GOODS_SOURCE_ID
+		LEFT JOIN pisp_publish_info ppi on ppi.INFO_ID = pgs.GOODS_SOURCE_ID AND ppi.INFO_TYPE = 1
+		LEFT JOIN pisp_euser pe on pe.USER_ID = ppi.USER_ID
+		LEFT JOIN pisp_user pu on pu.USER_ID = ppi.USER_ID
+		WHERE
+		puf.USER_ID = #{userId}
+		AND puf.INFO_TYPE = 1
+		AND ppi.`STATUS` = 3
+		AND ppi.IS_DELETE = 0
+		<if test="null != fromPCode"> AND pgs.FROM_P_CODE = #{fromPCode}</if>
+		<if test="null != fromCCode"> AND pgs.FROM_C_CODE = #{fromCCode}</if>
+		<if test="null != fromTCode"> AND pgs.FROM_T_CODE = #{fromTCode}</if>
+		<if test="null != toPCode"> AND pgs.TO_P_CODE = #{toPCode}</if>
+		<if test="null != toCCode"> AND pgs.TO_C_CODE = #{toCCode}</if>
+		<if test="null != toTCode"> AND pgs.TO_T_CODE = #{toTCode}</if>
+		ORDER BY puf.FAVORITE_TIME DESC
+	</select>
+	
+	<select id="queryUserCarSourceFavorites" parameterType="CarSourceQuery" resultMap="carSourceFavoriteVO">
+		SELECT 
+			puf.FAVORITE_ID,
+			puf.USER_ID,
+			puf.INFO_ID,
+			pcs.FROM_PLACE,
+			pcs.TO_PLACE,
+			pcs.SOURCE_TYPE,
+			(CASE pcs.SOURCE_TYPE
+			WHEN 01 then '本地车'
+			WHEN 02 then '回程车'
+			END)as SOURCE_TYPE_NAME,
+			pcs.PUBLISHER,
+			pcs.LINK_MOBILE1,
+			(CASE 
+			WHEN pu.USER_TYPE = 1 OR pu.USER_TYPE = 2 then (select pp.IDCARD_NO from pisp_puser pp where pp.USER_ID = pu.USER_ID)
+			ELSE (select pe.IDCARD_NO from pisp_euser pe where pe.USER_ID = pu.USER_ID)
+			END)as IDCARD_NO,
+			pu.USER_TYPE,
+			pcs.INFO_CONTENT,
+			pc.CAR_NO,
+			pc.CAR_TYPE,
+			pc.CAR_TYPE_FIRST_CODE,
+			pc.CAR_TYPE_SECOND_CODE,
+			pc.CAR_TYPE_THIRD_CODE,
+			(select pdv.VAL_NAME from pisp_dict_val pdv where pdv.DICT_CODE='CAR_TYPE' and pdv.VAL_CODE=pc.CAR_TYPE and IS_VALID=1) AS CAR_TYPE_NAME,
+			pc.CAR_LENGTH,
+			(select pdv.VAL_NAME from pisp_dict_val pdv where pdv.DICT_CODE='CAR_LENGTH' and pdv.VAL_CODE=pc.CAR_LENGTH and IS_VALID=1) AS CAR_LENGTH_NAME,
+			pc.LOAD_WEIGHT,
+			pu.IS_AUTH,
+			pc.CAR_PHOTO,
+			IF(pc.DRIVING_LICENSE_PHOTO = NULL OR pc.DRIVING_LICENSE_PHOTO = "","未上传","已上传") as DRIVING_LICENSE_PHOTO,
+			(CASE pu.USER_TYPE
+			WHEN 1 then (select IFNULL(YEAR (NOW()) - YEAR (pp.DRIVING_LICENCE_APPLY_DATE),0) from pisp_puser pp where pp.USER_ID = pu.USER_ID)
+			END)as DRIVE_AGE,
+			(CASE pu.USER_TYPE
+			WHEN 1 then (select pdl.LOCATION_NAME from pisp_driver_location pdl where pdl.DRIVER=pu.USER_ID)
+			END)as DRIVER_LOCATION_NAME,
+			(CASE pu.USER_TYPE
+			WHEN 1 then (select pdl.LONGITUDE from pisp_driver_location pdl where pdl.DRIVER=pu.USER_ID)
+			END)as LONGITUDE,
+			(CASE pu.USER_TYPE
+			WHEN 1 then (select pdl.LATITUDE from pisp_driver_location pdl where pdl.DRIVER=pu.USER_ID)
+			END)as LATITUDE,
+			(CASE pu.USER_TYPE
+			WHEN 1 then (select pdl.LOCATE_TIME from pisp_driver_location pdl where pdl.DRIVER=pu.USER_ID)
+			END)as DRIVER_LOCATION_TIME,
+			pcs.RETURN_BACK_DATE,
+			ppi.USER_ID AS PPI_USER_ID,
+			pcs.LINKMAN,
+			pc.DEFINE_CAR_TYPE
+		FROM  pisp_user_favorite puf 
+		LEFT JOIN pisp_car_source pcs on pcs.CAR_SOURCE_ID = puf.INFO_ID
+		LEFT JOIN pisp_publish_info ppi on ppi.INFO_ID = pcs.CAR_SOURCE_ID AND ppi.INFO_TYPE = 2
+		LEFT JOIN pisp_user pu on ppi.USER_ID = pu.USER_ID
+		LEFT  JOIN pisp_car pc on pc.CAR_ID = pcs.CAR_ID
+		WHERE puf.INFO_TYPE = 2
+		AND ppi.IS_DELETE = 0
+		AND ppi.`STATUS` = 3
+		AND puf.USER_ID = #{userId}
+		<if test="null != fromPCode"> AND pcs.FROM_P_CODE = #{fromPCode}</if>
+		<if test="null != fromCCode"> AND pcs.FROM_C_CODE = #{fromCCode}</if>
+		<if test="null != fromTCode"> AND pcs.FROM_T_CODE = #{fromTCode}</if>
+		<if test="null != toPCode"> AND pcs.TO_P_CODE = #{toPCode}</if>
+		<if test="null != toCCode"> AND pcs.TO_C_CODE = #{toCCode}</if>
+		<if test="null != toTCode"> AND pcs.TO_T_CODE = #{toTCode}</if>
+		ORDER BY puf.FAVORITE_TIME DESC
+	</select>
+</mapper>

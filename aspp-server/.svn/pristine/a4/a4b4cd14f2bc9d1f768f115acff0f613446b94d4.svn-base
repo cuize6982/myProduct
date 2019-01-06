@@ -1,0 +1,490 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.user.dao.UserBaseDAO">
+	<resultMap type="User" id="userMapper">
+		<id property="userId" column="USER_ID"/>
+		<result property="accountName" column="ACCOUNT_NAME"/>
+		<result property="nickName" column="NICKNAME"/>
+		<result property="userType" column="USER_TYPE"/>
+		<result property="userGrad" column="USER_GRAD"/>
+		<result property="isAuth" column="IS_AUTH"/>
+		<result property="remainMoney" column="REMAIN_MONEY"/>
+		<result property="favoriteNum" column="FAVORITE_NUM"/>
+		<result property="commentNum" column="COMMENT_NUM"/>
+		<result property="applauseRate" column="APPLAUSE_RATE"/>
+		<result property="headImage" column="HEAD_IMAGE"/>
+		<result property="lastLoginTime" column="LAST_LOGIN_TIME"/>
+		<result property="registerPCode" column="REGISTER_P_CODE"/>
+		<result property="registerPName" column="REGISTER_P_NAME"/>
+		<result property="registerCCode" column="REGISTER_C_CODE"/>
+		<result property="registerCName" column="REGISTER_C_NAME"/>
+		<result property="registerTCode" column="REGISTER_T_CODE"/>
+		<result property="createTime" column="CREATE_TIME"/>
+		<result property="updateTime" column="UPDATE_TIME"/>
+		<result property="createUser" column="CREATE_USER"/>
+		<result property="updateUser" column="UPDATE_USER"/>
+		<result property="recommendCode" column="RECOMMEND_CODE"/>
+		<result property="useScore" column="USE_SCORE"/>
+		<result property="isAgent" column="IS_AGENT"/>
+		<result property="score" column="SCORE"/>
+	</resultMap>
+	
+	<resultMap type="UserVO" id="userVOMapper">
+		<id property="userId" column="USER_ID"/>
+		<result property="accountName" column="ACCOUNT_NAME"/>
+		<result property="nickName" column="NICKNAME"/>
+		<result property="userType" column="USER_TYPE"/>
+		<result property="isAuth" column="IS_AUTH"/>
+		<result property="remainMoney" column="REMAIN_MONEY"/>
+		<result property="createTime" column="CREATE_TIME"/>
+		<result property="createUser" column="CREATE_USER"/>
+		<result property="accountStatus" column="STATUS"/>
+		<result property="recommendCode" column="RECOMMEND_CODE"/>
+		<result property="enterpriseName" column="ENTERPRISE_NAME"/>
+		<result property="address" column="ADDRESS"/>
+		<result property="realName" column="REAL_NAME"/>
+		<result property="linkMobile" column="LINKMOBILE"/>
+		<result property="corporation" column="CORPORATION"/>
+		<result property="belongArea" column="BELONG_AREA"/>
+		<result property="linkman" column="LINKMAN"/>
+		<result property="enterprisePhoto" column="ENTERPRISE_PHOTO"/>
+		<result property="livePlace" column="LIVE_PLACE"/>
+		<result property="score" column="SCORE"/>
+		<result property="remainMoney" column="REMAIN_MONEY"/>
+		<result property="drivingLicensePhoto" column="DRIVING_LICENSE_PHOTO"/>
+	</resultMap>
+	
+	<!-- 根据条件查询用户 -->
+	<select id="queryUsers" parameterType="UserQuery" resultMap="userVOMapper">
+		SELECT 
+			a.ACCOUNT_NAME,
+			a.PASSWORD,
+			e.LINKMAN,
+			u.USER_TYPE,
+			u.IS_AUTH,
+			u.REMAIN_MONEY,
+			u.CREATE_TIME,
+			u.USER_ID,
+			a.STATUS,
+			CASE 
+				WHEN p.REAL_NAME IS NULL THEN u.NICKNAME ELSE p.REAL_NAME
+			END AS NICKNAME,
+			e.ENTERPRISE_NAME,
+			CONCAT_WS("",p.LIVE_PLACE,e.BELONG_AREA) AS ADDRESS<!-- 2015年10月14日11:46:20 OSMP账户管理，查询页面要列出所在地 -->
+		FROM pisp_user u
+		inner JOIN ssmp.ssmp_account a ON u.ACCOUNT_NAME = a.ACCOUNT_NAME
+		LEFT JOIN pisp_euser e ON e.USER_ID=u.USER_ID
+		LEFT JOIN pisp_puser p ON p.USER_ID = u.USER_ID
+		<where>
+			<!-- 如果查出列表不包括代理商角色的账户flag=1,其实不影响 -->
+			<if test="flag != null ">
+				AND a.ACCOUNT_ID 
+     				  NOT IN (SELECT rr.ACCOUNT_ID FROM ssmp.ssmp_account_role rr WHERE rr.role_id= 
+								(SELECT ROLE_ID from ssmp.ssmp_role r WHERE r.ROLE_CODE = 'PISP_AGENT')
+			    			 )
+			</if>
+		
+			<if test="accountName != null and accountName != '' ">AND u.ACCOUNT_NAME LIKE "%"#{accountName}"%"</if>
+			<if test="nickName != null and nickName != '' ">AND u.NICKNAME = #{nickName}</if>
+			<if test="isAuth != null and isAuth.length>=0">
+				AND u.IS_AUTH in
+				<foreach collection="isAuth" item="item" index="index" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="userType != null and userType.length>=0">
+				AND u.USER_TYPE in
+				<foreach collection="userType" item="item" index="index" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="accountStatus != null and accountStatus.length>=0">
+				AND a.STATUS in
+				<foreach collection="accountStatus" item="item" index="index" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="belongArea !=null and belongArea !='' ">
+				AND (p.LIVE_PLACE like CONCAT('%',#{belongArea},'%') or e.BELONG_AREA like CONCAT('%',#{belongArea},'%'))
+			</if>
+		</where>
+		ORDER BY u.CREATE_TIME DESC
+	</select>
+	
+	<!-- 根据用户ID获取用户详细信息 -->
+	<select id="getUser" parameterType="Integer" resultMap="userMapper">
+		SELECT *
+		,(select d.dist_name from pisp_district d where d.dist_code = register_p_code) register_p_name
+		,(select d.dist_name from pisp_district d where d.dist_code = register_c_code) register_c_name
+		FROM pisp_user 
+		where USER_ID = #{userId}
+	</select>
+	<!-- 通过用户名获取用户信息 -->
+	<select id="getUserByAccountName" parameterType="String" resultMap="userMapper">
+		select * 
+		,(select d.dist_name from pisp_district d where d.dist_code = register_p_code) register_p_name
+		,(select d.dist_name from pisp_district d where d.dist_code = register_c_code) register_c_name
+		from pisp_user where ACCOUNT_NAME = #{accountName}
+	</select>
+	
+	<!-- 保存用户信息 -->
+	<insert id="saveUser" parameterType="User">
+		insert into 
+			pisp_user(USER_ID,
+					ACCOUNT_NAME,
+					NICKNAME,
+					USER_TYPE,
+					USER_GRAD,
+					IS_AUTH,
+					REMAIN_MONEY,
+					FAVORITE_NUM,
+					COMMENT_NUM,
+					APPLAUSE_RATE,
+					HEAD_IMAGE,
+					LAST_LOGIN_TIME,
+					CREATE_TIME,
+					CREATE_USER,
+					REGISTER_P_CODE,
+					REGISTER_C_CODE,
+					REGISTER_T_CODE,
+					RECOMMEND_CODE,
+					DATA_SOURCE) 
+			values(#{userId},
+					#{accountName},
+					#{nickName},
+					#{userType},
+					#{userGrad},
+					#{isAuth},
+					#{remainMoney},
+					#{favoriteNum},
+					#{commentNum},
+					#{applauseRate},
+					#{headImage},
+					#{lastLoginTime},
+					#{createTime},
+					#{createUser},
+					#{registerPCode},
+					#{registerCCode},
+					#{registerTCode},
+					#{recommendCode},
+					#{dataSource}
+					)
+	</insert>
+	
+	<!-- 更新用户昵称和头像 -->
+	<update id="updateNickNameAndHeadImage" parameterType="User">
+		UPDATE pisp_user u 
+		SET u.NICKNAME = #{nickName},
+			u.HEAD_IMAGE = #{headImage},
+			u.UPDATE_USER = #{updateUser},
+			u.UPDATE_TIME = #{updateTime}
+		WHERE u.USER_ID = #{userId}
+	</update>
+	
+	<!-- 更新用户是否认证 -->
+	<update id="updateAuthStatus" parameterType="User">
+		UPDATE pisp_user u 
+		SET u.IS_AUTH = #{isAuth},
+			u.UPDATE_USER = #{updateUser},
+			u.UPDATE_TIME = #{updateTime}
+		WHERE u.USER_ID = #{userId}
+	</update>
+	
+	<!-- 更新用户账户余额 -->
+	<update id="updateRemainMoney" parameterType="User">
+		UPDATE pisp_user u 
+		SET u.REMAIN_MONEY = #{remainMoney},
+			u.UPDATE_USER = #{updateUser},
+			u.UPDATE_TIME = #{updateTime}
+		WHERE u.USER_ID = #{userId}
+	</update>
+	
+	<!-- 更新评论数 -->
+	<update id="updateCommentNum" parameterType="Map">
+		UPDATE pisp_user u 
+		SET u.COMMENT_NUM = #{commentNum},
+			u.UPDATE_USER = #{updateUser},
+			u.UPDATE_TIME = #{updateTime}
+		WHERE u.USER_ID = #{userId}
+	</update>
+	
+	<!-- 更新好评率 -->
+	<update id="updateApplauseRate" parameterType="User">
+		UPDATE pisp_user u 
+		SET u.APPLAUSE_RATE = #{applauseRate},
+			u.UPDATE_USER = #{updateUser},
+			u.UPDATE_TIME = #{updateTime}
+		WHERE u.USER_ID = #{userId}
+	</update>
+	
+	<!-- 更新收藏数 -->
+	<update id="updateFavoriteNum" parameterType="User">
+		UPDATE pisp_user u 
+		SET u.FAVORITE_NUM = #{favoriteNum},
+			u.UPDATE_USER = #{updateUser},
+			u.UPDATE_TIME = #{updateTime}
+		WHERE u.USER_ID = #{userId}
+	</update>
+	
+	<!-- 更新最后一次登录时间 -->
+	<update id="updateLastLoginTime" parameterType="User">
+		UPDATE pisp_user u 
+		SET u.LAST_LOGIN_TIME = #{lastLoginTime},
+			u.UPDATE_USER = #{updateUser},
+			u.UPDATE_TIME = #{updateTime}
+		WHERE u.USER_ID = #{userId}
+	</update>
+	
+	<!-- 更新用户积分 -->
+	<update id="updateScore" parameterType="User">
+		UPDATE pisp_user u 
+		SET u.SCORE = #{score},
+			u.UPDATE_USER = #{updateUser},
+			u.UPDATE_TIME = #{updateTime}
+		WHERE u.USER_ID = #{userId}
+	</update>
+	
+	<!-- 更新注册地 -->
+	<update id="updateRegisterArea" parameterType="User">
+		UPDATE pisp_user u 
+		SET u.REGISTER_P_CODE = #{registerPCode},
+		    u.REGISTER_C_CODE = #{registerCCode},
+		    u.REGISTER_T_CODE = #{registerTCode},
+			u.UPDATE_USER = #{updateUser},
+			u.UPDATE_TIME = #{updateTime}
+		WHERE u.USER_ID = #{userId}
+	</update>
+	
+	<select id="getUserType" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+		SELECT USER_TYPE FROM pisp_user WHERE USER_ID = #{userId} 
+	</select>
+	
+	<!-- 更新用户信息-->
+	<update id="updateUser" parameterType="User">
+		UPDATE pisp_user u 
+		SET 
+			u.NICKNAME = #{nickName},
+			u.USER_GRAD = #{userGrad},
+			u.IS_AUTH = #{isAuth},
+			u.REMAIN_MONEY = #{remainMoney},
+			u.FAVORITE_NUM = #{favoriteNum},
+			u.COMMENT_NUM = #{commentNum},
+			u.APPLAUSE_RATE = #{applauseRate},
+			u.SCORE = #{score},
+			u.HEAD_IMAGE = #{headImage},
+			u.LAST_LOGIN_TIME = #{lastLoginTime},
+			u.REGISTER_P_CODE = #{registerPCode},
+		    u.REGISTER_C_CODE = #{registerCCode},
+		    u.REGISTER_T_CODE = #{registerTCode},
+			u.RECOMMEND_CODE = #{recommendCode},
+			u.UPDATE_USER = #{updateUser},
+			u.UPDATE_TIME = #{updateTime}
+		WHERE u.USER_ID = #{userId}
+	</update>
+	
+	<select id="queryUsersByParams" parameterType="UserQuery" resultMap="userVOMapper">
+		SELECT
+				u.USER_ID,
+				u.CREATE_TIME,
+				u.NICKNAME,
+				eu.BELONG_AREA,
+				eu.CORPORATION,
+				eu.ENTERPRISE_NAME,
+				eu.ENTERPRISE_PHOTO,
+				eu.LINKMAN,
+				eu.LINK_MOBILE1 as LINKMOBILE,
+				eu.ADDRESS,
+				u.ACCOUNT_NAME
+		FROM
+			pisp_user u
+		<!-- LEFT JOIN pisp_puser pu ON u.USER_ID = pu.USER_ID -->
+		LEFT JOIN pisp_euser eu ON u.USER_ID = eu.USER_ID
+		<where>
+			( u.USER_TYPE = 4 OR u.USER_TYPE = 5)
+			<if test="enterpriseName != null and enterpriseName != '' "> 
+				AND eu.ENTERPRISE_NAME LIKE CONCAT('%',#{enterpriseName},'%' )  
+			</if>
+			<if test="belongPCode != null and belongPCode != 0"> AND eu.BELONG_P_CODE = #{belongPCode}</if>
+			<if test="belongCCode != null and belongCCode != 0"> AND eu.BELONG_C_CODE = #{belongCCode}</if>
+			<if test="belongTCode != null and belongTCode != 0"> AND eu.BELONG_T_CODE = #{belongTCode}</if>
+		</where>
+		ORDER BY u.CREATE_TIME DESC
+	</select>
+	
+	<!-- 更新用户积分和已兑换积分 -->
+	<update id="updateScoreAndUseScore" parameterType="User">
+		UPDATE pisp_user u 
+		SET u.SCORE = #{score},
+			u.USE_SCORE = #{useScore},
+			u.UPDATE_USER = #{updateUser},
+			u.UPDATE_TIME = #{updateTime}
+		WHERE u.USER_ID = #{userId}
+	</update>
+	
+	<!-- 更新用户信息-->
+	<update id="updateIsAgent" parameterType="User">
+		UPDATE pisp_user u 
+		SET 
+			u.IS_AGENT = #{isAgent},
+			u.UPDATE_USER = #{updateUser},
+			u.UPDATE_TIME = #{updateTime}
+		WHERE u.USER_ID = #{userId}
+	</update>
+	
+	<select id="queryRightAgentUsers" parameterType="UserQuery" resultMap="userVOMapper">
+		SELECT
+			pu.USER_ID,
+			pu.ACCOUNT_NAME,
+			pe.ENTERPRISE_NAME,
+			pe.BELONG_AREA,
+			pu.CREATE_TIME,
+			pu.IS_AUTH,
+			pu.USER_TYPE
+		FROM
+			pisp_user pu
+		LEFT JOIN pisp_euser pe ON pe.USER_ID = pu.USER_ID
+		WHERE
+			NOT EXISTS (
+				SELECT
+					oa.AGENT_USER_ID
+				FROM
+					osmp_agent oa
+				WHERE
+					oa.AGENT_USER_ID = pu.USER_ID
+				AND oa.AGENT_PARENT_USER_ID = 0
+				<if test="null != agentStatus">
+			AND oa.AGENT_STATUS = #{agentStatus}
+		</if>
+			)
+		AND pu.USER_TYPE IN (4, 5)
+		<if test="null != accountName and '' != accountName">
+			AND pu.ACCOUNT_NAME like CONCAT("%",#{accountName},"%")
+		</if>
+		<if test="null != isAuth and isAuth.length != 0">
+			AND pu.IS_AUTH IN
+			<foreach collection="isAuth" item="item" index="index" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+	</select>
+	
+	<update id="updateRecommendCode" parameterType="User">
+		UPDATE 
+			pisp_user pu 
+		SET 
+			pu.RECOMMEND_CODE = #{recommendCode},
+			pu.UPDATE_USER = #{updateUser},
+			pu.UPDATE_TIME = #{updateTime}
+		WHERE 
+			pu.USER_ID = #{userId}
+	</update>
+
+	<!-- 获取待设置代理商列表 -->
+	<select id="getUnagentUserList" parameterType="UserQuery" resultMap="userVOMapper">
+		SELECT
+			pu.ACCOUNT_NAME,
+			pu.USER_ID,
+			(CASE
+				WHEN pu.NICKNAME is  NULL THEN pe.ENTERPRISE_NAME
+				WHEN pu.NICKNAME is not NULL THEN
+					CASE
+						WHEN pu.NICKNAME ='' THEN pe.ENTERPRISE_NAME
+						WHEN pu.NICKNAME !='' AND pe.ENTERPRISE_NAME is not NULL THEN CONCAT(pu.NICKNAME,'(',pe.ENTERPRISE_NAME,')') 
+					END
+			END) as NICKNAME,
+			pu.USER_TYPE,
+			pu.CREATE_TIME,
+			pu.IS_AUTH
+		FROM
+			pisp_user pu
+		INNER JOIN pisp_euser pe ON pu.USER_ID = pe.USER_ID
+		AND pu.IS_AGENT = 0
+		WHERE 1=1
+		<if test="accountName != null and accountName != '' ">AND pu.ACCOUNT_NAME LIKE "%"#{accountName}"%"</if>
+	</select>
+	
+	<select id="querySubAgentInfos" parameterType="UserQuery" resultMap="userVOMapper">
+		SELECT
+			u.USER_ID,
+			u.ACCOUNT_NAME,
+			CASE
+		WHEN p.REAL_NAME IS NULL THEN
+			u.NICKNAME
+		ELSE
+			p.REAL_NAME
+		END AS NICKNAME,
+		 u.IS_AUTH,
+		 u.USER_TYPE,
+		 p.REAL_NAME,
+		 e.ENTERPRISE_NAME,
+		 u.SCORE,
+		 u.REMAIN_MONEY,
+		 u.CREATE_TIME,
+		 CONCAT_WS(
+			"",
+			p.LIVE_PLACE,
+			e.BELONG_AREA
+		) AS ADDRESS
+		FROM
+			osmp_agent oa
+		LEFT JOIN pisp_user u ON oa.AGENT_USER_ID = u.USER_ID
+		LEFT JOIN pisp_puser p ON p.USER_ID = u.USER_ID
+		LEFT JOIN pisp_euser e ON e.USER_ID = u.USER_ID
+		<where>
+			oa.AGENT_CODE LIKE CONCAT(#{agentParentUserId}, '-%')
+			AND oa.AGENT_USER_ID != #{agentParentUserId}
+			AND oa.AGENT_STATUS = 1
+			<if test="accountName != null and accountName !='' "> AND u.ACCOUNT_NAME like CONCAT("%",#{accountName},"%")</if>
+			<if test="isAuth != null and isAuth.length>0">
+				 and u.IS_AUTH in 
+				 <foreach collection="isAuth" item="item" open="(" separator="," close=")">
+				 	#{item}
+				 </foreach>
+			</if>
+			<if test="userType != null and userType.length>0">
+				 and u.USER_TYPE in 
+				 <foreach collection="userType" item="item" open="(" separator="," close=")">
+				 	#{item}
+				 </foreach>
+			</if>
+			<!-- <if test="accountStatus != null and accountStatus.length>0">
+				 and a.STATUS in 
+				 <foreach collection="accountStatus" item="item" open="(" separator="," close=")">
+				 	#{item}
+				 </foreach>
+			</if> -->
+			<if test="areaPCode != null and areaPCode != 0"> AND ( p.LIVE_P_CODE = #{areaPCode} OR e.BELONG_P_CODE = #{areaPCode} )</if>
+			<if test="areaCCode != null and areaCCode != 0"> AND ( p.LIVE_C_CODE = #{areaCCode} OR e.BELONG_C_CODE = #{areaCCode} )</if>
+			<if test="areaTCode != null and areaTCode != 0"> AND ( p.LIVE_T_CODE = #{areaTCode} OR e.BELONG_T_CODE = #{areaTCode} )</if>
+			<if test="belongArea !=null and belongArea !='' ">
+				AND (p.LIVE_PLACE like CONCAT('%',#{belongArea},'%') or e.BELONG_AREA like CONCAT('%',#{belongArea},'%'))
+			</if>
+			<if test="recommendCode !=null and recommendCode !='' ">
+				AND RECOMMEND_CODE = #{recommendCode}
+			</if>
+		</where>
+		ORDER BY u.CREATE_TIME DESC 
+	</select>
+	
+	<update id="updateUserGrad" parameterType="User">
+		UPDATE 
+			pisp_user pu 
+		SET 
+			pu.USER_GRAD = #{userGrad},
+			pu.UPDATE_USER = #{updateUser},
+			pu.UPDATE_TIME = #{updateTime}
+		WHERE 
+			pu.USER_ID = #{userId}
+	</update>
+	
+	<select id="getUserBycarId" parameterType="java.lang.Integer" resultMap="userVOMapper">
+		SELECT 
+			pu.ACCOUNT_NAME,
+			pu.IS_AUTH,
+			pc.DRIVING_LICENSE_PHOTO 
+		FROM pisp_user pu 
+		LEFT JOIN pisp_user_car puc ON pu.USER_ID = puc.USER_ID
+		LEFT JOIN pisp_car pc ON puc.CAR_ID = pc.CAR_ID
+		WHERE puc.CAR_ID =#{carId}
+	</select>
+</mapper>

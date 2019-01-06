@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.template.dao.TemplateInfoBaseDAO">
+	<resultMap type="TemplateInfo" id="templateInfoMap">
+		<id property="id" column="TEMPLATE_ID"/>
+		<result property="templateCode" column="TEMPLATE_CODE"/>
+		<result property="templateName" column="TEMPLATE_NAME"/>
+		<result property="templateType" column="TEMPLATE_TYPE"/>
+		<result property="content" column="CONTENT"/>
+		<result property="createUser" column="CREATE_USER"/>
+		<result property="createTime" column="CREATE_TIME"/>
+		<result property="updateUser" column="UPDATE_USER"/>
+		<result property="updateTime" column="UPDATE_TIME"/>
+	</resultMap>
+	
+	<select id="queryTemplateInfos" parameterType="TemplateInfoQuery" resultMap="templateInfoMap">
+		SELECT ti.* FROM osmp_template_info ti
+		<where>
+			<if test="templateName != null and templateName != ''">
+				AND ti.TEMPLATE_NAME LIKE '%${templateName}%'
+			</if>
+			<if test="templateType != null"> AND ti.TEMPLATE_TYPE = #{templateType}</if>
+		</where>
+	</select>
+	
+	<select id="getTemplateInfo" parameterType="string" resultMap="templateInfoMap">
+		SELECT ti.* FROM osmp_template_info ti 
+		<where>
+			<if test="id != null"> AND ti.TEMPLATE_ID = #{id}</if>
+			<if test="templateCode != null and templateCode != ''"> AND ti.TEMPLATE_CODE = #{templateCode}</if>
+		</where>
+	</select>
+	
+	<insert id="addTemplateInfo" parameterType="TemplateInfo">
+		INSERT INTO osmp_template_info(TEMPLATE_CODE,TEMPLATE_NAME,TEMPLATE_TYPE,CONTENT,CREATE_USER,CREATE_TIME)
+		VALUES(#{templateCode},#{templateName},#{templateType},#{content},#{createUser},#{createTime})
+	</insert>
+	
+	<update id="updateTemplateInfo" parameterType="TemplateInfo">
+		UPDATE osmp_template_info ti SET
+		ti.TEMPLATE_NAME = #{templateName},
+		ti.TEMPLATE_TYPE = #{templateType},
+		ti.CONTENT = #{content},
+		ti.UPDATE_USER = #{updateUser},
+		ti.UPDATE_TIME = #{updateTime}
+		WHERE ti.TEMPLATE_ID = #{id}
+	</update>
+	
+	<delete id="deleteTemplateInfo">
+		DELETE FROM osmp_template_info 
+		<where>
+			<if test="id != null"> AND TEMPLATE_ID = #{id}</if>
+			<if test="templateCode != null and templateCode != ''"> AND TEMPLATE_CODE = #{templateCode}</if>
+		</where>
+	</delete>
+</mapper>

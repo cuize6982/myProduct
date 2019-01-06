@@ -1,0 +1,891 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.car.dao.CarBaseDAO">
+	<resultMap type="Car" id="carMap">
+		<id property="id" column="CAR_ID"/>
+		<result property="carNo" column="CAR_NO"/>
+		<result property="firstNo" column="FIRST_NO"/>
+		<result property="secondNo" column="SECOND_NO"/>
+		<result property="thirdNo" column="THIRD_NO"/>
+		<result property="carType" column="CAR_TYPE"/>
+		<result property="carTypeName" column="CAR_TYPE_NAME"/>
+		<result property="carLength" column="CAR_LENGTH"/>
+		<result property="carLengthName" column="CAR_LENGTH_NAME"/>
+		<result property="carLengthStr" column="CAR_LENGTH_NAME"/>
+		<result property="loadWeight" column="LOAD_WEIGHT"/>
+		<result property="carPhoto" column="CAR_PHOTO"/>
+		<result property="drivingLicensePhoto" column="DRIVING_LICENSE_PHOTO"/>
+		<result property="driver" column="DRIVER"/>
+		<result property="driverPhone" column="DRIVER_PHONE"/>
+		<result property="mark" column="MARK"/>
+		<result property="longitude" column="LONGITUDE"/>
+		<result property="latitude" column="LATITUDE"/>
+		<result property="locationName" column="LOCATION_NAME"/>
+		<result property="locateTime" column="LOCATE_TIME"/>
+		<result property="qq" column="QQ"/>
+		<result property="idCardNo" column="IDCARD_NO"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="createUser" column="CREATE_USER"/>
+		<result property="createTime" column="CREATE_TIME"/>
+		<result property="updateUser" column="UPDATE_USER"/>
+		<result property="updateTime" column="UPDATE_TIME"/>
+		<result property="dataSource" column="DATA_SOURCE"/>
+		<result property="defineCarType" column="DEFINE_CAR_TYPE"/>
+		<result property="carTypeFirstCode" column="CAR_TYPE_FIRST_CODE"/>
+		<result property="carTypeSecondCode" column="CAR_TYPE_SECOND_CODE"/>
+		<result property="carTypeThirdCode" column="CAR_TYPE_THIRD_CODE"/>
+	</resultMap>
+	
+	<resultMap type="CarVO" id="carVOMap">
+		<result property="id" column="CAR_ID"/>
+		<result property="driver" column="DRIVER"/>
+		<result property="driverPhone" column="DRIVER_PHONE"/>
+		<result property="carNo" column="CAR_NO"/>
+		<result property="carTypeCode" column="CAR_TYPE"/>
+		<result property="carTypeName" column="CAR_TYPE_NAME"/>
+		<result property="carLength" column="CAR_LENGTH"/>
+		<result property="carLengthName" column="CAR_LENGTH_NAME"/>
+		<result property="carLengthStr" column="CAR_LENGTH_NAME"/>
+		<result property="loadWeight" column="LOAD_WEIGHT"/>
+		<result property="carPhoto" column="CAR_PHOTO"/>
+		<result property="firstNoCode" column="FIRST_NO"/>
+		<result property="carTypeCode" column="CAR_TYPE"/>
+		<result property="drivingLicensePhoto" column="DRIVING_LICENSE_PHOTO"/>
+		<result property="realName" column="REAL_NAME"/>
+		<result property="isAuth" column="IS_AUTH"/>
+		<result property="mobilePhone" column="MOBILE_PHONE"/>
+		<result property="driveAge" column="DRIVE_AGE"/>
+		<result property="idcardNo" column="IDCARD_NO"/>
+		<result property="resume" column="RESUME"/>
+		<result property="locationName" column="LOCATION_NAME"/>
+		<result property="locateTime" column="LOCATE_TIME"/>
+		<result property="longitude" column="LONGITUDE"/>
+		<result property="latitude" column="LATITUDE"/>
+		<result property="idCardNo" column="IDCARD_NO"/>
+		<result property="qq" column="QQ"/>
+		<result property="mark" column="MARK"/>
+		<result property="isDelete" column="IS_DELETE"/>
+		<result property="driverRunCityCode" column="DRIVER_RUN_CITY_CODE"/>
+		<result property="driverRunCityName" column="DRIVER_RUN_CITY_NAME"/>
+		<result property="distance" column="DISTANCE"/>
+		<result property="accountName" column="ACCOUNT_NAME"/>
+		<result property="userPhoto" column="USER_PHOTO"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="defineCarType" column="DEFINE_CAR_TYPE"/>
+		<result property="carTypeFirstCode" column="CAR_TYPE_FIRST_CODE"/>
+		<result property="carTypeSecondCode" column="CAR_TYPE_SECOND_CODE"/>
+		<result property="carTypeThirdCode" column="CAR_TYPE_THIRD_CODE"/>
+	
+	</resultMap>
+	
+	<!-- 根据id查询车辆信息 -->
+	<select id="getCar" parameterType="Integer" resultMap="carMap">
+		<if test="carId != null">
+			<!-- SELECT 
+			   pc.CAR_ID,
+			   pc.CAR_NO,
+			   pc.FIRST_NO,
+			   pc.SECOND_NO,
+			   pc.THIRD_NO,
+			   pc.CAR_TYPE,
+			   pc.CAR_LENGTH,
+			   pc.LOAD_WEIGHT,
+			   pc.CAR_PHOTO,
+			   pc.DRIVING_LICENSE_PHOTO,
+			   pc.DRIVER,
+			   pc.DRIVER_PHONE,
+			   pc.IDCARD_NO,
+			   pc.QQ,
+			   pc.MARK,
+			   pc.IS_DELETE,
+			   pc.CREATE_USER,
+			   pc.CREATE_TIME,
+			   pc.UPDATE_USER,
+			   pc.UPDATE_TIME,
+			   pc.LONGITUDE,
+			   pc.LATITUDE,
+			   pc.LOCATION_NAME,
+			   pc.LOCATE_TIME,
+			   pc.DATA_SOURCE,
+			   pdv1.VAL_NAME AS CAR_TYPE_NAME,
+			   pdv2.VAL_NAME AS CAR_LENGTH_NAME
+			FROM PISP_CAR pc 
+			LEFT JOIN pisp_dict_val pdv1 ON pdv1.VAL_CODE = pc.CAR_TYPE AND pdv1.DICT_CODE='CAR_TYPE'
+			LEFT JOIN pisp_dict_val pdv2 ON pdv2.VAL_CODE = pc.CAR_LENGTH AND pdv2.DICT_CODE='CAR_LENGTH'
+			where pc.CAR_ID = #{carId}  -->
+			
+			    SELECT 
+			   pc.CAR_ID,
+			   pc.CAR_NO,
+			   pc.FIRST_NO,
+			   pc.SECOND_NO,
+			   pc.THIRD_NO,
+			   pc.CAR_TYPE,
+			   pc.CAR_LENGTH,
+			   pc.LOAD_WEIGHT,
+			   pc.CAR_PHOTO,
+			   pc.DRIVING_LICENSE_PHOTO,
+			   pc.DRIVER,
+			   pc.DRIVER_PHONE,
+			   pc.IDCARD_NO,
+			   pc.QQ,
+			   pc.MARK,
+			   pc.IS_DELETE,
+			   pc.CREATE_USER,
+			   pc.CREATE_TIME,
+			   pc.UPDATE_USER,
+			   pc.UPDATE_TIME,
+			   pc.LONGITUDE,
+			   pc.LATITUDE,
+			   pc.LOCATION_NAME,
+			   pc.LOCATE_TIME,
+			   pc.DATA_SOURCE,
+			   pc.DEFINE_CAR_TYPE,
+			   CASE 
+					when pc.CAR_TYPE_FIRST_CODE is NOT  NULL and pc.CAR_TYPE_SECOND_CODE is NOT  NULL AND pc.CAR_TYPE_THIRD_CODE is NOT  NULL then CONCAT(ct1.CARTYPE_NAME,'-',ct2.CARTYPE_NAME,'-',ct3.CARTYPE_NAME)
+					when pc.CAR_TYPE_FIRST_CODE is NOT  NULL and pc.CAR_TYPE_SECOND_CODE is NOT  NULL  then CONCAT(ct1.CARTYPE_NAME,'-',ct2.CARTYPE_NAME)
+				    when pc.CAR_TYPE_FIRST_CODE is NOT  NULL  then ct1.CARTYPE_NAME
+			        when pc.CAR_TYPE is not null then pdv1.VAL_NAME
+				    when pc.CAR_TYPE_FIRST_CODE is NULL and pc.CAR_TYPE_SECOND_CODE is NULL AND pc.CAR_TYPE_THIRD_CODE is NULL  then  ''
+			   END as CAR_TYPE_NAME
+			   FROM pisp_car pc 
+			   left JOIN  pisp_car_type_base_data ct1 ON ct1.CARTYPE_CODE = pc.CAR_TYPE_FIRST_CODE 
+			   LEFT JOIN pisp_car_type_base_data ct2 ON ct2.CARTYPE_CODE = pc.CAR_TYPE_SECOND_CODE
+			   LEFT JOIN pisp_car_type_base_data ct3 ON ct3.CARTYPE_CODE = pc.CAR_TYPE_THIRD_CODE
+			   LEFT JOIN pisp_dict_val pdv1 ON pdv1.VAL_CODE = pc.CAR_TYPE
+		      Where  
+				pc.CAR_ID =#{carId} and
+                IF(pc.CAR_TYPE IS NOT NULL,pdv1.DICT_CODE='CAR_TYPE',2=2)
+		</if>
+		
+	</select>
+	
+	<!-- 根据条件查询车辆集合-->
+	<select id="queryCars" parameterType="CarQuery" resultMap="carVOMap">
+		SELECT
+				pc.CAR_ID
+			FROM
+				pisp_car pc
+				LEFT JOIN pisp_user_car puc ON pc.CAR_ID = puc.CAR_ID
+				LEFT JOIN pisp_user pu ON puc.USER_ID = pu.USER_ID
+				LEFT JOIN pisp_puser pp ON pp.USER_ID = pu.USER_ID
+				<!-- LEFT JOIN pisp_dict_val ctn ON ctn.VAL_CODE = pc.CAR_TYPE AND ctn.DICT_CODE = 'CAR_TYPE'
+				LEFT JOIN pisp_dict_val cln ON cln.VAL_CODE = pc.CAR_LENGTH AND cln.DICT_CODE = 'CAR_LENGTH'
+			 -->
+			 <!-- 距离 -->
+				LEFT JOIN (
+					SELECT
+						pdl.DRIVER,
+						pdl.MOBILE,
+						pdl.LONGITUDE,
+						pdl.LATITUDE,
+						pdl.LOCATION_NAME,
+						pdl.LOCATE_TIME,
+						<if test="(null != slng and null != slat) and ('' != slng and '' != slat)">
+						CAST(
+							distance (
+								#{slng},
+								#{slat},
+								pdl.LONGITUDE,
+								pdl.LATITUDE
+							) AS SIGNED
+						) AS LOCATION
+						</if>
+						<if test="(null == slng or null == slat) or  ('' == slng or '' == slat)">
+							null AS LOCATION
+						</if>
+					FROM pisp_driver_location pdl
+				) lc ON lc.MOBILE = pc.DRIVER_PHONE
+				<!-- 长跑城市 -->
+				LEFT JOIN (
+					SELECT
+						pdrc.USER_ID,
+						GROUP_CONCAT(
+							CASE WHEN pdrc.AREA_CODE IS NULL THEN(CASE WHEN pdrc.CITY_CODE IS NULL THEN pdrc.TO_PROVINCE_CODE ELSE pdrc.CITY_CODE END)
+							ELSE pdrc.AREA_CODE END
+						) AS DRIVER_RUN_CITY_CODE,
+						GROUP_CONCAT(
+							(SELECT 
+								pd.DIST_NAME
+								FROM
+									pisp_district pd
+								WHERE
+									pd.DIST_CODE = (
+										CASE WHEN pdrc.AREA_CODE IS NULL THEN (CASE WHEN pdrc.CITY_CODE IS NULL THEN pdrc.TO_PROVINCE_CODE ELSE pdrc.CITY_CODE END)
+										ELSE pdrc.AREA_CODE END
+									)
+							)
+						) AS DRIVER_RUN_CITY_NAME
+					FROM
+						pisp_driver_run_city pdrc
+					GROUP BY
+						pdrc.USER_ID
+				) cr ON pu.USER_ID = cr.USER_ID
+				
+				WHERE
+					pc.IS_DELETE = 0
+					<if test="userId !=null">
+						AND uc.USER_ID =#{userId}
+					</if>
+					<if test="firstNo !=null">
+						AND pc.FIRST_NO = #{firstNo}
+					</if>
+					<if test="secondNo !=null">
+						AND pc.SECOND_NO =#{secondNo}
+					</if>
+					<if test="thirdNo !=null and thirdNo !=''">
+						AND pc.THIRD_NO like '%${thirdNo}%'
+					</if>
+					<if test="carTypes !=null and carTypes.length>0">
+						AND pc.CAR_TYPE in
+						<foreach collection="carTypes" item="item" index="index" open="(" separator="," close=")">
+							#{item}
+						</foreach>
+					</if>
+					<if test="driver !=null and driver !=''">
+						AND pc.DRIVER like '%${driver}%'
+					</if>
+					<if test="userType!=null">
+						AND pu.USER_TYPE = #{userType}
+					</if>
+					<if test="dirverRunCityCode != null">
+						AND cr.DRIVER_RUN_CITY_CODE like CONCAT('%',#{dirverRunCityCode},'%')
+					</if>
+					<if test="carLengths !=null and carLengths.length>0">
+						AND pc.CAR_LENGTH in
+						<foreach collection="carLengths" item="item" index="index" open="(" separator="," close=")">
+							#{item}
+						</foreach>
+					</if>
+					<if test="locationName != null and locationName != ''">
+						AND lc.LOCATION_NAME LIKE '%${locationName}%'
+					</if>
+				ORDER BY
+					lc.LOCATION IS NULL ,lc.LOCATION ASC LIMIT #{start}, #{pageSize}
+	
+		<!-- SELECT rec.*,IF(rec.DISTANCE_NUM IS NULL,"距离不详",CONCAT('距您',rec.DISTANCE_NUM,'公里')) AS DISTANCE
+		FROM
+			(SELECT 
+				pc.CAR_ID,
+				pc.DRIVER,
+				pc.DRIVER_PHONE,
+				pc.CAR_NO,
+				IFNULL(pp.REAL_NAME,pu.NICKNAME) AS REAL_NAME,
+				pu.IS_AUTH AS IS_AUTH,
+				pp.MOBILE_PHONE,
+				IFNULL(YEAR (NOW()) - YEAR (pp.DRIVING_LICENCE_APPLY_DATE),0) AS DRIVE_AGE,
+				IFNULL(pp.IDCARD_NO,"未实名认证") as IDCARD_NO,
+				pp.RESUME,
+				(CASE
+					WHEN pp.DRIVING_LICENCE_PHOTO IS NULL THEN "未上传"
+					ELSE "已上传"
+				 END
+				) AS DRIVING_LICENSE_PHOTO,
+				pc.CAR_TYPE,
+				(SELECT dv.VAL_NAME FROM pisp_dict_val dv WHERE dv.VAL_CODE = pc.CAR_TYPE AND dv.DICT_CODE='CAR_TYPE') AS CAR_TYPE_NAME,
+				(SELECT dv.VAL_NAME FROM pisp_dict_val dv WHERE dv.VAL_CODE = pc.CAR_LENGTH AND dv.DICT_CODE='CAR_LENGTH') AS CAR_LENGTH_NAME,
+				pc.LOAD_WEIGHT,
+				IFNULL(recentLocation.LOCATION_NAME,"未开启定位") AS LOCATION_NAME,
+				recentLocation.LOCATE_TIME,
+				pc.CAR_PHOTO,
+				pc.QQ,
+				pc.MARK,
+				uc.USER_ID,
+				pu.HEAD_IMAGE AS USER_PHOTO,
+				pdrc.DRIVER_RUN_CITY_CODE,
+				pdrc.DRIVER_RUN_CITY_NAME,
+				recentLocation.LONGITUDE,
+				recentLocation.LATITUDE
+				<if test="(slng!=null and slng!='') and (slat!=null and slat!='')">
+					,distance(#{slng},#{slat},recentLocation.LONGITUDE,recentLocation.LATITUDE) AS DISTANCE_NUM
+				</if>
+				<if test="(slng==null or slng=='') or (slat==null or slat=='')">
+					, NULL AS DISTANCE_NUM
+				</if>
+			FROM PISP_CAR pc
+			LEFT JOIN pisp_user_car uc ON pc.CAR_ID = uc.CAR_ID
+			LEFT JOIN pisp_user pu ON pu.USER_ID = uc.USER_ID
+			LEFT JOIN (select pdrc.USER_ID,GROUP_CONCAT(CASE WHEN pdrc.AREA_CODE is NULL THEN ( CASE WHEN pdrc.CITY_CODE is NULL THEN pdrc.TO_PROVINCE_CODE ELSE pdrc.CITY_CODE END) ELSE pdrc.AREA_CODE END) AS DRIVER_RUN_CITY_CODE,GROUP_CONCAT((select  pd.DIST_NAME from pisp_district pd where pd.DIST_CODE = (CASE WHEN pdrc.AREA_CODE is NULL THEN ( CASE WHEN pdrc.CITY_CODE is NULL THEN pdrc.TO_PROVINCE_CODE ELSE pdrc.CITY_CODE END) ELSE pdrc.AREA_CODE END))) AS DRIVER_RUN_CITY_NAME from pisp_driver_run_city pdrc group by pdrc.USER_ID) pdrc ON pdrc.USER_ID = pu.USER_ID LEFT JOIN pisp_puser pp ON pp.USER_ID = pu.USER_ID
+			LEFT JOIN pisp_driver_location recentLocation ON recentLocation.MOBILE = pc.DRIVER_PHONE
+			WHERE pc.IS_DELETE = 0
+			<if test="userId !=null">
+				and uc.USER_ID =#{userId}
+			</if>
+			<if test="firstNo !=null">
+				and pc.FIRST_NO = #{firstNo}
+			</if>
+			<if test="secondNo !=null">
+				and pc.SECOND_NO =#{secondNo}
+			</if>
+			<if test="thirdNo !=null and thirdNo !=''">
+				and pc.THIRD_NO like '%${thirdNo}%'
+			</if>
+			<if test="carTypes !=null and carTypes.length>0">
+				and pc.CAR_TYPE in
+				<foreach collection="carTypes" item="item" index="index" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="driver !=null and driver !=''">
+				and pc.DRIVER like '%${driver}%'
+			</if>
+			<if test="userType!=null">
+				and pu.USER_TYPE = #{userType}
+			</if>
+			<if test="dirverRunCityCode != null">
+				and pdrc.DRIVER_RUN_CITY_CODE like CONCAT('%',#{dirverRunCityCode},'%')
+			</if>
+			<if test="carLengths !=null and carLengths.length>0">
+				and pc.CAR_LENGTH in
+				<foreach collection="carLengths" item="item" index="index" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="locationName != null and locationName != ''">
+				AND recentLocation.LOCATION_NAME LIKE '%${locationName}%'
+			</if>
+			ORDER BY 
+			<if test="(slng!=null and slng!='') and (slat!=null and slat!='')">DISTANCE_NUM is NULL,cast(DISTANCE_NUM AS unsigned),</if>
+			pc.CREATE_TIME DESC) rec -->
+	</select>
+	
+	<select id="getCarInfosByCarIds" resultMap="carVOMap">
+		SELECT
+			carAll.*, 
+			CASE WHEN carAll.DISTANCE_NUM IS NULL THEN
+				'距离不详'
+			ELSE
+				CONCAT(
+					'距您',
+					carAll.DISTANCE_NUM,
+					'公里'
+				)
+			END AS DISTANCE
+		FROM
+			(
+				SELECT
+					pc.CAR_ID,
+					pc.DRIVER,
+					pc.DRIVER_PHONE,
+					pc.CAR_NO,
+					pc.CAR_LENGTH,
+					pc.LOAD_WEIGHT,
+					pc.CAR_PHOTO,
+					pc.QQ,
+					pc.MARK,
+					IFNULL(pp.REAL_NAME, pu.NICKNAME) AS REAL_NAME,
+					pp.MOBILE_PHONE,
+					pu.IS_AUTH AS IS_AUTH,
+					IFNULL(YEAR (NOW()) - YEAR (pp.DRIVING_LICENCE_APPLY_DATE), 0) AS DRIVE_AGE,
+					pp.RESUME,
+					(CASE WHEN pp.DRIVING_LICENCE_PHOTO IS NULL THEN "未上传" ELSE "已上传" END) AS DRIVING_LICENSE_PHOTO,
+					IFNULL(pp.IDCARD_NO, "未实名认证") AS IDCARD_NO,
+					puc.USER_ID,
+					pu.HEAD_IMAGE AS USER_PHOTO,
+					CASE WHEN lc.LOCATION_NAME IS NULL THEN '暂未开启定位' ELSE lc.LOCATION_NAME END,
+				 	lc.LOCATE_TIME,
+				 	lc.LONGITUDE,
+				 	lc.LATITUDE,
+				 	lc.LOCATION AS DISTANCE_NUM,
+				 	lc.LOCATION_NAME,
+				 	cr.DRIVER_RUN_CITY_CODE,
+				 	cr.DRIVER_RUN_CITY_NAME,
+				 	pc.DEFINE_CAR_TYPE,
+				 	pc.CAR_TYPE_FIRST_CODE,
+				 	pc.CAR_TYPE_SECOND_CODE,
+				 	pc.CAR_TYPE_THIRD_CODE,
+				    CONCAT(pc.CAR_LENGTH,'米') AS CAR_LENGTH_NAME,
+				 	CASE 
+				      when pc.CAR_TYPE_FIRST_CODE is NOT  NULL and pc.CAR_TYPE_SECOND_CODE is NOT  NULL AND pc.CAR_TYPE_THIRD_CODE is NOT  NULL then CONCAT(ct1.CARTYPE_NAME,'-',ct2.CARTYPE_NAME,'-',ct3.CARTYPE_NAME)
+				      when pc.CAR_TYPE_FIRST_CODE is NOT  NULL and pc.CAR_TYPE_SECOND_CODE is NOT  NULL  then CONCAT(ct1.CARTYPE_NAME,'-',ct2.CARTYPE_NAME)
+					  when pc.CAR_TYPE_FIRST_CODE is NOT  NULL  then ct1.CARTYPE_NAME
+			          when pc.DEFINE_CAR_TYPE is not null then pc.DEFINE_CAR_TYPE
+			          when pc.CAR_TYPE is not null then ctn.VAL_NAME
+		            END as CAR_TYPE_NAME
+				FROM
+					pisp_car pc
+				LEFT JOIN pisp_user_car puc ON pc.CAR_ID = puc.CAR_ID
+				LEFT JOIN pisp_user pu ON puc.USER_ID = pu.USER_ID
+				LEFT JOIN pisp_puser pp ON pp.USER_ID = pu.USER_ID
+				left JOIN  pisp_car_type_base_data ct1 ON ct1.CARTYPE_CODE = pc.CAR_TYPE_FIRST_CODE 
+				LEFT JOIN pisp_car_type_base_data ct2 ON ct2.CARTYPE_CODE = pc.CAR_TYPE_SECOND_CODE
+				LEFT JOIN pisp_car_type_base_data ct3 ON ct3.CARTYPE_CODE = pc.CAR_TYPE_THIRD_CODE
+			    LEFT JOIN pisp_dict_val ctn ON ctn.VAL_CODE = pc.CAR_TYPE AND ctn.DICT_CODE = 'CAR_TYPE'
+			<!-- 距离 -->
+				LEFT JOIN (
+					SELECT
+						pdl.DRIVER,
+						pdl.MOBILE,
+						pdl.LONGITUDE,
+						pdl.LATITUDE,
+						pdl.LOCATION_NAME,
+						pdl.LOCATE_TIME,
+						<if test="(null != slng and null != slat) and ('' != slng and '' != slat)">
+						CAST(
+							distance (#{slng},#{slat},pdl.LONGITUDE,pdl.LATITUDE)
+						 	AS SIGNED
+						 ) AS LOCATION
+						</if>
+						<if test="(null == slng or null == slat) or  ('' == slng or '' == slat)">
+							null AS LOCATION
+						</if>
+					FROM pisp_driver_location pdl
+				) lc ON lc.MOBILE = pc.DRIVER_PHONE
+				<!-- 长跑城市 -->
+				LEFT JOIN (
+					SELECT
+						pdrc.USER_ID,
+						GROUP_CONCAT(
+							CASE WHEN pdrc.AREA_CODE IS NULL THEN(CASE WHEN pdrc.CITY_CODE IS NULL THEN pdrc.TO_PROVINCE_CODE ELSE pdrc.CITY_CODE END)
+							ELSE pdrc.AREA_CODE END
+						) AS DRIVER_RUN_CITY_CODE,
+						GROUP_CONCAT(
+							(SELECT 
+								pd.DIST_NAME
+								FROM
+									pisp_district pd
+								WHERE
+									pd.DIST_CODE = (
+										CASE WHEN pdrc.AREA_CODE IS NULL THEN (CASE WHEN pdrc.CITY_CODE IS NULL THEN pdrc.TO_PROVINCE_CODE ELSE pdrc.CITY_CODE END)
+										ELSE pdrc.AREA_CODE END
+									)
+							)
+						) AS DRIVER_RUN_CITY_NAME
+					FROM
+						pisp_driver_run_city pdrc
+					GROUP BY
+						pdrc.USER_ID
+				) cr ON pu.USER_ID = cr.USER_ID
+				
+				WHERE
+				pc.IS_DELETE = 0 AND pu.USER_TYPE = 1 
+				<if test="carIds !=null and carIds.size()>0">
+				AND
+				pc.CAR_ID IN
+				<foreach collection="carIds" item="item" index="index" open="(" separator="," close=")">
+						#{item}
+				</foreach>
+				</if>
+				
+				ORDER BY
+					lc.LOCATION IS NULL ,lc.LOCATION ASC
+			) carAll
+	</select>
+	
+	<select id="getCarInfocount" resultType="java.lang.Integer" parameterType="CarQuery">
+		SELECT
+			COUNT(0)
+		FROM
+			pisp_car pc
+		LEFT JOIN pisp_user_car puc ON pc.CAR_ID = puc.CAR_ID
+		LEFT JOIN pisp_user pu ON puc.USER_ID = pu.USER_ID
+		LEFT JOIN pisp_puser pp ON pp.USER_ID = pu.USER_ID
+		LEFT JOIN (
+			SELECT
+				pdrc.USER_ID,
+				GROUP_CONCAT(
+					CASE
+					WHEN pdrc.AREA_CODE IS NULL THEN
+						(
+							CASE
+							WHEN pdrc.CITY_CODE IS NULL THEN
+								pdrc.TO_PROVINCE_CODE
+							ELSE
+								pdrc.CITY_CODE
+							END
+						)
+					ELSE
+						pdrc.AREA_CODE
+					END
+				) AS DRIVER_RUN_CITY_CODE,
+				GROUP_CONCAT(
+					(
+						SELECT
+							pd.DIST_NAME
+						FROM
+							pisp_district pd
+						WHERE
+							pd.DIST_CODE = (
+								CASE
+								WHEN pdrc.AREA_CODE IS NULL THEN
+									(
+										CASE
+										WHEN pdrc.CITY_CODE IS NULL THEN
+											pdrc.TO_PROVINCE_CODE
+										ELSE
+											pdrc.CITY_CODE
+										END
+									)
+								ELSE
+									pdrc.AREA_CODE
+								END
+							)
+					)
+				) AS DRIVER_RUN_CITY_NAME
+			FROM
+				pisp_driver_run_city pdrc
+			GROUP BY
+				pdrc.USER_ID
+		) cr ON pu.USER_ID = cr.USER_ID
+		WHERE
+			pc.IS_DELETE = 0
+		
+		<if test="userId !=null">
+			AND uc.USER_ID =#{userId}
+		</if>
+		<if test="firstNo !=null">
+			AND pc.FIRST_NO = #{firstNo}
+		</if>
+		<if test="secondNo !=null">
+			AND pc.SECOND_NO =#{secondNo}
+		</if>
+		<if test="thirdNo !=null and thirdNo !=''">
+			AND pc.THIRD_NO like '%${thirdNo}%'
+		</if>
+		<if test="carTypes !=null and carTypes.length>0">
+			AND pc.CAR_TYPE in
+			<foreach collection="carTypes" item="item" index="index" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test="driver !=null and driver !=''">
+			AND pc.DRIVER like '%${driver}%'
+		</if>
+		<if test="userType!=null">
+			AND pu.USER_TYPE = #{userType}
+		</if>
+		<if test="dirverRunCityCode != null">
+			AND cr.DRIVER_RUN_CITY_CODE like CONCAT('%',#{dirverRunCityCode},'%')
+		</if>
+		<if test="carLengths !=null and carLengths.length>0">
+			AND pc.CAR_LENGTH in
+			<foreach collection="carLengths" item="item" index="index" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+	</select>
+	
+	<select id="queryCarsInfo" parameterType="CarQuery" resultMap="carVOMap">
+		SELECT rec.*,IF(rec.DISTANCE_NUM IS NULL,"距离不详",CONCAT('距您',rec.DISTANCE_NUM,'公里')) AS DISTANCE
+		FROM
+			(SELECT 
+				pc.CAR_ID,
+				pc.DRIVER,
+				pc.DRIVER_PHONE,
+				pc.CAR_NO,
+				pc.CAR_TYPE,
+				pc.CAR_LENGTH AS CAR_LENGTH_NAME,
+				CASE
+				      when pc.CAR_TYPE_FIRST_CODE is NOT  NULL and pc.CAR_TYPE_SECOND_CODE is NOT  NULL AND pc.CAR_TYPE_THIRD_CODE is NOT  NULL then CONCAT(ct1.CARTYPE_NAME,'-',ct2.CARTYPE_NAME,'-',ct3.CARTYPE_NAME)
+				      when pc.CAR_TYPE_FIRST_CODE is NOT  NULL and pc.CAR_TYPE_SECOND_CODE is NOT  NULL  then CONCAT(ct1.CARTYPE_NAME,'-',ct2.CARTYPE_NAME)
+					  when pc.CAR_TYPE_FIRST_CODE is NOT  NULL  then ct1.CARTYPE_NAME
+			          when pc.DEFINE_CAR_TYPE is not null then pc.DEFINE_CAR_TYPE
+			          when pc.CAR_TYPE is not null then ctn.VAL_NAME
+		        END as CAR_TYPE_NAME,
+				pc.LOAD_WEIGHT,
+				pc.CAR_PHOTO,
+				pc.QQ,
+				pc.MARK,
+				pdl.LOCATION_NAME,
+				pdl.LONGITUDE,
+				pdl.LATITUDE,
+				pdl.LOCATE_TIME,
+				CASE
+					WHEN ISNULL(u.IS_AUTH) THEN 0
+					ELSE u.IS_AUTH
+				END AS IS_AUTH
+				<if test="(slng!=null and slng!='') and (slat!=null and slat!='')">
+					,distance(#{slng},#{slat},pdl.LONGITUDE,pdl.LATITUDE) AS DISTANCE_NUM
+				</if>
+				<if test="(slng==null or slng=='') and (slat==null or slat=='')">
+					, NULL AS DISTANCE_NUM
+				</if>
+			FROM PISP_CAR pc
+			LEFT JOIN pisp_user_car uc ON pc.CAR_ID = uc.CAR_ID
+			LEFT JOIN pisp_user u ON u.ACCOUNT_NAME = pc.DRIVER_PHONE
+			LEFT JOIN pisp_driver_location pdl ON pdl.MOBILE = pc.DRIVER_PHONE 
+			left JOIN  pisp_car_type_base_data ct1 ON ct1.CARTYPE_CODE = pc.CAR_TYPE_FIRST_CODE 
+			LEFT JOIN pisp_car_type_base_data ct2 ON ct2.CARTYPE_CODE = pc.CAR_TYPE_SECOND_CODE
+			LEFT JOIN pisp_car_type_base_data ct3 ON ct3.CARTYPE_CODE = pc.CAR_TYPE_THIRD_CODE
+			LEFT JOIN pisp_dict_val ctn ON ctn.VAL_CODE = pc.CAR_TYPE AND ctn.DICT_CODE = 'CAR_TYPE'
+	
+			<where>
+				<if test="userId !=null">
+					AND uc.USER_ID =#{userId}	
+				</if>
+				<if test="isDelete !=null">
+					AND pc.IS_DELETE =#{isDelete}
+				</if>
+				<if test="driver != null and driver != ''">
+					AND pc.DRIVER LIKE '%${driver}%'
+				</if>
+				<if test="driverPhone != null and driverPhone != ''">
+					AND pc.DRIVER_PHONE LIKE '%${driverPhone}%'
+				</if>
+				<if test="firstNo != null">
+					AND pc.FIRST_NO = #{firstNo}
+				</if>
+				<if test="secondNo != null">
+					AND pc.SECOND_NO = #{secondNo}
+				</if>
+				<if test="thirdNo != null and thirdNo != ''">
+					AND pc.THIRD_NO LIKE '%${thirdNo}%'
+				</if>
+				<if test="carTypes !=null and carTypes.length>0">
+					AND pc.CAR_TYPE in
+					<foreach collection="carTypes" item="item" index="index" open="(" separator="," close=")">
+						#{item}
+					</foreach>
+				</if>
+				<if test="queryFlag != null and userId !=null">
+					AND NOT EXISTS (
+					SELECT
+						0
+					FROM
+						pisp_user_car_monitor ucm
+					WHERE
+						ucm.MONITOR_PERSON = #{userId}
+					AND pc.CAR_ID = ucm.MONITOR_CAR_ID
+					)
+				</if>
+			</where>
+			ORDER BY pc.CREATE_TIME desc) rec
+	</select>
+	
+	
+	
+	<!-- 根据用户id查询车辆集合 -->
+	<select id="queryCarsByUserId" parameterType="int" resultMap="carVOMap">
+		SELECT 
+				DISTINCT pc.CAR_ID,
+				pc.DRIVER,
+				pc.DRIVER_PHONE,
+				pc.CAR_NO,
+				(SELECT dv.VAL_NAME FROM pisp_dict_val dv WHERE dv.VAL_CODE = pc.CAR_TYPE AND dv.DICT_CODE='CAR_TYPE') AS CAR_TYPE_NAME,
+				pc.CAR_LENGTH,
+				pc.LOAD_WEIGHT,
+				pc.FIRST_NO,
+
+				pc.CAR_PHOTO,
+				pc.DRIVING_LICENSE_PHOTO,
+				pc.IDCARD_NO,
+				pdl.LOCATION_NAME,
+				pdl.LOCATE_TIME,
+				pc.DEFINE_CAR_TYPE,
+				pc.CAR_TYPE_FIRST_CODE,
+				pc.CAR_TYPE_SECOND_CODE,
+				pc.CAR_TYPE_THIRD_CODE
+		FROM PISP_CAR pc
+		LEFT JOIN pisp_user_car uc ON uc.CAR_ID=pc.CAR_ID
+		LEFT JOIN pisp_driver_location pdl ON pdl.MOBILE = pc.DRIVER_PHONE
+		where uc.USER_ID =#{userId}
+			AND pc.IS_DELETE = 0
+		ORDER BY pc.CREATE_TIME desc
+	</select>
+	<!-- 新增车辆 -->
+	<insert id="saveCar" parameterType="Car">
+		INSERT INTO PISP_CAR(CAR_ID,CAR_NO,FIRST_NO,SECOND_NO,THIRD_NO,CAR_LENGTH,LOAD_WEIGHT
+		<if test="carPhoto !=null">,CAR_PHOTO</if>
+		<if test="drivingLicensePhoto !=null">,DRIVING_LICENSE_PHOTO</if>
+		,DRIVER,DRIVER_PHONE
+		<if test="mark !=null and mark !=''">,MARK</if>
+		,LONGITUDE,LATITUDE,LOCATION_NAME,LOCATE_TIME,QQ
+		<if test="createUser !=null">,CREATE_USER</if>
+		<if test="createTime !=null">,CREATE_TIME</if>
+		<if test="idCardNo !=null">,IDCARD_NO</if>
+		<if test="dataSource !=null">,DATA_SOURCE</if>
+
+		<if test="defineCarType !=null">,DEFINE_CAR_TYPE</if>
+		<if test="carTypeFirstCode !=null">,CAR_TYPE_FIRST_CODE</if>
+		<if test="carTypeSecondCode !=null">,CAR_TYPE_SECOND_CODE</if>
+		<if test="carTypeThirdCode !=null">,CAR_TYPE_THIRD_CODE</if>
+
+		)
+		VALUES
+		(#{id,jdbcType=INTEGER},#{carNo,jdbcType=INTEGER},#{firstNo,jdbcType=INTEGER},#{secondNo,jdbcType=INTEGER},#{thirdNo,jdbcType=VARCHAR}
+		,#{carLength,jdbcType=FLOAT},#{loadWeight,jdbcType=FLOAT}
+		<if test="carPhoto !=null">,#{carPhoto,jdbcType=VARCHAR}</if>
+		<if test="drivingLicensePhoto !=null">,#{drivingLicensePhoto,jdbcType=VARCHAR}</if>
+		,#{driver,jdbcType=VARCHAR}
+		,#{driverPhone,jdbcType=VARCHAR}
+		<if test="mark !=null and mark !=''">,#{mark,jdbcType=VARCHAR}</if>
+		,#{longitude,jdbcType=VARCHAR}
+		,#{latitude,jdbcType=VARCHAR}
+		,#{locationName,jdbcType=VARCHAR}
+		,#{locateTime,jdbcType=TIMESTAMP}
+		,#{qq,jdbcType=VARCHAR}
+		<if test="createUser !=null">,#{createUser,jdbcType=VARCHAR}</if>
+		<if test="createTime !=null">,#{createTime,jdbcType=TIMESTAMP}</if>
+		<if test="idCardNo !=null">,#{idCardNo}</if>
+		<if test="dataSource !=null">,#{dataSource}</if>
+
+		<if test="defineCarType !=null">,#{defineCarType}</if>
+		<if test="carTypeFirstCode !=null">,#{carTypeFirstCode}</if>
+		<if test="carTypeSecondCode !=null">,#{carTypeSecondCode}</if>
+		<if test="carTypeThirdCode !=null">,#{carTypeThirdCode}</if>
+
+
+		)
+	</insert>
+	<!-- 更新车辆信息 -->
+	<update id="updateCar" parameterType="Car">
+		UPDATE PISP_CAR pc
+		<set>
+			<if test="carNo !=null and carNo !=''">pc.CAR_NO =#{carNo,jdbcType=VARCHAR},</if>
+			<if test="firstNo !=null and firstNo !=''">pc.FIRST_NO =#{firstNo,jdbcType=INTEGER},</if>
+			<if test="secondNo !=null and secondNo !=''">pc.SECOND_NO =#{secondNo,jdbcType=INTEGER},</if>
+			<if test="thirdNo !=null and thirdNo !=''">pc.THIRD_NO =#{thirdNo,jdbcType=VARCHAR},</if>
+			<if test="carType !=null and carType !=''">pc.CAR_TYPE =#{carType,jdbcType=VARCHAR},</if>
+			<if test="carLength !=null and carLength !=''">pc.CAR_LENGTH =#{carLength,jdbcType=FLOAT},</if>
+			pc.LOAD_WEIGHT=#{loadWeight,jdbcType=FLOAT},
+			pc.CAR_PHOTO=#{carPhoto,jdbcType=VARCHAR},
+			<if test="driver != null and driver != ''">pc.DRIVER=#{driver,jdbcType=VARCHAR},</if>
+			pc.DRIVER_PHONE=#{driverPhone,jdbcType=VARCHAR},
+			pc.DRIVING_LICENSE_PHOTO=#{drivingLicensePhoto,jdbcType=VARCHAR},
+			pc.MARK=#{mark,jdbcType=VARCHAR},
+			<if test="longitude !=null and longitude !=''">pc.LONGITUDE=#{longitude,jdbcType=VARCHAR},</if>
+			<if test="latitude !=null and latitude !=''">pc.LATITUDE=#{latitude,jdbcType=VARCHAR},</if>
+			<if test="locationName !=null and locationName !=''">pc.LOCATION_NAME=#{locationName,jdbcType=VARCHAR},</if>
+			<if test="locateTime != null">pc.LOCATE_TIME = #{locateTime},</if>
+			<if test="qq != null">pc.QQ = #{qq},</if>
+			<if test="updateUser !=null">pc.UPDATE_USER=#{updateUser,jdbcType=VARCHAR},</if>
+			<if test="updateTime !=null">pc.UPDATE_TIME=#{updateTime,jdbcType=TIMESTAMP},</if>
+			<if test="defineCarType !=null">pc.DEFINE_CAR_TYPE=#{defineCarType,jdbcType=VARCHAR},</if>
+			
+			pc.CAR_TYPE_FIRST_CODE=#{carTypeFirstCode,jdbcType=VARCHAR},
+			pc.CAR_TYPE_SECOND_CODE=#{carTypeSecondCode,jdbcType=VARCHAR},
+			pc.CAR_TYPE_THIRD_CODE=#{carTypeThirdCode,jdbcType=VARCHAR},
+			pc.IDCARD_NO=#{idCardNo}
+		</set>
+		 where pc.CAR_ID = #{id,jdbcType=INTEGER}
+	</update>
+	<delete id="deleteCar" parameterType="Integer">
+		DELETE FROM PISP_CAR WHERE CAR_ID =#{id,jdbcType=INTEGER}
+	</delete>
+	
+	<select id="getCarCountByUserId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+		SELECT COUNT(pc.CAR_ID)
+		FROM PISP_CAR pc
+		LEFT JOIN pisp_user_car uc ON uc.CAR_ID=pc.CAR_ID
+		where uc.USER_ID = #{userId}
+		AND pc.IS_DELETE = 0
+	</select>
+	
+	<select id="getCarByUserIdAndCarNO" parameterType="java.util.Map" resultType="java.lang.Integer">
+		SELECT
+			COUNT(puc.USER_CAR_ID)
+		FROM
+			pisp_user_car puc
+		LEFT JOIN pisp_car pc ON pc.CAR_ID = puc.CAR_ID AND pc.IS_DELETE = 0
+		WHERE
+			puc.USER_ID = #{userId}
+		AND pc.CAR_NO = #{carNo}
+	</select>
+	<!-- 删除车辆,假删除 -->
+	<delete id="deleteCarInfo" parameterType="Car">
+		update pisp_car pc
+		<set>
+			<if test="updateUser !=null and updateUser !='' ">
+				pc.UPDATE_USER=#{updateUser},
+			</if>
+			<if test="updateTime !=null and updateTime !='' ">
+				pc.UPDATE_TIME=#{updateTime},
+			</if>
+			<if test="isDelete !=null and isDelete !='' ">
+				pc.IS_DELETE=#{isDelete}
+			</if>
+		</set>
+		where pc.CAR_ID = #{id,jdbcType=INTEGER}
+	</delete>
+	
+	<select id="getCarInfoUsedMap" resultMap="carMap">
+		SELECT
+			c.CAR_NO,
+			(
+				SELECT
+					dv.VAL_NAME
+				FROM
+					pisp_dict_val dv
+				WHERE
+					dv.DICT_CODE = 'CAR_TYPE'
+				AND dv.VAL_CODE = c.CAR_TYPE
+			) AS CAR_TYPE_NAME,
+			c.CAR_TYPE,
+			c.CAR_PHOTO,
+			c.CAR_LENGTH,
+			c.LOAD_WEIGHT,
+			c.DRIVER,
+			c.DRIVER_PHONE,
+			dl.LOCATION_NAME,
+			dl.LOCATE_TIME,
+			dl.LONGITUDE,
+			dl.LATITUDE,
+			uc.USER_ID
+		FROM
+			pisp_car c
+		LEFT JOIN pisp_user_car uc ON uc.CAR_ID = c.CAR_ID
+		LEFT JOIN pisp_driver_location dl ON dl.MOBILE = c.DRIVER_PHONE
+		WHERE c.CAR_ID = #{carId}
+	</select>
+	
+	<select id="getCarLocationInfoByMobile" parameterType="string" resultType="java.util.Map">
+		select dl.location_name,dl.locate_time,dl.longitude,dl.latitude
+		from pisp_driver_location dl
+		where dl.mobile = #{mobile}
+	</select>
+	
+	<select id="queryCarList" parameterType="CarQuery" resultMap="carVOMap">
+		SELECT 
+			pu.ACCOUNT_NAME,
+			IFNULL(pp.REAL_NAME,pu.NICKNAME) AS REAL_NAME,
+			pc.CAR_ID,
+			pc.CAR_NO,
+			pc.DRIVER,
+			pc.DRIVER_PHONE,
+			(SELECT dv.VAL_NAME FROM pisp_dict_val dv WHERE dv.VAL_CODE = pc.CAR_TYPE AND dv.DICT_CODE='CAR_TYPE') AS CAR_TYPE_NAME,
+			(SELECT dv.VAL_NAME FROM pisp_dict_val dv WHERE dv.VAL_CODE = pc.CAR_LENGTH AND dv.DICT_CODE='CAR_LENGTH') AS CAR_LENGTH_NAME,
+			pc.LOAD_WEIGHT,
+			pdl.LOCATION_NAME,
+			pdl.LONGITUDE,
+			pdl.LATITUDE,
+			pdl.LOCATE_TIME,
+			pdrc.DRIVER_RUN_CITY_NAME
+		FROM pisp_user pu
+		LEFT JOIN pisp_puser pp ON pu.USER_ID = pp.USER_ID
+		LEFT JOIN pisp_user_car puc ON pu.USER_ID = puc.USER_ID
+		LEFT  JOIN pisp_car pc ON pc.CAR_ID=puc.CAR_ID
+		LEFT JOIN pisp_driver_location pdl ON pc.DRIVER_PHONE = pdl.MOBILE
+		LEFT JOIN pisp_driver_location pdl2 ON pu.ACCOUNT_NAME = pdl2.MOBILE
+		LEFT JOIN (
+			SELECT 
+				pdrc.USER_ID,
+				GROUP_CONCAT((SELECT  pd.DIST_NAME FROM pisp_district pd WHERE pd.DIST_CODE = (CASE WHEN pdrc.AREA_CODE is NULL THEN ( CASE WHEN pdrc.CITY_CODE is NULL THEN pdrc.TO_PROVINCE_CODE ELSE pdrc.CITY_CODE END) ELSE pdrc.AREA_CODE END))) AS DRIVER_RUN_CITY_NAME 
+			FROM pisp_driver_run_city pdrc 
+			GROUP BY pdrc.USER_ID
+		) pdrc ON pdrc.USER_ID = pu.USER_ID
+		WHERE pu.USER_TYPE=1 AND pc.IS_DELETE =0
+		<if test="null != accountName and '' != accountName">
+			AND pu.ACCOUNT_NAME like CONCAT('%',#{accountName},'%')
+		</if>
+		<if test="null !=carNo and '' != carNo">
+			AND pc.CAR_NO like CONCAT('%',#{carNo},'%') 
+		</if>
+		<if test="null !=driver and '' !=driver">
+			AND pc.DRIVER like CONCAT('%',#{driver},'%')
+		</if>
+		<if test="null !=driverPhone and '' !=driverPhone">
+			AND pc.DRIVER_PHONE like CONCAT('%',#{driverPhone},'%')
+		</if>
+		ORDER BY pc.CREATE_TIME DESC
+	</select>
+	
+	<select id="queryCarsCount" resultType="int" parameterType="java.lang.Integer">
+		SELECT
+			count(0)
+		FROM
+			pisp_user_car puc
+		LEFT JOIN pisp_user pu ON puc.USER_ID = pu.USER_ID
+		LEFT JOIN pisp_car pc ON pc.CAR_ID = puc.CAR_ID
+		WHERE pu.USER_TYPE = #{userType} AND pc.IS_DELETE = 0
+	</select>
+</mapper>

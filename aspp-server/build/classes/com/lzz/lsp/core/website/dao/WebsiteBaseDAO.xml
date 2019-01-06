@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.website.dao.WebsiteBaseDAO">
+	<resultMap type="Website" id="websiteMap">
+		<id property="id" column="OUTLETS_ID"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="outletsName" column="OUTLETS_NAME"/>
+		<result property="linker" column="LINKER"/>
+		<result property="linkMobile" column="LINK_MOBILE"/>
+		<result property="linkPhone" column="LINK_PHONE"/>
+		<result property="linkQq" column="LINK_QQ"/>
+		<result property="belongArea" column="BELONG_AREA"/>
+		<result property="belongPCode" column="BELONG_P_CODE"/>
+		<result property="belongCCode" column="BELONG_C_CODE"/>
+		<result property="belongTCode" column="BELONG_T_CODE"/>
+		<result property="address" column="ADDRESS"/>
+		<result property="longitude" column="LONGITUDE"/>
+		<result property="latitude" column="LATITUDE"/>
+		<result property="createUser" column="CREATE_USER"/>
+		<result property="createTime" column="CREATE_TIME"/>
+		<result property="updateUser" column="UPDATE_USER"/>
+		<result property="updateTime" column="UPDATE_TIME"/>
+	</resultMap>
+	
+	<resultMap type="WebsiteVO" id="websiteVOMap">
+		<result property="userId" column="USER_ID"/>
+		<result property="outletsName" column="OUTLETS_NAME"/>
+		<result property="id" column="OUTLETS_ID"/>
+		<result property="linker" column="LINKER"/>
+		<result property="linkMobile" column="LINK_MOBILE"/>
+		<result property="linkPhone" column="LINK_PHONE"/>
+		<result property="linkQq" column="LINK_QQ"/>
+		<result property="belongArea" column="BELONG_AREA"/>
+		<result property="belongPCode" column="BELONG_P_CODE"/>
+		<result property="belongCCode" column="BELONG_C_CODE"/>
+		<result property="belongTCode" column="BELONG_T_CODE"/>
+		<result property="address" column="ADDRESS"/>
+		<result property="longitude" column="LONGITUDE"/>
+		<result property="latitude" column="LATITUDE"/>
+	</resultMap>
+	
+	<!-- 根据id查询网点信息 -->
+	<select id="getWebsite" parameterType="Integer" resultMap="websiteMap">
+		SELECT * FROM PISP_LOGISTICS_OUTLETS plo WHERE plo.OUTLETS_ID =#{websiteId}
+	</select>
+	<!-- 新增网点信息 -->
+	<insert id="saveWebsite" parameterType="Website">
+		insert into PISP_LOGISTICS_OUTLETS(OUTLETS_ID,USER_ID,OUTLETS_NAME,LINKER,LINK_MOBILE
+		<if test="linkPhone !=null">,LINK_PHONE</if>
+		<if test="linkQq !=null">,LINK_QQ</if>
+		,BELONG_AREA,BELONG_P_CODE,BELONG_C_CODE,BELONG_T_CODE,ADDRESS,LONGITUDE,LATITUDE,CREATE_USER,CREATE_TIME,UPDATE_USER,UPDATE_TIME
+		)
+		VALUES
+		(#{id,jdbcType=INTEGER},#{userId,jdbcType=INTEGER},#{outletsName,jdbcType=VARCHAR},#{linker,jdbcType=VARCHAR},#{linkMobile,jdbcType=VARCHAR}
+		<if test="linkPhone !=null">,#{linkPhone,jdbcType=VARCHAR}</if>
+		<if test="linkQq !=null">,#{linkQq,jdbcType=VARCHAR}</if>
+		,#{belongArea,jdbcType=VARCHAR},#{belongPCode,jdbcType=INTEGER},#{belongCCode,jdbcType=INTEGER},#{belongTCode,jdbcType=INTEGER},#{address,jdbcType=VARCHAR}
+		,#{longitude,jdbcType=VARCHAR},#{latitude,jdbcType=VARCHAR}
+		,#{createUser,jdbcType=VARCHAR},#{createTime,jdbcType=TIMESTAMP},#{updateUser,jdbcType=VARCHAR},#{updateTime,jdbcType=TIMESTAMP})
+	</insert>
+	<!-- 根据条件查询网点集合 -->
+	<select id="queryWebsites" parameterType="WebsiteQuery" resultMap="websiteVOMap">
+		SELECT 
+			plo.OUTLETS_ID,
+			plo.USER_ID,
+			plo.OUTLETS_NAME,
+			plo.LINKER,
+			plo.LINK_MOBILE,
+			plo.LINK_PHONE,
+			plo.LINK_QQ,
+			plo.BELONG_AREA,
+			plo.BELONG_P_CODE,
+			plo.BELONG_C_CODE,
+			plo.BELONG_T_CODE,
+			plo.ADDRESS,
+			plo.LONGITUDE,
+			plo.LATITUDE
+		FROM PISP_LOGISTICS_OUTLETS plo
+		where plo.USER_ID =#{userId}
+		<if test="outletsName !=null and outletsName !=''">
+			and plo.OUTLETS_NAME like '%${outletsName}%'
+		</if>
+		
+		<if test="belongPCode != null and belongPCode !=0 ">
+			and  plo.BELONG_P_CODE = #{belongPCode}
+		</if>
+		<if test="belongCCode != null and belongCCode !=0">
+			and  plo.BELONG_C_CODE = #{belongCCode}
+		</if>
+		<if test="belongTCode != null and belongTCode !=0">
+			and  plo.BELONG_T_CODE = #{belongTCode}
+		</if>
+	</select>
+	<!-- 更新网点信息 -->
+	<update id="updateWebsite" parameterType="Website">
+		UPDATE PISP_LOGISTICS_OUTLETS plo
+		<set>
+			plo.OUTLETS_NAME=#{outletsName,jdbcType=VARCHAR},
+			plo.LINKER=#{linker,jdbcType=VARCHAR},
+			plo.LINK_MOBILE=#{linkMobile,jdbcType=VARCHAR},
+			<if test="linkPhone !=null">plo.LINK_PHONE=#{linkPhone,jdbcType=VARCHAR},</if>
+			<if test="linkQq !=null">plo.LINK_QQ=#{linkQq,jdbcType=VARCHAR},</if>
+			plo.BELONG_AREA=#{belongArea,jdbcType=VARCHAR},
+			plo.BELONG_P_CODE=#{belongPCode,jdbcType=INTEGER},
+			plo.BELONG_C_CODE=#{belongCCode,jdbcType=INTEGER},
+			plo.BELONG_T_CODE=#{belongTCode,jdbcType=INTEGER},
+			plo.ADDRESS=#{address,jdbcType=VARCHAR},
+			plo.LONGITUDE=#{longitude,jdbcType=VARCHAR},
+			plo.LATITUDE=#{latitude,jdbcType=VARCHAR}
+		</set>
+		WHERE plo.OUTLETS_ID=#{id,jdbcType=INTEGER}
+	</update>
+	<!-- 删除网点 -->
+	<delete id="deleteWebsites" parameterType="java.util.Map">
+		<if test="websiteIds !=null and websiteIds.length >=1">
+			DELETE FROM PISP_LOGISTICS_OUTLETS 
+			WHERE OUTLETS_ID in
+			<foreach collection="websiteIds" item="websiteId" open="(" separator="," close=")">
+				#{websiteId}
+			</foreach>
+		</if>
+	</delete>
+	
+	<select id="getWebsitesNum" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+		SELECT COUNT(0) 
+		FROM PISP_LOGISTICS_OUTLETS pls 
+		<where>
+			<if test="userId != null">
+				AND pls.USER_ID=#{userId}
+			</if>
+		</where>
+	</select>
+</mapper>

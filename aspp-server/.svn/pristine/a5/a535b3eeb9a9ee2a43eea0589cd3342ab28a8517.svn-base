@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.user.dao.EuserBaseDAO">
+	<resultMap type="Euser" id="EuserMapper">
+		<id property="userId" column="USER_ID"/>
+		<result property="enterpriseName" column="ENTERPRISE_NAME"/>
+		<result property="registerCode" column="REGISTER_CODE"/>
+		<result property="enterpriseType" column="ENTERPRISE_TYPE"/>
+		<result property="businessScope" column="BUSINESS_SCOPE"/>
+		<result property="corporation" column="CORPORATION"/>
+		<result property="registerMoney" column="REGISTER_MONEY"/>
+		<result property="linkman" column="LINKMAN"/>
+		<result property="linkPhone" column="LINK_PHONE"/>
+		<result property="linkMobile1" column="LINK_MOBILE1"/>
+		<result property="linkMobile2" column="LINK_MOBILE2"/>
+		<result property="fax" column="FAX"/>
+		<result property="email" column="EMAIL"/>
+		<result property="qq" column="QQ"/>
+		<result property="belongPCode" column="BELONG_P_CODE"/>
+		<result property="belongCCode" column="BELONG_C_CODE"/>
+		<result property="belongTCode" column="BELONG_T_CODE"/>
+		<result property="belongArea" column="BELONG_AREA"/>
+		<result property="address" column="ADDRESS"/>
+		<result property="licensePhoto" column="LICENSE_PHOTO"/>
+		<result property="idcardNo" column="IDCARD_NO"/>
+		<result property="idcardPhoto" column="IDCARD_PHOTO"/>
+		<result property="resume" column="RESUME"/>
+		<result property="enterprisePhoto" column="ENTERPRISE_PHOTO"/>
+	</resultMap>
+	
+	<!-- 根据条件查询企业用户 -->
+	<select id="queryEusers" parameterType="EuserQuery" resultMap="EuserMapper">
+		SELECT * FROM pisp_euser 
+	</select>
+	
+	<!-- 根据用户ID获取企业用户详细信息 -->
+	<select id="getEuser" parameterType="Integer" resultMap="EuserMapper">
+		SELECT * FROM pisp_euser e
+		WHERE e.USER_ID = #{userId}
+	</select>
+	
+	<!-- 保存企业用户信息 -->
+	<insert id="saveEuser" parameterType="Euser">
+		insert into 
+			pisp_euser(USER_ID,
+					ENTERPRISE_NAME,
+					REGISTER_CODE,
+					ENTERPRISE_TYPE,
+					BUSINESS_SCOPE,
+					CORPORATION,
+					REGISTER_MONEY,
+					LINKMAN,
+					LINK_PHONE,
+					LINK_MOBILE1,
+					LINK_MOBILE2,
+					FAX,
+					EMAIL,
+					QQ,
+					BELONG_P_CODE,
+					BELONG_C_CODE,
+					BELONG_T_CODE,
+					BELONG_AREA,
+					ADDRESS,
+					IDCARD_NO,
+					IDCARD_PHOTO,
+					LICENSE_PHOTO,
+					RESUME,ENTERPRISE_PHOTO) 
+			values(#{userId},
+					#{enterpriseName},
+					#{registerCode},
+					#{enterpriseType},
+					#{businessScope},
+					#{corporation},
+					#{registerMoney},
+					#{linkman},
+					#{linkPhone},
+					#{linkMobile1},
+					#{linkMobile2},
+					#{fax},
+					#{email},
+					#{qq},
+					#{belongPCode},
+					#{belongCCode},
+					#{belongTCode},
+					#{belongArea},
+					#{address},
+					#{idcardNo},
+					#{idcardPhoto},
+					#{licensePhoto},
+					#{resume},#{enterprisePhoto})
+	</insert>
+	
+	<!-- 更新企业用户 -->
+	<update id="updateEuser" parameterType="Euser">
+		update pisp_euser e
+		SET
+		    e.ENTERPRISE_NAME = #{enterpriseName},
+			e.REGISTER_CODE = #{registerCode},
+			e.ENTERPRISE_TYPE = #{enterpriseType},
+			e.BUSINESS_SCOPE = #{businessScope},
+			e.CORPORATION = #{corporation},
+			e.REGISTER_MONEY = #{registerMoney},
+			e.LINKMAN = #{linkman},
+			e.LINK_PHONE = #{linkPhone},
+			e.LINK_MOBILE1 = #{linkMobile1},
+			e.LINK_MOBILE2 = #{linkMobile2},
+			e.FAX = #{fax},
+			e.EMAIL = #{email},
+			e.QQ = #{qq},
+			e.BELONG_P_CODE = #{belongPCode},
+			e.BELONG_C_CODE = #{belongCCode},
+			e.BELONG_T_CODE = #{belongTCode},
+			e.BELONG_AREA = #{belongArea},
+			e.ADDRESS = #{address},
+			e.IDCARD_NO = #{idcardNo},
+			e.IDCARD_PHOTO = #{idcardPhoto},
+			e.LICENSE_PHOTO = #{licensePhoto},
+			e.RESUME = #{resume},
+			e.ENTERPRISE_PHOTO = #{enterprisePhoto}
+		where USER_ID = #{userId}
+	</update>
+	
+	<!-- 更新企业用户 -->
+	<update id="updateEuserInfo" parameterType="Euser">
+		update pisp_euser e
+		<set>
+			<if test="enterpriseName != null and enterpriseName != ''">e.ENTERPRISE_NAME = #{enterpriseName},</if>
+			<if test="registerCode != null and registerCode != ''">e.REGISTER_CODE = #{registerCode},</if>
+			<if test="enterpriseType != null and enterpriseType != ''">e.ENTERPRISE_TYPE = #{enterpriseType},</if>
+			<if test="businessScope != null and businessScope != ''">e.BUSINESS_SCOPE = #{businessScope},</if>
+			<if test="corporation != null and corporation != ''">e.CORPORATION = #{corporation},</if>
+			<if test="registerMoney != null">e.REGISTER_MONEY = #{registerMoney},</if>
+			<if test="linkman != null and linkman != ''">e.LINKMAN = #{linkman},</if>
+			<if test="linkPhone != null and linkPhone != ''">e.LINK_PHONE = #{linkPhone},</if>
+			<if test="linkMobile1 != null and linkMobile1 != ''">e.LINK_MOBILE1 = #{linkMobile1},</if>
+			<if test="linkMobile2 != null and linkMobile2 != ''">e.LINK_MOBILE2 = #{linkMobile2},</if>
+			<if test="fax != null and fax != ''">e.FAX = #{fax},</if>
+			<if test="email != null and email != ''">e.EMAIL = #{email},</if>
+			<if test="qq != null and qq != ''">e.QQ = #{qq},</if>
+			<if test="belongPCode !=null">e.BELONG_P_CODE = #{belongPCode},</if>
+			<if test="belongCCode !=null">e.BELONG_C_CODE = #{belongCCode},</if>
+			<if test="belongTCode !=null">e.BELONG_T_CODE = #{belongTCode},</if>
+			<if test="belongArea !=null and belongArea !=''">e.BELONG_AREA = #{belongArea},</if>
+			<if test="address != null and address != ''">e.ADDRESS = #{address},</if>
+			<if test="idcardNo !=null and idcardNo !=''">e.IDCARD_NO = #{idcardNo},</if>
+			<if test="idcardPhoto !=null and idcardPhoto !=''">e.IDCARD_PHOTO = #{idcardPhoto},</if>
+			<if test="licensePhoto != null and licensePhoto != ''">e.LICENSE_PHOTO = #{licensePhoto},</if>
+			<if test="resume != null and resume != ''">e.RESUME = #{resume}</if>
+			<if test="enterprisePhoto != null and enterprisePhoto != ''">e.ENTERPRISE_PHOTO = #{enterprisePhoto}</if>
+		</set>
+		where USER_ID = #{userId}
+	</update>
+</mapper>

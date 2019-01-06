@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.app.dao.AppDownloadBaseDAO">
+	<resultMap type="AppVO" id="appVOMap">
+		<id property="appId" column="APP_ID"/>
+		<result property="appCode" column="APP_CODE"/>
+		<result property="appName" column="APP_NAME"/>
+		<result property="appVersion" column="APP_VERSION"/>
+		<result property="appSystem" column="APP_SYSTEM"/>
+		<result property="amount" column="AMOUNT"/>
+	</resultMap>
+	<insert id="saveAppDownload" parameterType="AppDownload">
+		INSERT INTO PISP_APP_DOWNLOAD(APP_CODE,APP_SYSTEM,APP_VERSION,DOWNLOAD_TIME)
+		VALUES(#{appCode,jdbcType=VARCHAR},#{appSystem,jdbcType=VARCHAR},#{appVersion,jdbcType=VARCHAR},
+		#{downLoadTime,jdbcType=TIMESTAMP}
+		);
+	</insert>
+	
+	<select id="countAppDownload" parameterType="AppQuery" resultMap="appVOMap">
+		SELECT 
+			pad.APP_CODE,
+			pdv.VAL_NAME AS APP_NAME,
+			pad.APP_SYSTEM,
+			pad.APP_VERSION,
+			COUNT(pad.DOWNLOAD_ID) as AMOUNT
+		FROM pisp_dict_val pdv 
+		INNER JOIN pisp_app_download pad ON pdv.VAL_CODE = pad.APP_CODE
+		WHERE pdv.DICT_CODE = 'PRODUCT_NAME'
+		<if test="appCodes !=null and appCodes.length>=1">
+			AND pad.APP_CODE IN
+			<foreach collection="appCodes" item="item" index="index" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test="appSystems !=null and appSystems.length>=1">
+			AND pad.APP_SYSTEM IN
+			<foreach collection="appSystems" item="item" index="index" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		GROUP BY pad.APP_CODE,pad.APP_SYSTEM,pad.APP_VERSION
+		ORDER BY pad.APP_SYSTEM,pad.APP_VERSION DESC
+	</select>
+</mapper>

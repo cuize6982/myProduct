@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.chinaweathercode.dao.ChinaWeatherCodeDAO">
+	<resultMap type="ChinaWeatherCode" id="chinaWeatherCodeMap">
+		<result property="distCode" column="DIST_CODE"/>
+		<result property="parentCode" column="PARENT_CODE"/>
+		<result property="fullName" column="FULL_NAME"/>
+		<result property="distName" column="DIST_NAME"/>
+		<result property="chinaWeatherCode" column="CHINA_WEATHER_CODE"/>
+	</resultMap>
+	
+	<select id="getChinaWeatherCodeByLocalCityCode" resultMap="chinaWeatherCodeMap" parameterType="java.lang.Integer">
+		SELECT
+			pcwc.CHINA_WEATHER_CODE,
+			pcwc.DIST_CODE,
+			pcwc.DIST_NAME,
+			pcwc.FULL_NAME,
+			pcwc.PARENT_CODE
+		FROM
+			pisp_china_weather_code pcwc
+		WHERE
+			pcwc.DIST_CODE = #{localCityCode}
+	</select>
+	
+</mapper>

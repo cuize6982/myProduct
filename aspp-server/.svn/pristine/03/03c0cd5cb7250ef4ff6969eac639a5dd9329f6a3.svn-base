@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.cmpt.authentication.idcard.dao.IdCardAuthRecDAO">
+    <resultMap type="IdcardAuthRec" id="idcardAuthRecMap">
+        <result property="authRecId" column="AUTH_REC_ID"/>
+        <result property="idcardNo" column="IDCARD_NO"/>
+        <result property="personName" column="PERSON_NAME"/>
+        <result property="authTime" column="AUTH_TIME"/>
+        <result property="authResult" column="AUTH_RESULT"/>
+        <result property="iasUser" column="IAS_USER"/>
+        <result property="payMoney" column="PAY_MONEY"/>
+        <result property="createUser" column="CREATE_USER"/>
+		<result property="createTime" column="CREATE_TIME"/>
+		<result property="updateUser" column="UPDATE_USER"/>
+		<result property="updateTime" column="UPDATE_TIME"/>
+    </resultMap>
+    <!-- 注意事项：只获取认证身份证号码和认证名称匹配并且时间倒序最新的一条-->
+    <select id="getIdCarAuth" parameterType="java.util.Map" resultMap="idcardAuthRecMap">
+        SELECT * FROM idcard_auth_rec iar 
+        WHERE
+        	iar.IDCARD_NO = #{idcardNo}
+            AND iar.PERSON_NAME = #{personName}
+            <if test="null != userId">
+               AND iar.IAS_USER = #{userId} 
+            </if>
+        ORDER BY iar.AUTH_TIME DESC
+		LIMIT 1
+    </select>
+    
+    <insert id="addIdcardAuthRec" parameterType="idcardAuthRec">
+        INSERT INTO idcard_auth_rec(
+        	AUTH_REC_ID,
+        	IDCARD_NO,
+        	PERSON_NAME,
+        	AUTH_TIME,
+        	AUTH_RESULT,
+        	IAS_USER,
+        	PAY_MONEY,
+        	CREATE_USER,
+        	CREATE_TIME
+        )VALUES(
+        	#{authRecId},#{idcardNo},#{personName},
+        	#{authTime},#{authResult},#{iasUser},#{payMoney},
+        	#{createUser},#{createTime}
+        )
+    </insert>
+    
+    <select id="queryIdCardAuthRec" parameterType="IdcardAuthRecQuery" resultMap="idcardAuthRecMap">
+        <!-- SELECT * FROM idcard_auth_rec iar WHERE iar.IAS_USER = #{userId} -->
+        SELECT DISTINCT iar.* FROM idcard_auth_rec iar LEFT JOIN pisp_user_consume_rec pucr ON pucr.BIZ_ID = iar.AUTH_REC_ID 
+        WHERE pucr.USER_ID = #{userId}
+        <if test="idcardNo != null">
+            AND iar.IDCARD_NO = #{idcardNo}
+        </if>
+        <if test="personName != null">
+            AND iar.PERSON_NAME = #{personName}
+        </if>
+    </select>
+</mapper>

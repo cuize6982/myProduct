@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.ias.dao.IasInfoDAO">
+	<resultMap type="IasInfo" id="IasMapper">
+	    <result property="iasInfoId" column="IAS_INFO_ID"/>
+	    <result property="supplier" column="SUPPLIER"/>
+	    <result property="linkPhone" column="LINK_PHONE"/>
+	    <result property="price" column="PRICE"/>
+	    <result property="surplusNum" column="SURPLUS_NUM"/>
+	    <result property="isWarn" column="IS_WARN"/>
+	    <result property="warnVal" column="WARN_VAL"/>
+	    <result property="warnMethod" column="WARN_METHOD"/>
+	    <result property="dayMaxSendNum" column="DAY_MAX_SEND_NUM"/>
+	    <result property="noticeMobiles" column="NOTICE_MOBILES"/>
+	    <result property="noticeEmails" column="NOTICE_EMAILS"/>
+	    <result property="serviceStatus" column="SERVICE_STATUS"/>
+	    <result property="createTime" column="CREATE_TIME"/>
+		<result property="updateTime" column="UPDATE_TIME"/>
+		<result property="createUser" column="CREATE_USER"/>
+		<result property="updateUser" column="UPDATE_USER"/>
+	</resultMap>
+	
+	<resultMap type="IasInfoVO" id="IasInfoVOMapper">
+	    <result property="iasInfoId" column="IAS_INFO_ID"/>
+	    <result property="supplier" column="SUPPLIER"/>
+	    <result property="linkPhone" column="LINK_PHONE"/>
+	    <result property="price" column="PRICE"/>
+	    <result property="surplusNum" column="SURPLUS_NUM"/>
+	    <result property="isWarn" column="IS_WARN"/>
+	    <result property="warnVal" column="WARN_VAL"/>
+	    <result property="warnMethod" column="WARN_METHOD"/>
+	    <result property="dayMaxSendNum" column="DAY_MAX_SEND_NUM"/>
+	    <result property="noticeMobiles" column="NOTICE_MOBILES"/>
+	    <result property="noticeEmails" column="NOTICE_EMAILS"/>
+	    <result property="serviceStatus" column="SERVICE_STATUS"/>
+	</resultMap>
+	
+	<!-- 获取身份证认证服务信息 -->
+	<select id="getIasInfo" parameterType="java.lang.Integer" resultMap="IasInfoVOMapper">
+	    SELECT 
+	    	oii.SUPPLIER,
+	    	oii.LINK_PHONE,
+	    	oii.SURPLUS_NUM,
+	    	oii.IS_WARN,
+	    	oii.PRICE,
+	    	oii.WARN_VAL,
+	    	oii.WARN_METHOD,
+	    	oii.DAY_MAX_SEND_NUM,
+	    	oii.NOTICE_MOBILES,
+	    	oii.NOTICE_EMAILS,
+	    	oii.SERVICE_STATUS
+	    FROM osmp_ias_info oii
+	    WHERE oii.IAS_INFO_ID = #{iasInfoId}
+	</select>
+	
+	<!-- 更新身份证认证服务-->
+	<update id="updateIasInfo" parameterType="IasInfo">
+		update osmp_ias_info oii
+		<set>
+			oii.IS_WARN = #{isWarn},
+			oii.WARN_VAL = #{warnVal},
+			oii.WARN_METHOD = #{warnMethod},
+			oii.DAY_MAX_SEND_NUM = #{dayMaxSendNum},
+			oii.NOTICE_MOBILES = #{noticeMobiles},
+			oii.NOTICE_EMAILS = #{noticeEmails},
+			oii.SERVICE_STATUS = #{serviceStatus},
+			oii.UPDATE_USER = #{updateUser},
+			oii.UPDATE_TIME = #{updateTime}
+		</set>
+		where oii.IAS_INFO_ID = #{iasInfoId}
+	</update>
+	
+	<select id="queryCountServiceDashboardAreaInfo" parameterType="java.util.Map" resultType="java.util.HashMap">
+	    SELECT d.FULL_NAME AS name,count(d.DIST_CODE) AS value from (
+			SELECT CONCAT(LEFT(a.IDCARD_NO,3),'000') as idCard
+			from idcard_auth_rec a 
+		)rec
+		INNER JOIN pisp_district d ON d.DIST_CODE = rec.idCard
+		GROUP BY d.DIST_CODE
+	</select>
+	
+	<select id="queryCountServiceDashboardAuthInfo" parameterType="java.util.Map" resultType="java.util.HashMap">
+	    SELECT date_data.da AS datet,IFNULL(t.num,0) AS num FROM
+			(SELECT DATE_SUB(CURDATE(), INTERVAL 29 DAY) AS da
+			UNION ALL 
+			SELECT DATE_SUB(CURDATE(), INTERVAL 28 DAY) AS da
+			UNION ALL 
+			SELECT DATE_SUB(CURDATE(), INTERVAL 27 DAY) AS da
+			UNION ALL 
+			SELECT DATE_SUB(CURDATE(), INTERVAL 26 DAY) AS da
+			UNION ALL 
+			SELECT DATE_SUB(CURDATE(), INTERVAL 25 DAY) AS da
+			UNION ALL 
+			SELECT DATE_SUB(CURDATE(), INTERVAL 24 DAY) AS da
+			UNION ALL 
+			SELECT DATE_SUB(CURDATE(), INTERVAL 23 DAY) AS da
+			UNION ALL 
+			SELECT DATE_SUB(CURDATE(), INTERVAL 22 DAY) AS da
+			UNION ALL 
+			SELECT DATE_SUB(CURDATE(), INTERVAL 21 DAY) AS da
+			UNION ALL 
+			SELECT DATE_SUB(CURDATE(), INTERVAL 20 DAY) AS da
+			UNION ALL 
+			SELECT DATE_SUB(CURDATE(), INTERVAL 19 DAY) AS da
+			UNION ALL 
+			SELECT DATE_SUB(CURDATE(), INTERVAL 18 DAY) AS da
+			UNION ALL 
+			SELECT DATE_SUB(CURDATE(), INTERVAL 17 DAY) AS da
+			UNION ALL 
+			SELECT DATE_SUB(CURDATE(), INTERVAL 16 DAY) AS da
+			UNION ALL 
+			SELECT DATE_SUB(CURDATE(), INTERVAL 15 DAY) AS da
+			UNION ALL 
+			SELECT DATE_SUB(CURDATE(), INTERVAL 14 DAY) AS da
+			UNION ALL 
+			SELECT DATE_SUB(CURDATE(), INTERVAL 13 DAY) AS da
+			UNION ALL 
+			SELECT DATE_SUB(CURDATE(), INTERVAL 12 DAY) AS da
+			UNION ALL 
+			SELECT DATE_SUB(CURDATE(), INTERVAL 11 DAY) AS da
+			UNION ALL 
+			SELECT DATE_SUB(CURDATE(), INTERVAL 10 DAY) AS da
+			UNION ALL 
+			SELECT DATE_SUB(CURDATE(), INTERVAL 9 DAY) AS da
+			UNION ALL 
+			SELECT DATE_SUB(CURDATE(), INTERVAL 8 DAY) AS da
+			UNION ALL 
+			SELECT DATE_SUB(CURDATE(), INTERVAL 7 DAY) AS da
+			UNION ALL 
+			SELECT DATE_SUB(CURDATE(), INTERVAL 6 DAY) AS da
+			UNION ALL 
+			SELECT DATE_SUB(CURDATE(), INTERVAL 5 DAY) AS da
+			UNION ALL 
+			SELECT DATE_SUB(CURDATE(), INTERVAL 4 DAY) AS da
+			UNION ALL 
+			SELECT DATE_SUB(CURDATE(), INTERVAL 3 DAY) AS da
+			UNION ALL 
+			SELECT DATE_SUB(CURDATE(), INTERVAL 2 DAY) AS da
+			UNION ALL 
+			SELECT DATE_SUB(CURDATE(), INTERVAL 1 DAY) AS da
+			UNION ALL
+			SELECT CURDATE() AS da) AS date_data
+		LEFT JOIN
+			(SELECT count(a.AUTH_TIME) AS num,date_format(a.AUTH_TIME,'%Y-%m-%d') AS d  from idcard_auth_rec a
+			GROUP BY date_format(a.AUTH_TIME,'%Y-%m-%d'))AS t ON t.d  = date_data.da
+		ORDER BY date_data.da 
+	</select>
+	
+	<select id="getIDCardServiceInfo" parameterType="java.lang.String" resultMap="IasMapper">
+	    SELECT * FROM osmp_ias_info oii  
+	    <where>
+	    	<if test="supplier != null and supplier !=''">oii.SUPPLIER = #{supplier}</if>
+	    </where>
+	</select>
+	
+	<select id="getCountIdCardRec" parameterType="java.util.Map" resultType="java.lang.Integer">
+	    SELECT count(*) FROM IDCARD_AUTH_REC r  
+	</select>
+	<!-- 更新身份证认证服务指定字段 -->
+	<update id="updateIasInfoSpecific" parameterType="IasInfo">
+		update osmp_ias_info oii
+		<set>
+			<if test="price != null">
+				oii.PRICE = #{price,jdbcType=FLOAT},
+			</if>
+			<if test="surplusNum != null">
+				oii.SURPLUS_NUM = #{surplusNum,jdbcType=INTEGER},
+			</if>
+			<if test="updateUser != null and updateUser != ''">
+				oii.UPDATE_USER = #{updateUser,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				oii.UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP}
+			</if>
+		</set>
+		where oii.SUPPLIER = #{supplier}
+	</update>
+</mapper>

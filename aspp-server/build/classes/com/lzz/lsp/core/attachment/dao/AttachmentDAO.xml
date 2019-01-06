@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.attachment.dao.AttachmentDAO">
+	<resultMap type="Attachment" id="attachmentMap">
+		<id property="attId" column="ATT_ID"/>
+		<result property="fileName" column="FILE_NAME"/>
+		<result property="fileSize" column="FILE_SIZE"/>
+		<result property="viewName" column="VIEW_NAME"/>
+		<result property="fileType" column="FILE_TYPE"/>
+		<result property="filePath" column="FILE_PATH"/>
+		<result property="isWatermark" column="IS_WATERMARK"/>
+		<result property="uploadIp" column="UPLOAD_IP"/>
+		<result property="uploadUser" column="UPLOAD_USER"/>
+		<result property="uploadTime" column="UPLOAD_TIME"/>
+		<result property="sortNo" column="SORT_NO"/>
+		<result property="description" column="DESCRIPTION"/>
+	</resultMap>
+	
+	<insert id="saveAttachment" parameterType="Attachment">
+		INSERT INTO pisp_attachment(ATT_ID, FILE_NAME, FILE_SIZE, VIEW_NAME, FILE_TYPE, FILE_PATH, IS_WATERMARK, UPLOAD_IP, UPLOAD_USER, UPLOAD_TIME, DESCRIPTION)
+		VALUES 
+		(#{attId,jdbcType=INTEGER}, #{fileName}, #{fileSize}, #{viewName,jdbcType=VARCHAR}, #{fileType,jdbcType=VARCHAR}, #{filePath,jdbcType=VARCHAR}, #{isWatermark}, #{uploadIp,jdbcType=VARCHAR}, #{uploadUser,jdbcType=VARCHAR}, #{uploadTime,jdbcType=TIMESTAMP}, #{description,jdbcType=VARCHAR})
+	</insert>
+	
+	<select id="queryAttachments" parameterType="AttachmentQuery" resultMap="attachmentMap">
+		SELECT pa.* FROM pisp_attachment pa 
+		<where>
+			<if test="viewName != null and viewName != ''"> AND pa.VIEW_NAME like '%${viewName}%'</if>
+			<if test="fileType != null"> AND pa.FILE_TYPE = #{fileType}</if>
+			<if test="uploadTimeMin != null"> AND date_format(pi.UPLOAD_TIME,'%Y-%m-%d') &gt;= date_format(#{uploadTimeMin},'%Y-%m-%d')</if>
+			<if test="uploadTimeMax != null"> AND date_format(pi.UPLOAD_TIME,'%Y-%m-%d') &lt;= date_format(#{uploadTimeMax},'%Y-%m-%d')</if>
+			<if test="attIds != null and attIds.length >= 1">
+				AND pa.ATT_ID IN
+				<foreach collection="attIds" item="item" open="(" separator="," close=")">#{item}</foreach>
+			</if>
+		</where>
+	</select>
+	
+	<select id="getAttachment" parameterType="integer" resultMap="attachmentMap">
+		SELECT * FROM pisp_attachment pa WHERE pa.ATT_ID = #{attId}
+	</select>
+	
+	<delete id="deleteAttachment">
+		<if test="attId != null">
+		DELETE FROM pisp_attachment WHERE ATT_ID = #{attId}
+		</if>
+	</delete>
+</mapper>

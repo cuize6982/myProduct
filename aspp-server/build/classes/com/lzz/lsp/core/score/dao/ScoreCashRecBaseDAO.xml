@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.score.dao.ScoreCashRecBaseDAO">
+	<resultMap type="ScoreCashRec" id="scoreCashRecMap">
+		<id property="id" column="ID"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="score" column="SCORE"/>
+		<result property="type" column="TYPE"/>
+		<result property="price" column="PRICE"/>
+		<result property="wxErrorCode" column="WX_ERROR_CODE"/>
+		<result property="result" column="RESULT"/>
+		<result property="resultMsg" column="RESULT_MSG"/>
+		<result property="createTime" column="CREATE_TIME"/>
+		<result property="mark" column="MARK"/>
+		<result property="isFill" column="IS_FILL"/>
+		<result property="openId" column="OPEN_ID"/>
+		<result property="nickName" column="NICK_NAME"/>
+		<result property="accountName" column="ACCOUNT_NAME"/>
+		<result property="enterpriseName" column="ENTERPRISE_NAME"/>
+	</resultMap>
+	
+	<insert id="saveScoreCashRec" parameterType="ScoreCashRec">
+		INSERT INTO pisp_score_cash_rec
+		(
+		USER_ID,
+		SCORE,
+		TYPE,
+		PRICE,
+		CREATE_TIME
+		<if test="result !=null">,RESULT</if>
+		<if test="wxErrorCode !=null">,WX_ERROR_CODE</if>
+		<if test="resultMsg !=null">,RESULT_MSG</if>
+		<if test="mark !=null">,MARK</if>
+		<if test="isFill !=null">,IS_FILL</if>
+		<if test="openId !=null">,OPEN_ID</if>
+		<if test="nickName !=null">,NICK_NAME</if>
+		 )
+		VALUES
+		(
+		#{userId},
+		#{score},
+		#{type},
+		#{price},
+		#{createTime}
+		<if test="result !=null">,#{result}</if>
+		<if test="wxErrorCode !=null">,#{wxErrorCode}</if>
+		<if test="resultMsg !=null">,#{resultMsg}</if>
+		<if test="mark !=null">,#{mark}</if>
+		<if test="isFill !=null">,#{isFill}</if>
+		<if test="openId !=null">,#{openId}</if>
+		<if test="nickName !=null">,#{nickName}</if>
+		)
+	</insert>
+	
+	<update id="updateScoreCashRec" parameterType="ScoreCashRec">
+        UPDATE pisp_score_cash_rec 
+        <set>
+            <if test="null != mark">
+                MARK = #{mark},
+            </if>
+            <if test="null != isFill">
+                IS_FILL = #{isFill},
+            </if>
+        </set>
+        WHERE ID = #{id}
+    </update>
+    
+	<select id="queryScoreCashRec"  parameterType="ScoreCashRecQuery" resultMap="scoreCashRecMap">
+			SELECT
+				rec.USER_ID,
+				rec.ID,
+				rec.CREATE_TIME,
+				rec.NICK_NAME,
+				rec.OPEN_ID,
+				rec.PRICE,
+				rec.SCORE,
+				rec.RESULT,
+				rec.WX_ERROR_CODE,
+				rec.RESULT_MSG,
+				rec.TYPE,
+				rec.MARK,
+				rec.IS_FILL,
+				e.ENTERPRISE_NAME,
+				u.ACCOUNT_NAME
+				FROM pisp_score_cash_rec rec
+				left join pisp_euser e on rec.USER_ID = e.USER_ID 
+				left join pisp_user u on rec.USER_ID = u.USER_ID 
+			<where>
+			   <if test="null != userId and '' != userId">AND rec.USER_ID = #{userId}</if>
+			   <if test="null != type and '' != type">AND rec.TYPE = #{type}</if>
+			   <if test="null != result and '' != result">AND rec.RESULT = #{result}</if>
+			   <if test="accountName != null and accountName !='' ">AND u.ACCOUNT_NAME = #{accountName}</if>
+			   <if test="startDate != null">
+					 and DATE(rec.CREATE_TIME) &gt;= DATE(#{startDate})
+			   </if>
+			   <if test="endDate != null">
+					 and DATE(rec.CREATE_TIME) &lt;= DATE(#{endDate})
+			   </if>
+			
+			   <if test="null != cashMonth and '' != cashMonth">
+			   	 AND date_format(rec.CREATE_TIME,'%Y-%m') = #{cashMonth}
+			   </if>
+			   AND rec.TYPE != 0 
+			   ORDER BY rec.CREATE_TIME DESC
+		    </where>
+	</select>
+	
+	
+	<select id="getScoreCashRecList"  parameterType="ScoreCashRec" resultMap="scoreCashRecMap">
+			SELECT *
+			FROM pisp_score_cash_rec rec
+			<where>
+			   <if test="null != userId and '' != userId">AND rec.USER_ID = #{userId}</if>
+			   <if test="null != type and '' != type">AND rec.TYPE = #{type}</if>
+			   <if test="null != result and '' != result">AND rec.RESULT = #{result}</if>
+		    </where>
+		     AND rec.TYPE != 0 
+	</select>
+	
+	
+	<select id="countScoreCash" parameterType="map" resultType="int">
+		SELECT COUNT(0) FROM pisp_score_cash_rec rec
+		<where>
+			<if test="userId != null"> AND rec.USER_ID = #{userId}</if>
+			<if test=" flag == 0 "> AND date_format(rec.CREATE_TIME,'%Y-%m-%d') = #{currentDate}</if>
+			<if test=" flag == 1">AND date_format(rec.CREATE_TIME,'%Y-%m')=date_format(#{currentDate},'%Y-%m') </if>
+		</where>
+		 AND rec.TYPE != 0 
+	</select>
+</mapper>

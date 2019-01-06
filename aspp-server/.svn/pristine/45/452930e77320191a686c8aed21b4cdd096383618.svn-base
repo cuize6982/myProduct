@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.user.dao.PuserBaseDAO">
+	<resultMap type="Puser" id="PuserMapper">
+		<id property="userId" column="USER_ID"/>
+		<result property="realName" column="REAL_NAME"/>
+		<result property="mobilePhone" column="MOBILE_PHONE"/>
+		<result property="email" column="EMAIL"/>
+		<result property="birthday" column="BIRTHDAY"/>
+		<result property="livePlace" column="LIVE_PLACE"/>
+		<result property="livePCode" column="LIVE_P_CODE"/>
+		<result property="liveCCode" column="LIVE_C_CODE"/>
+		<result property="liveTCode" column="LIVE_T_CODE"/>
+		<result property="idCardNo" column="IDCARD_NO"/>
+		<result property="idCardPhoto1" column="IDCARD_PHOTO1"/>
+		<result property="drivingLicencePhoto" column="DRIVING_LICENCE_PHOTO"/>
+		<result property="drivingLicenceApplyTime" column="DRIVING_LICENCE_APPLY_DATE"/>
+		<result property="drivingLicenceExpiryTime" column="DRIVING_LICENCE_EXPIRY_DATE"/>
+		<result property="resume" column="RESUME"/>
+		<result property="address" column="ADDRESS"/>
+		<result property="QQ" column="QQ"/>
+	</resultMap>
+	
+	<!-- 根据条件查询个人用户 -->
+	<select id="queryPusers" parameterType="PuserQuery" resultMap="PuserMapper">
+		SELECT * FROM pisp_puser 
+	</select>
+	
+	<!-- 根据用户ID获取个人用户详细信息 -->
+	<select id="getPuser" parameterType="Integer" resultMap="PuserMapper">
+		SELECT * FROM pisp_puser p
+		WHERE p.USER_ID = #{userId}
+	</select>
+	
+	<!-- 保存个人用户信息 -->
+	<insert id="savePuser" parameterType="Puser">
+		insert into 
+			pisp_puser(USER_ID,
+					REAL_NAME,
+					MOBILE_PHONE,
+					EMAIL,
+					BIRTHDAY,
+					LIVE_PLACE,
+					LIVE_P_CODE,
+					LIVE_C_CODE,
+					LIVE_T_CODE,
+					IDCARD_NO,
+					IDCARD_PHOTO1,
+					DRIVING_LICENCE_PHOTO,
+			<!-- 		DRIVING_LICENCE_APPLY_DATE,
+					DRIVING_LICENCE_EXPIRY_DATE, -->
+					RESUME,
+					ADDRESS,
+					QQ) 
+			values(#{userId},
+					#{realName},
+					#{mobilePhone},
+					#{email},
+					#{birthday},
+					#{livePlace},
+					#{livePCode},
+					#{liveCCode},
+					#{liveTCode},
+					#{idCardNo},
+					#{idCardPhoto1},
+					#{drivingLicencePhoto},
+					<!-- #{drivingLicenceApplyTime},
+					#{drivingLicenceExpiryTime}, -->
+					#{resume},
+					#{address},
+					#{QQ})
+	</insert>
+	
+	<!-- 更新个人用户信息 -->
+	<update id="updatePuser" parameterType="Puser">
+		update pisp_puser p 
+		<set>
+			<if test="realName != null and realName != ''">p.REAL_NAME = #{realName},</if>
+			<if test="mobilePhone != null and mobilePhone != ''">p.MOBILE_PHONE = #{mobilePhone},</if>
+			<if test="email != null and email != ''">p.EMAIL = #{email},</if>
+			<if test="birthday != null">p.BIRTHDAY = #{birthday},</if>
+			<if test="livePlace != null and livePlace != ''">p.LIVE_PLACE = #{livePlace},</if>
+			<if test="livePCode != null">p.LIVE_P_CODE = #{livePCode},</if>
+			<if test="liveCCode != null">p.LIVE_C_CODE = #{liveCCode},</if>
+			<if test="liveTCode != null">p.LIVE_T_CODE = #{liveTCode},</if>
+			<if test="idCardNo != null and idCardNo != ''">p.IDCARD_NO = #{idCardNo},</if>
+			<if test="idCardPhoto1 != null and idCardPhoto1 != ''">p.IDCARD_PHOTO1 = #{idCardPhoto1},</if>
+			<if test="drivingLicencePhoto != null">p.DRIVING_LICENCE_PHOTO = #{drivingLicencePhoto},</if>
+			<if test="resume != null and resume != ''">p.RESUME = #{resume},</if>
+			<if test="address != null and address != ''">p.ADDRESS = #{address},</if>
+			<if test="QQ != null and QQ != ''">p.QQ = #{QQ},</if>
+		</set>
+		where USER_ID = #{userId}
+	</update>
+	
+	<!-- 更新个人用户信息 -->
+	<update id="updatePuserInfo" parameterType="Puser">
+		update pisp_puser p 
+			<set>
+				<if test="realName != null and realName != ''">p.REAL_NAME = #{realName},</if>
+				<if test="mobilePhone != null and mobilePhone != ''">p.MOBILE_PHONE = #{mobilePhone},</if>
+				<if test="email != null and email != ''">p.EMAIL = #{email},</if>
+				<if test="birthday != null">p.BIRTHDAY = #{birthday},</if>
+				<if test="livePlace != null and livePlace != ''">p.LIVE_PLACE = #{livePlace},</if>
+				<if test="livePCode != null">p.LIVE_P_CODE = #{livePCode},</if>
+				<if test="liveCCode != null">p.LIVE_C_CODE = #{liveCCode},</if>
+				<if test="liveTCode != null">p.LIVE_T_CODE = #{liveTCode},</if>
+				<if test="idCardNo != null and idCardNo != ''">p.IDCARD_NO = #{idCardNo},</if>
+				<if test="idCardPhoto1 != null and idCardPhoto1 != ''">p.IDCARD_PHOTO1 = #{idCardPhoto1},</if>
+				<if test="drivingLicencePhoto != null and drivingLicencePhoto != ''">p.DRIVING_LICENCE_PHOTO = #{drivingLicencePhoto},</if>
+				<!-- p.DRIVING_LICENCE_APPLY_DATE = #{drivingLicenceApplyTime},
+				p.DRIVING_LICENCE_EXPIRY_DATE = #{drivingLicenceExpiryTime}, -->
+				<if test="resume != null and resume != ''">p.RESUME = #{resume},</if>
+				<if test="address != null and address != ''">p.ADDRESS = #{address},</if>
+				<if test="QQ != null and QQ != ''">p.QQ = #{QQ},</if>
+			</set>			
+		where USER_ID = #{userId}
+	</update>
+</mapper>

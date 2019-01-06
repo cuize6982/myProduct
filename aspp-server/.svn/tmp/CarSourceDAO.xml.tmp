@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.aspp.dao.CarSourceDAO">
+	<resultMap type="AsppCarSourceVO" id="carSourceVOMap">
+		<result property="carSourceId" column="CAR_SOURCE_ID"/>
+		<result property="fromPlace" column="FROM_PLACE"/>
+		<result property="toPlace" column="TO_PLACE"/>
+		<result property="fromPCode" column="FROM_P_CODE"/>
+		<result property="fromCCode" column="FROM_C_CODE"/>
+		<result property="fromTCode" column="FROM_T_CODE"/>
+		<result property="toPCode" column="TO_P_CODE"/>
+		<result property="toCCode" column="TO_C_CODE"/>
+		<result property="toTCode" column="TO_T_CODE"/>
+		<result property="carId" column="CAR_ID"/>
+		<result property="carNo" column="CAR_NO"/>
+		<result property="returnBackDate" column="RETURN_BACK_DATE"/>
+		<result property="commonPhrase" column="COMMON_PHRASE"/>
+		<result property="mark" column="MARK"/>
+		<result property="linkMan" column="LINKMAN"/>
+		<result property="linkMobile" column="LINK_MOBILE1"/>
+		<result property="linkQQ" column="LINK_QQ"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="infoType" column="INFO_TYPE"/>
+		<result property="expiryDate" column="EXPIRY_DATE"/>
+		<result property="status" column="STATUS"/>
+		<result property="publishTime" column="PUBLISH_TIME"/>
+		<result property="displayTime" column="DISPLAY_TIME"/>
+		<result property="publishId" column="PUBLISH_ID"/>
+		<result property="publishUserId" column="PUBLISH_USER_ID"/>
+		<result property="carLength" column="CAR_LENGTH"/>
+		<result property="carLengthName" column="CAR_LENGTH_NAME"/>
+		<result property="carType" column="CAR_TYPE"/>
+		<result property="carTypeName" column="CAR_TYPE_NAME"/>
+		<result property="loadWeight" column="LOAD_WEIGHT"/>
+		<result property="sourceTypeName" column="SOURCE_TYPE_NAME"/>
+		<result property="sourceType" column="SOURCE_TYPE"/>
+		<result property="carPhoto" column="CAR_PHOTO"/>
+		<result property="userType" column="USER_TYPE"/>
+		<result property="userIDNO" column="USER_ID_NO"/>
+		<result property="userTypeName" column="USER_TYPE_NAME"/>
+		<result property="infoContent" column="INFO_CONTENT"/>
+		<result property="favoriteId" column="FAVORITE_ID"/>
+		<result property="infoId" column="INFO_ID"/>
+		<result property="defineCarType" column="DEFINE_CAR_TYPE"/>
+	</resultMap>
+	
+	<resultMap type="CarVO" id="carVOMap">
+		<result property="id" column="CAR_ID"/>
+		<result property="driver" column="DRIVER"/>
+		<result property="driverPhone" column="DRIVER_PHONE"/>
+		<result property="carNo" column="CAR_NO"/>
+		<result property="carTypeName" column="CAR_TYPE_NAME"/>
+		<result property="carLength" column="CAR_LENGTH"/>
+		<result property="loadWeight" column="LOAD_WEIGHT"/>
+		<result property="carPhoto" column="CAR_PHOTO"/>
+		<result property="carTypeCode" column="CAR_TYPE"/>
+		
+	</resultMap>
+	
+	<select id="queryCarSources" parameterType="AsppCarSourceVO" resultMap="carSourceVOMap">
+		SELECT
+			pcs.FROM_PLACE,
+			<if test="null != userId">
+				puf.FAVORITE_ID,
+			</if>
+			pcs.TO_PLACE,
+			pc.CAR_NO,
+			pc.CAR_LENGTH,
+			pcl.VAL_NAME AS CAR_LENGTH_NAME,
+			pc.CAR_TYPE,
+			pct.VAL_NAME AS CAR_TYPE_NAME,
+			pc.LOAD_WEIGHT,
+			CASE
+		WHEN pcs.SOURCE_TYPE = '01' THEN
+			'本地车'
+		WHEN pcs.SOURCE_TYPE = '02' THEN
+			'回程车'
+		END AS SOURCE_TYPE_NAME,
+		 pcs.SOURCE_TYPE,
+		 ppi.PUBLISH_TIME,
+		 pcs.MARK,
+		 pcs.INFO_CONTENT,
+		 pc.CAR_PHOTO,
+		 pcs.CAR_SOURCE_ID,
+		 pcs.LINK_MOBILE1,
+		 ppi.PUBLISH_ID,
+		 ppi.USER_ID AS PUBLISH_USER_ID,
+		 pu.USER_TYPE,
+		 CASE
+		WHEN pu.USER_TYPE = 1
+		OR pu.USER_TYPE = 2 THEN
+			(
+				SELECT
+					pp.IDCARD_NO
+				FROM
+					pisp_puser pp
+				WHERE
+					pp.USER_ID = pu.USER_ID
+			)
+		ELSE
+			(
+				SELECT
+					peu.IDCARD_NO
+				FROM
+					pisp_euser peu
+				WHERE
+					peu.USER_ID = pu.USER_ID
+			)
+		END AS USER_ID_NO,
+		 CASE pu.USER_TYPE WHEN 1 THEN '司机'
+		WHEN 2 THEN '个人货主'
+		WHEN 3 THEN '企业货主'
+		WHEN 4 THEN '货运信息部'
+		WHEN 5 THEN '物流公司'
+		END AS USER_TYPE_NAME
+		FROM
+			pisp_publish_info ppi
+		LEFT JOIN pisp_car_source pcs ON pcs.CAR_SOURCE_ID = ppi.INFO_ID
+		LEFT JOIN pisp_car pc ON pc.CAR_ID = pcs.CAR_ID
+		LEFT JOIN pisp_dict_val pct ON pct.VAL_CODE = pc.CAR_TYPE
+		AND pct.DICT_CODE = 'CAR_TYPE'
+		LEFT JOIN pisp_dict_val pcl ON pcl.VAL_CODE = pc.CAR_LENGTH
+		AND pcl.DICT_CODE = 'CAR_LENGTH'
+		LEFT JOIN pisp_user pu ON pu.USER_ID = ppi.USER_ID
+		<if test="null != userId">
+		LEFT JOIN pisp_user_favorite puf ON puf.INFO_ID = ppi.INFO_ID AND puf.USER_ID = #{userId} AND puf.INFO_TYPE = 2
+		</if>
+		WHERE
+			ppi.INFO_TYPE = 2
+		AND ppi.`STATUS` = 3
+		AND ppi.IS_DELETE = 0
+		<if test="null != fromPCode">
+			AND pcs.FROM_P_CODE = #{fromPCode}
+		</if>
+		<if test="null != fromCCode">
+			AND pcs.FROM_C_CODE = #{fromCCode}
+		</if>
+		<if test="null != toPCode">
+			AND pcs.TO_P_CODE = #{toPCode}
+		</if>
+		<if test="null != toCCode">
+			AND pcs.TO_C_CODE = #{toCCode}
+		</if>
+		<if test="null != carType and '' != carType">
+			AND pc.CAR_TYPE = #{carType}
+		</if>
+		<if test="null != carLength and '' != carLength">
+			AND pc.CAR_LENGTH = #{carLength}
+		</if>
+	</select>
+	
+	<select id="getCarSources" parameterType="java.util.Map" resultMap="carSourceVOMap">
+		SELECT
+			pcs.CAR_SOURCE_ID,
+			pcs.FROM_PLACE,
+			pcs.TO_PLACE,
+			pcs.FROM_P_CODE,
+			pcs.FROM_C_CODE,
+			pcs.FROM_T_CODE,
+			pcs.TO_P_CODE,
+			pcs.TO_C_CODE,
+			pcs.TO_T_CODE,
+			pcs.CAR_ID,
+			pc.CAR_NO,
+			pcs.RETURN_BACK_DATE,
+			pcs.COMMON_PHRASE,
+			pcs.MARK,
+			pcs.LINKMAN,
+			pcs.LINK_MOBILE1,
+			pcs.LINK_QQ,
+			ppi.USER_ID,
+			ppi.INFO_TYPE,
+			ppi.EXPIRY_DATE,
+			ppi.`STATUS`,
+			ppi.PUBLISH_TIME,
+			ppi.DISPLAY_TIME,
+			ppi.PUBLISH_ID,
+			pcs.INFO_CONTENT,
+			pc.DEFINE_CAR_TYPE
+		FROM
+			pisp_publish_info ppi
+		LEFT JOIN pisp_car_source pcs ON pcs.CAR_SOURCE_ID = ppi.INFO_ID
+		LEFT JOIN pisp_car pc ON pcs.CAR_ID = pc.CAR_ID
+		WHERE
+			ppi.USER_ID = #{userId}
+		AND ppi.INFO_TYPE = 2
+		AND pcs.SOURCE_TYPE = #{carSourceType}
+		AND ppi.IS_DELETE = 0
+		ORDER BY ppi.PUBLISH_TIME desc
+	</select>
+	
+	<select id="getCanPublishCars" parameterType="java.util.Map" resultMap="carVOMap">
+		SELECT
+			pc.CAR_ID,
+			pc.CAR_NO,
+			pc.DRIVER,
+			pc.DRIVER_PHONE,
+			pc.CAR_LENGTH,
+			pc.LOAD_WEIGHT,
+			pc.CAR_PHOTO,
+			(
+				SELECT
+					dv.VAL_NAME
+				FROM
+					pisp_dict_val dv
+				WHERE
+					dv.VAL_CODE = pc.CAR_TYPE
+				AND dv.DICT_CODE = 'CAR_TYPE'
+			) AS CAR_TYPE_NAME,
+			pc.CAR_TYPE
+		FROM
+			pisp_car pc
+		WHERE
+			pc.CAR_ID IN (
+				SELECT
+					puc.CAR_ID
+				FROM
+					pisp_user_car puc
+				WHERE
+					puc.USER_ID = #{userId}
+				AND puc.CAR_ID NOT IN (
+					SELECT
+						pc.CAR_ID
+					FROM
+						pisp_publish_info ppi
+					LEFT JOIN pisp_car_source pcs ON pcs.CAR_SOURCE_ID = ppi.INFO_ID
+					LEFT JOIN pisp_car pc ON pcs.CAR_ID = pc.CAR_ID
+					WHERE
+						ppi.USER_ID = #{userId}
+					AND ppi.INFO_TYPE = 2
+					AND pcs.SOURCE_TYPE = #{carSourceType}
+					AND ppi.IS_DELETE = 0
+				)
+			)
+			AND pc.IS_DELETE = 0
+			ORDER BY pc.CREATE_TIME desc
+	</select>
+	
+	<select id="getCarSourceIsFavorite" parameterType="java.util.Map" resultMap="carSourceVOMap">
+<!-- 		SELECT
+		<if test="null != userId">
+			puf.FAVORITE_ID,
+		</if>
+			ppi.PUBLISH_ID,
+			pc.CAR_NO,
+			pc.MARK,
+			cl.VAL_NAME AS CAR_LENGTH_NAME,
+			pc.CAR_PHOTO,
+			pc.LOAD_WEIGHT,
+			pc.CAR_TYPE,
+			ct.VAL_NAME AS CAR_TYPE_NAME,
+			
+			pcs.RETURN_BACK_DATE,
+			ppi.INFO_ID,
+			ppi.INFO_TYPE,
+			ppi.USER_ID
+		FROM
+			pisp_publish_info ppi
+		<if test="null != userId">
+			LEFT JOIN pisp_user_favorite puf ON puf.INFO_ID = ppi.INFO_ID AND puf.USER_ID = #{userId} AND puf.INFO_TYPE = 2
+		</if>
+		LEFT JOIN pisp_car_source pcs ON pcs.CAR_SOURCE_ID = ppi.INFO_ID
+		LEFT JOIN pisp_car pc ON pc.CAR_ID = pcs.CAR_ID
+		LEFT JOIN pisp_dict_val cl ON cl.VAL_CODE = pc.CAR_LENGTH AND cl.DICT_CODE = 'CAR_LENGTH'
+		LEFT JOIN pisp_dict_val ct ON ct.VAL_CODE = pc.CAR_TYPE AND ct.DICT_CODE = 'CAR_TYPE'
+		
+		
+		
+		WHERE ppi.INFO_TYPE = 2
+		AND ppi.PUBLISH_ID IN 
+		<foreach collection="publishInfoIds" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+		
+		
+		 -->
+
+	SELECT 
+	    DISTINCT
+		<if test="null != userId">
+			puf.FAVORITE_ID,
+		</if>
+			ppi.PUBLISH_ID,
+			pc.CAR_NO,
+			pc.MARK,
+			pc.CAR_PHOTO,
+			pc.LOAD_WEIGHT,
+			pc.CAR_TYPE,
+			pc.DEFINE_CAR_TYPE,
+			pcs.RETURN_BACK_DATE,
+			ppi.INFO_ID,
+			ppi.INFO_TYPE,
+			ppi.USER_ID,
+			CASE 
+			   when pc.CAR_TYPE_FIRST_CODE is NOT  NULL and pc.CAR_TYPE_SECOND_CODE is NOT  NULL AND pc.CAR_TYPE_THIRD_CODE is NOT  NULL then CONCAT(ct1.CARTYPE_NAME,'-',ct2.CARTYPE_NAME,'-',ct3.CARTYPE_NAME)
+			   when pc.CAR_TYPE_FIRST_CODE is NOT  NULL and pc.CAR_TYPE_SECOND_CODE is NOT  NULL  then CONCAT(ct1.CARTYPE_NAME,'-',ct2.CARTYPE_NAME)
+			   when pc.CAR_TYPE_FIRST_CODE is NOT  NULL  then ct1.CARTYPE_NAME
+			   when pc.CAR_TYPE is not null then ctn.VAL_NAME
+		    END as CAR_TYPE_NAME,
+			CASE 
+		          when pc.CAR_TYPE_FIRST_CODE is NOT  NULL and pc.CAR_TYPE_SECOND_CODE is NOT  NULL AND pc.CAR_TYPE_THIRD_CODE is NOT  NULL  then  pc.CAR_TYPE_THIRD_CODE
+		          when pc.CAR_TYPE_FIRST_CODE is NOT  NULL and pc.CAR_TYPE_SECOND_CODE is NOT  NULL then pc.CAR_TYPE_SECOND_CODE
+		          when pc.CAR_TYPE_FIRST_CODE is NOT  NULL  then  pc.CAR_TYPE_FIRST_CODE
+		    END as CAR_TYPE_CODE
+	   FROM
+			pisp_publish_info ppi
+ 		<if test="null != userId">
+ 			LEFT JOIN pisp_user_favorite puf ON puf.INFO_ID = ppi.INFO_ID AND puf.USER_ID = #{userId} AND puf.INFO_TYPE = 2
+ 		</if>
+		  LEFT JOIN pisp_car_source pcs ON pcs.CAR_SOURCE_ID = ppi.INFO_ID
+		  LEFT JOIN pisp_car pc ON pc.CAR_ID = pcs.CAR_ID
+	      left JOIN  pisp_car_type_base_data ct1 ON ct1.CARTYPE_CODE = pc.CAR_TYPE_FIRST_CODE and pc.CAR_TYPE_FIRST_CODE is not NULL
+	      LEFT JOIN pisp_car_type_base_data ct2 ON ct2.CARTYPE_CODE = pc.CAR_TYPE_SECOND_CODE and pc.CAR_TYPE_SECOND_CODE is not NULL
+		  LEFT JOIN pisp_car_type_base_data ct3 ON ct3.CARTYPE_CODE = pc.CAR_TYPE_THIRD_CODE and pc.CAR_TYPE_THIRD_CODE is not NULL
+		  LEFT JOIN pisp_dict_val ctn ON ctn.VAL_CODE = pc.CAR_TYPE AND ctn.DICT_CODE = 'CAR_TYPE' and pc.CAR_TYPE is NOT  NULL	
+	</select>
+</mapper>

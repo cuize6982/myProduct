@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.periodical.dao.PeriodicalDAO">
+	
+	<resultMap type="PeriodicalItem" id="periodicalItemMap">
+		<id property="itemId" column="ITEM_ID"/>
+		<result property="periodicalId" column="PERIODICAL_ID"/>
+		<result property="attRefId" column="ATT_REF_ID"/>
+		<result property="detailsUrl" column="DETAILS_URL"/>
+		<result property="indexNo" column="INDEX_NO"/>
+	</resultMap>
+
+	<resultMap type="Periodical" id="periodicalMap">
+		<id property="periodicalId" column="PERIODICAL_ID"/>
+		<result property="belongProduct" column="BELONG_PRODUCT"/>
+		<result property="terminalType" column="TERMINAL_TYPE"/>
+		<result property="periodicalNo" column="PERIODICAL_NO"/>
+		<result property="status" column="STATUS"/>
+		<result property="content" column="CONTENT"/>
+		<result property="createUser" column="CREATE_USER"/>
+		<result property="createTime" column="CREATE_TIME"/>
+		<result property="updateUser" column="UPDATE_USER"/>
+		<result property="updateTime" column="UPDATE_TIME"/>
+		<collection property="periodicalItemInfos" column="PERIODICAL_ID" select="queryPeriodicalItem"></collection>
+	</resultMap>
+	<!-- 条件查询期刊 -->
+	<select id="queryPeriodical" parameterType="PeriodicalQuery" resultMap="periodicalMap">
+		SELECT 
+			op.PERIODICAL_ID,
+			op.PERIODICAL_NO,
+			op.BELONG_PRODUCT,
+			op.STATUS,
+			op.TERMINAL_TYPE
+		FROM 
+		osmp_periodical op
+		<where>
+			<if test="belongProduct !=null and belongProduct !=''">
+			 and op.BELONG_PRODUCT = #{belongProduct}
+			</if>
+			
+			<if test="terminalType !=null and terminalType != ''">
+			 and op.TERMINAL_TYPE = #{terminalType}
+			</if>
+			
+			<if test="periodicalNo !=null">
+			 and op.PERIODICAL_NO like '%${periodicalNo}%'
+			</if>
+			
+			<if test="statuses !=null and statuses.length >=1">
+				and op.STATUS in
+				<foreach collection="statuses" item="status" open="(" separator="," close=")">
+					#{status}
+				</foreach>
+			</if>
+			ORDER BY op.CREATE_TIME desc
+		</where>
+	</select>
+	
+	<select id="queryPeriodicalItem" parameterType="java.lang.Integer" resultMap="periodicalItemMap">
+		SELECT * from osmp_periodical_item i where i.PERIODICAL_ID = #{periodicalId} ORDER BY i.INDEX_NO 
+	</select>
+	
+	<select id="getPeriodical" parameterType="java.lang.Integer" resultMap="periodicalMap">
+		SELECT * from osmp_periodical p where p.PERIODICAL_ID = #{periodicalId}
+	</select>
+	
+	
+	<insert id="savePeriodical" parameterType="Periodical">
+		insert into osmp_periodical(
+					PERIODICAL_ID,BELONG_PRODUCT,TERMINAL_TYPE,PERIODICAL_NO,STATUS,CONTENT,CREATE_USER,CREATE_TIME
+				)
+		values(
+				#{periodicalId},#{belongProduct},#{terminalType},#{periodicalNo},#{status},#{content},#{createUser},#{createTime}
+		       )
+	</insert>
+	
+	<insert id="savePeriodicalItem" parameterType="PeriodicalItem">
+		insert into osmp_periodical_item(
+					ITEM_ID,PERIODICAL_ID,ATT_REF_ID,DETAILS_URL,INDEX_NO
+				)
+		values(
+				#{itemId},#{periodicalId},#{attRefId},#{detailsUrl},#{indexNo}
+		       )
+	</insert>
+	
+	<update id="updatePeriodical" parameterType="Periodical">
+		update osmp_periodical p 
+		<set>
+			<if test="belongProduct != null and belongProduct != ''">
+				p.BELONG_PRODUCT=#{belongProduct},
+			</if>
+			<if test="terminalType != null and terminalType !=''">
+				p.TERMINAL_TYPE = #{terminalType},
+			</if>
+			<if test="periodicalNo != null and periodicalNo !=''">
+				p.PERIODICAL_NO=#{periodicalNo},
+			</if>
+			<if test="status != null">
+				p.STATUS=#{status},
+			</if>
+			<if test="content != null and content != ''">
+				p.CONTENT=#{content},
+			</if>
+			<if test="updateTime != null">
+				p.UPDATE_TIME=#{updateTime},
+			</if>
+			<if test="updateUser != null">
+				p.UPDATE_USER=#{updateUser}
+			</if>
+		</set> 
+		where p.PERIODICAL_ID = #{periodicalId}
+	</update>
+	
+	<update id="updatePeriodicalTime" parameterType="java.util.Map">
+		update pisp_data_version pd
+		<set>
+			<if test="version !=null and version !=''">
+				pd.VERSION = #{version}
+			</if>
+		</set>
+		where pd.DATA_CODE = #{dataCode}
+	</update>
+		       
+	<update id="updatePeriodicalItem" parameterType="PeriodicalItem">
+		update osmp_periodical_item p 
+		<set>
+			<if test="periodicalId != null">
+				p.PERIODICAL_ID=#{periodicalId},
+			</if>
+			<if test="attRefId != null and attRefId !=''">
+				p.ATT_REF_ID = #{attRefId},
+			</if>
+			<if test="detailsUrl != null and detailsUrl !=''">
+				p.DETAILS_URL=#{detailsUrl},
+			</if>
+			<if test="indexNo != null">
+				p.INDEX_NO=#{indexNo}
+			</if>
+		</set> 
+		where p.ITEM_ID = #{itemId}
+	</update>
+	
+	<delete id="deletePeriodical" parameterType="Integer">
+		delete from osmp_periodical where PERIODICAL_ID =#{periodicalId}
+	</delete>
+	
+	<delete id="deletePeriodicalItem" parameterType="Integer">
+		delete from osmp_periodical_item where ITEM_ID =#{itemId}
+	</delete>
+	
+	<delete id="deletePeriodicalItems" parameterType="Integer">
+		delete from osmp_periodical_item where PERIODICAL_ID =#{periodicalId}
+	</delete>
+	
+	<update id="updatePeriodicalStatus" parameterType="java.util.Map">
+		update osmp_periodical p 
+		<set>
+			<if test="status != null">
+				p.STATUS=#{status}
+			</if>
+		</set> 
+		where p.PERIODICAL_ID = #{periodicalId}
+	</update>
+	
+	
+	
+	<select id="getPeriodicalInfos" parameterType="java.util.Map" resultMap="periodicalMap">
+		SELECT * from osmp_periodical p where p.STATUS = 1
+			<if test="belongProduct !=null and belongProduct != ''">
+				 and p.BELONG_PRODUCT = #{belongProduct}
+			</if>
+			<if test="terminalType !=null and terminalType != ''">
+				 and p.TERMINAL_TYPE = #{terminalType}
+			</if>
+		 ORDER BY p.PERIODICAL_NO DESC LIMIT 1
+	</select>
+	
+</mapper>

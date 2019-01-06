@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.sms.dao.SmsSendRecBaseDAO">
+	
+	<insert id="saveSmsSendRecList" parameterType="list">
+		<if test="smsSendRecs != null and smsSendRecs.size() > 0">
+		INSERT INTO sms_send_rec(SEND_REC_ID,MOBILE,CONTENT,SEND_TIME,MSG_TYPE,SENDER,PAY_MONEY,MSG_ID,SP,IS_SUCCESS,B_TPL_CODE,IP,SOURCE)
+		VALUES
+		<foreach collection="smsSendRecs" item="item"  separator="," >
+		(#{item.sendRecId},#{item.mobile},#{item.content},#{item.sendTime},#{item.msgType},#{item.sender,jdbcType=VARCHAR},#{item.payMoney},#{item.msgId},#{item.sp},#{item.isSuccess},#{item.bTplCode},#{item.ip},#{item.source})
+		</foreach>
+		</if>
+	</insert>
+	
+	<insert id="saveSmsSendRec" parameterType="SmsSendRec">
+		INSERT INTO sms_send_rec(SEND_REC_ID,MOBILE,CONTENT,SEND_TIME,MSG_TYPE,SENDER,PAY_MONEY,MSG_ID,SP,IS_SUCCESS,B_TPL_CODE,IP,SOURCE)
+		VALUES(#{sendRecId},#{mobile},#{content},#{sendTime},#{msgType},#{sender,jdbcType=VARCHAR},#{payMoney},#{msgId},#{sp},#{isSuccess},#{bTplCode},#{ip},#{source})
+	</insert>
+	
+	<select id="countSmsSendRec" parameterType="integer" resultType="integer">
+		SELECT COUNT(0) FROM sms_send_rec sr WHERE sr.MSG_TYPE = #{msgType}
+		<if test="currentDate != null and currentDate != ''">
+			AND DATE(sr.SEND_TIME) = #{currentDate}
+		</if>
+	</select>
+	
+	<select id="countSmsSendRecDays" parameterType="map" resultType="hashmap">
+		SELECT dt.d AS RESULT,dt.type AS TYPE,IFNULL(rec.num,0) AS TOTAL_NUM 
+		FROM (SELECT * FROM (SELECT DATE_SUB(CURDATE(), INTERVAL 29 DAY) AS d
+		UNION ALL 
+		SELECT DATE_SUB(CURDATE(), INTERVAL 28 DAY)
+		UNION ALL 
+		SELECT DATE_SUB(CURDATE(), INTERVAL 27 DAY)
+		UNION ALL 
+		SELECT DATE_SUB(CURDATE(), INTERVAL 26 DAY)
+		UNION ALL 
+		SELECT DATE_SUB(CURDATE(), INTERVAL 25 DAY)
+		UNION ALL 
+		SELECT DATE_SUB(CURDATE(), INTERVAL 24 DAY)
+		UNION ALL 
+		SELECT DATE_SUB(CURDATE(), INTERVAL 23 DAY)
+		UNION ALL 
+		SELECT DATE_SUB(CURDATE(), INTERVAL 22 DAY)
+		UNION ALL 
+		SELECT DATE_SUB(CURDATE(), INTERVAL 21 DAY)
+		UNION ALL 
+		SELECT DATE_SUB(CURDATE(), INTERVAL 20 DAY)
+		UNION ALL 
+		SELECT DATE_SUB(CURDATE(), INTERVAL 19 DAY)
+		UNION ALL 
+		SELECT DATE_SUB(CURDATE(), INTERVAL 18 DAY)
+		UNION ALL 
+		SELECT DATE_SUB(CURDATE(), INTERVAL 17 DAY)
+		UNION ALL 
+		SELECT DATE_SUB(CURDATE(), INTERVAL 16 DAY)
+		UNION ALL 
+		SELECT DATE_SUB(CURDATE(), INTERVAL 15 DAY)
+		UNION ALL 
+		SELECT DATE_SUB(CURDATE(), INTERVAL 14 DAY)
+		UNION ALL 
+		SELECT DATE_SUB(CURDATE(), INTERVAL 13 DAY)
+		UNION ALL 
+		SELECT DATE_SUB(CURDATE(), INTERVAL 12 DAY)
+		UNION ALL 
+		SELECT DATE_SUB(CURDATE(), INTERVAL 11 DAY)
+		UNION ALL 
+		SELECT DATE_SUB(CURDATE(), INTERVAL 10 DAY)
+		UNION ALL 
+		SELECT DATE_SUB(CURDATE(), INTERVAL 9 DAY)
+		UNION ALL 
+		SELECT DATE_SUB(CURDATE(), INTERVAL 8 DAY)
+		UNION ALL 
+		SELECT DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+		UNION ALL 
+		SELECT DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+		UNION ALL 
+		SELECT DATE_SUB(CURDATE(), INTERVAL 5 DAY)
+		UNION ALL 
+		SELECT DATE_SUB(CURDATE(), INTERVAL 4 DAY)
+		UNION ALL 
+		SELECT DATE_SUB(CURDATE(), INTERVAL 3 DAY)
+		UNION ALL 
+		SELECT DATE_SUB(CURDATE(), INTERVAL 2 DAY)
+		UNION ALL 
+		SELECT DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+		UNION ALL
+		SELECT CURDATE()) dd
+		,(
+		SELECT 1 AS type
+		UNION ALL 
+		SELECT 2
+		) tt) dt
+		LEFT JOIN
+		(SELECT sr.MSG_TYPE,DATE(sr.SEND_TIME) AS send,COUNT(0) AS num FROM sms_send_rec sr
+		WHERE DATE_SUB(CURDATE(), INTERVAL 1 MONTH) &lt;= date(sr.SEND_TIME)
+		GROUP BY sr.MSG_TYPE,send
+		) rec
+		ON dt.d = rec.send AND dt.type = rec.MSG_TYPE
+		ORDER BY dt.d
+	</select>
+	
+	<select id="getSmsSendRecIsExistForMobile" parameterType="integer" resultType="integer">
+		SELECT COUNT(0) FROM sms_send_rec sr
+		<where>
+			<if test="mobile != null and mobile != ''">
+				sr.MOBILE = #{mobile}
+			</if>
+		</where>
+	</select>
+	
+	<select id="getCountByIPAndMobile" resultType="integer">
+		SELECT COUNT(0) FROM sms_send_rec sr
+		WHERE (sr.MOBILE = #{mobile} OR sr.IP = #{ip})
+		AND TIMESTAMPDIFF(SECOND,sr.SEND_TIME,#{currentDate}) &lt; #{betweenTime};
+	</select>
+</mapper>

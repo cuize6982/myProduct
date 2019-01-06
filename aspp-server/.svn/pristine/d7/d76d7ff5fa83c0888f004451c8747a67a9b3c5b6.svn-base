@@ -1,0 +1,2 @@
+freemarker.template.captcha=validcode.ftl
+freemarker.template.inviteregister=inviteregister.ftl

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.vas.dao.VasDAO">
+	<resultMap type="Vas" id="vasMap">
+	    <result property="serviceCode" column="SERVICE_CODE"/>
+	    <result property="serviceName" column="SERVICE_NAME"/>
+	    <result property="price" column="PRICE"/>
+	    <result property="isFree" column="IS_FREE"/>
+	    <result property="mark" column="MARK"/>
+	    <result property="createUser" column="CREATE_USER"/>
+	    <result property="createTime" column="CREATE_TIME"/>
+	    <result property="updateUser" column="UPDATE_USER"/>
+	    <result property="updateTime" column="UPDATE_TIME"/>
+	</resultMap>
+	<select id="getVasByServiceCode" parameterType="java.lang.String" resultMap="vasMap">
+	    SELECT * FROM pisp_vas pa WHERE pa.SERVICE_CODE = #{serviceCode}
+	</select>
+	<!-- 条件查询服务列表 -->
+	<select id="queryVas" parameterType="VasQuery" resultMap="vasMap">
+		select 
+		pa.SERVICE_CODE,
+		pa.SERVICE_NAME,
+		pa.IS_FREE,
+		pa.CREATE_TIME
+		from pisp_vas pa
+		where 1=1
+		<if test="serviceCode !=null"> and pa.SERVICE_CODE like '%${serviceCode}%'</if>
+		<if test="serviceName !=null"> and pa.SERVICE_NAME like '%${serviceName}%'</if>
+		<if test="isFrees !=null">
+			and pa.IS_FREE IN
+			<foreach collection="isFrees" item="isFree" open="(" separator="," close=")">
+				#{isFree}
+			</foreach>
+		 </if>
+		 ORDER BY pa.CREATE_TIME desc
+	</select>
+	<!-- 新增服务 -->
+	<insert id="saveVas" parameterType="Vas">
+		insert into pisp_vas(SERVICE_CODE,SERVICE_NAME,PRICE,IS_FREE,MARK
+		,CREATE_USER,CREATE_TIME
+		)
+		VALUES
+		(#{serviceCode,jdbcType=VARCHAR},#{serviceName,jdbcType=VARCHAR},#{price,jdbcType=FLOAT},#{isFree,jdbcType=INTEGER}
+		,#{mark,jdbcType=VARCHAR},#{createUser,jdbcType=VARCHAR},#{createTime,jdbcType=TIMESTAMP}
+		)
+	</insert>
+	<!-- 更新服务 -->
+	<update id="updateVasByServiceCode" parameterType="Vas">
+		update pisp_vas pa
+		<set>
+			pa.SERVICE_NAME = #{serviceName},
+			pa.PRICE = #{price},
+			pa.IS_FREE = #{isFree},
+			pa.MARK = #{mark},
+			pa.UPDATE_USER = #{updateUser},
+			pa.UPDATE_TIME = #{updateTime}
+		</set>
+		where pa.SERVICE_CODE = #{serviceCode}
+	</update>
+	<!-- 删除服务 -->
+	<delete id="deleteVasByServiceCode" parameterType="String">
+		delete from pisp_vas where SERVICE_CODE = #{serviceCode}
+	</delete>
+</mapper>

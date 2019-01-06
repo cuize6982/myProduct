@@ -1,0 +1,396 @@
+package com.lzz.aspp.web;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.lzz.aspp.service.MonitorCarService;
+import com.lzz.aspp.util.CommonUtil;
+import com.lzz.lsp.base.constants.ReturnDatas;
+import com.lzz.lsp.base.qo.CarMonitorQuery;
+import com.lzz.lsp.base.vo.CarMonitorVO;
+import com.lzz.lsp.cmpt.dict.service.DictService;
+import com.lzz.lsp.core.carmonitor.service.CarMonitorService;
+import com.lzz.lsp.core.user.service.UserBaseService;
+import com.lzz.lsp.util.CommonUtils;
+import com.lzz.lsp.util.MongoUtils;
+import com.lzz.lton.core.web.controller.BaseController;
+import com.lzz.lton.util.HttpUtils;
+
+/**
+ * <p>监控车辆controller</p>
+ * @author Liuyl 2015年10月27日
+ * @version 1.0
+ * <p>注意事项： </p>
+ */
+@Controller
+@RequestMapping("/monitor")
+public class MonitorCarController extends BaseController{
+	
+	@Resource(name = "dictService")
+	private DictService dictService;
+	
+	
+	@Resource(name = "userBaseService")
+	private UserBaseService userBaseService;
+
+	@Resource(name = "monitorCarService")
+	private MonitorCarService monitorCarService;
+	
+	@Resource(name = "carMonitorService")
+	private CarMonitorService carMonitorService;
+	/**
+	 * <p>检测用户余额是否可以监控车辆</p>
+	 * <p>执行流程：</p>
+	 * <p>注意事项：</p>
+	 * @author Liuyl 2015年10月27日
+	 * @param accessToken
+	 * @param userId
+	 * @return
+	 */
+	@RequestMapping(value = "/checkUserBalance.do", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> checkUserBalance(String accessToken, Integer userId){
+		Map<String, Object> model = new HashMap<String, Object>();
+		try {
+			// 验证访问凭证
+			CommonUtils.checkAccessToken(accessToken, model);
+			CommonUtils.checkParams("userId", userId, model);
+			Float remainMoney = null != userBaseService.getUser(userId) ? userBaseService.getUser(userId).getRemainMoney() : 0f;
+			if(remainMoney > 0.09){
+				model.put("code", ReturnDatas.SUCCESS_CODE);
+				setSuccessFlag(model);
+			} else {
+				model.put("code", ReturnDatas.USER_NOT_REMAINMONEY);
+				model.put("msg", ReturnDatas.USER_NOT_REMAINMONEY_MSG);
+			}
+		} catch (Exception e) {
+			model.clear();
+			model.put("code", ReturnDatas.SYSTEM_EXCEPTION);
+			model.put("msg", ReturnDatas.SYSTEM_EXCEPTION_MSG);
+			e.printStackTrace();
+		}
+		return model;
+	}
+	
+	/**
+	 * <p>监控车辆列表</p>
+	 * <p>执行流程：</p>
+	 * <p>注意事项：</p>
+	 * @author Liuyl 2015年10月27日
+	 * @param accessToken
+	 * @param userId
+	 * @return
+	 */
+	@RequestMapping(value = "/queryMonitorCars.do", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> queryMonitorCars(String accessToken, Integer userId,
+			Integer pageNo){
+		Map<String, Object> model = new HashMap<String, Object>();
+		try {
+			// 验证访问凭证
+			CommonUtils.checkAccessToken(accessToken, model);
+			CommonUtils.checkParams("userId", userId, model);
+			CarMonitorQuery query = new CarMonitorQuery();
+			query.setPageNo(pageNo);
+			query.setUserId(userId);
+			query.setPageSize(3);
+			List<CarMonitorVO> queryCarMontior = carMonitorService.queryCarMontior(query);
+			for (CarMonitorVO carMonitorVO : queryCarMontior) {
+				if(null == carMonitorVO.getCarType() || "".equals(carMonitorVO.getCarType()) || "0".equals(carMonitorVO.getCarType())){
+					
+				
+				if(carMonitorVO.getCarTypeFirstCode() == null || "".equals(carMonitorVO.getCarTypeFirstCode())){
+					
+				}else{
+					if(carMonitorVO.getCarTypeSecondCode() == null || "".equals(carMonitorVO.getCarTypeSecondCode())){
+						carMonitorVO.setCarType(carMonitorVO.getCarTypeFirstCode().toString());
+					}else{
+						if(carMonitorVO.getCarTypeThirdCode() == null || "".equals(carMonitorVO.getCarTypeThirdCode())){
+							carMonitorVO.setCarType(carMonitorVO.getCarTypeSecondCode().toString());
+						}else{
+							carMonitorVO.setCarType(carMonitorVO.getCarTypeThirdCode().toString());
+						}
+					}
+				}
+			}
+		}
+			model.put("code", ReturnDatas.SUCCESS_CODE);
+			model.put("monitorCars", queryCarMontior);
+			model.put("totalPageNum", query.getTotalPageNum());
+		} catch (Exception e) {
+			model.clear();
+			model.put("code", ReturnDatas.SYSTEM_EXCEPTION);
+			model.put("msg", ReturnDatas.SYSTEM_EXCEPTION_MSG);
+			e.printStackTrace();
+		}
+		return model;
+	}
+	
+	/**
+	 * <p>添加监控车辆</p>
+	 * <p>执行流程：</p>
+	 * <p>注意事项：</p>
+	 * @author Liuyl 2015年10月27日
+	 * @param accessToken
+	 * @param userId
+	 * @return
+	 */
+	@RequestMapping(value = "/addMonitorCar.do", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> addMonitorCar(String accessToken, Integer userId,
+			String carIds){
+		Map<String, Object> model = new HashMap<String, Object>();
+		try {
+			// 验证访问凭证
+			CommonUtils.checkAccessToken(accessToken, model);
+			CommonUtils.checkParams("userId", userId, model);
+			CommonUtils.checkParams("carIds", carIds, model);
+			Map<String, Object> params = new HashMap<String, Object>();
+			params.put("monitorPerson", userId);
+			params.put("monitorCarId", carIds.split(","));
+			carMonitorService.saveCarMontior(params);
+			model.put("code", ReturnDatas.SUCCESS_CODE);
+			this.setSuccessFlag(model);
+		} catch (Exception e) {
+			model.clear();
+			model.put("code", ReturnDatas.SYSTEM_EXCEPTION);
+			model.put("msg", ReturnDatas.SYSTEM_EXCEPTION_MSG);
+			e.printStackTrace();
+		}
+		return model;
+	}
+	/**
+	 * <p>添加监控车辆列表</p>
+	 * <p>执行流程：</p>
+	 * <p>注意事项：</p>
+	 * @author Liuyl 2015年10月29日
+	 * @param accessToken
+	 * @param userId
+	 * @param keys
+	 * @return
+	 */
+	@RequestMapping(value = "/queryAddMonitorCar.do", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> queryAddMonitorCar(String accessToken, Integer userId,
+			String keys, Integer pageNo){
+		Map<String, Object> model = new HashMap<String, Object>();
+		try {
+			// 验证访问凭证
+			CommonUtils.checkAccessToken(accessToken, model);
+			CommonUtils.checkParams("userId", userId, model);
+			CarMonitorQuery query = new CarMonitorQuery();
+			query.setPageNo(pageNo);
+			query.setUserId(userId);
+			if(!StringUtils.isEmpty(keys)){
+				if(CommonUtil.isNumeric(keys)){
+					query.setDriverPhone(keys);
+				} else {
+					query.setDriver(keys);
+				}
+			}
+			List<CarMonitorVO> queryAddMonitorCar = monitorCarService.queryAddMonitorCar(query);
+//			List<CarMonitorVO> queryAddMonitorCar = MongoUtils.queryMonitorCars(query);
+			for (CarMonitorVO carMonitorVO : queryAddMonitorCar) {
+				if(null != carMonitorVO.getCarTypeFirstCode()){
+				Integer carTypeFirstCode=carMonitorVO.getCarTypeFirstCode();
+				Integer carTypeSecondCode=carMonitorVO.getCarTypeSecondCode();
+				Integer carTypeThirdCode=carMonitorVO.getCarTypeThirdCode();
+				String carTypeStr=null;
+				if(StringUtils.isEmpty(carTypeFirstCode) && StringUtils.isEmpty(carTypeSecondCode) && StringUtils.isEmpty(carTypeThirdCode) && StringUtils.isEmpty(carMonitorVO.getDefineCarType())){
+					if(!StringUtils.isEmpty(carMonitorVO.getCarTypeName())){
+						carTypeStr =carMonitorVO.getCarTypeName();
+					}
+				}
+				if(carTypeFirstCode == null || "".equals(carTypeFirstCode)){
+					
+				}else{
+					if(carTypeSecondCode == null || "".equals(carTypeSecondCode)){
+						String	TypeName1 = dictService.queryCarTypeNameByCarTypeCode(carTypeFirstCode);
+						carMonitorVO.setCarType(carTypeFirstCode.toString());
+						carTypeStr =TypeName1;
+					}else{
+						if(carTypeThirdCode == null || "".equals(carTypeThirdCode)){
+							String	TypeName1 = dictService.queryCarTypeNameByCarTypeCode(carTypeFirstCode);
+							String  TypeName2 = dictService.queryCarTypeNameByCarTypeCode(carTypeSecondCode);
+							carMonitorVO.setCarType(carTypeSecondCode.toString());
+							carTypeStr =TypeName1+"-" +TypeName2;
+						}else{
+							String	TypeName1 = dictService.queryCarTypeNameByCarTypeCode(carTypeFirstCode);
+							String  TypeName2 = dictService.queryCarTypeNameByCarTypeCode(carTypeSecondCode);
+							String TypeName3 =dictService.queryCarTypeNameByCarTypeCode(carTypeThirdCode);
+							carMonitorVO.setCarType(carTypeThirdCode.toString());
+							carTypeStr =TypeName1+"-" +TypeName2+"-"+TypeName3;
+						}
+					}
+				}
+				carMonitorVO.setCarTypeName(carTypeStr);
+			}
+		}
+			model.put("code", ReturnDatas.SUCCESS_CODE);
+			model.put("addMonitorCars", queryAddMonitorCar);
+			model.put("totalPageNum", query.getTotalPageNum());
+		} catch (Exception e) {
+			model.clear();
+			model.put("code", ReturnDatas.SYSTEM_EXCEPTION);
+			model.put("msg", ReturnDatas.SYSTEM_EXCEPTION_MSG);
+			e.printStackTrace();
+		}
+		return model;
+	}
+	
+	/**
+	 * <p>删除车辆监控</p>
+	 * <p>执行流程：</p>
+	 * <p>注意事项：</p>
+	 * @author Liuyl 2015年11月3日
+	 * @param accessToken
+	 * @param monitorRecId
+	 * @return
+	 */
+	@RequestMapping(value = "/deleteMonitorCar.do", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> deleteMonitorCar(String accessToken, Integer monitorRecId){
+		Map<String, Object> model = new HashMap<String, Object>();
+		try {
+			CommonUtils.checkAccessToken(accessToken, model);
+			CommonUtils.checkParams("monitorRecId", monitorRecId, model);
+			carMonitorService.deleteMonitorCar(monitorRecId);
+			model.put("code", ReturnDatas.SUCCESS_CODE);
+			setSuccessFlag(model);
+		} catch (Exception e) {
+			e.printStackTrace();
+			model.clear();
+			model.put("code", ReturnDatas.SYSTEM_EXCEPTION);
+			model.put("msg", ReturnDatas.SYSTEM_EXCEPTION_MSG);
+		}
+		return model;
+	}
+	
+	/**
+	 * 
+	 * <p>车辆监控查询Mongo</p>
+	 * <p>执行流程：</p>
+	 * <p>注意事项：</p>
+	 * @author Cuiz 2016年11月21日
+	 * @param accessToken
+	 * @param userId
+	 * @param keys
+	 * @param pageNo
+	 * @return
+	 */
+	@RequestMapping(value = "/queryAddMonitorCarToMongo.do", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> queryAddMonitorCarToMongo(String accessToken, Integer userId,
+			String keys){
+		Map<String, Object> model = new HashMap<String, Object>();
+		Map<String, Object> params = new HashMap<String, Object>();
+		try {
+			// 验证访问凭证
+			CommonUtils.checkAccessToken(accessToken, model);
+			CommonUtils.checkParams("userId", userId, model);
+			CommonUtils.checkParams("keys", keys, model);
+			CarMonitorQuery query = new CarMonitorQuery();
+			query.setUserId(userId);
+			query.setPageSize(10);
+			if(!StringUtils.isEmpty(keys)){
+				if(CommonUtil.isNumeric(keys)){
+					query.setDriverPhone(keys);
+				} else {
+					query.setDriver(keys);
+				}
+			}
+//			List<CarMonitorVO> queryAddMonitorCar = monitorCarService.queryAddMonitorCar(query);
+			List<CarMonitorVO> queryAddMonitorCar = MongoUtils.queryMonitorCars(query);
+//			int len = queryAddMonitorCar.size();
+			
+				
+				for (Iterator<CarMonitorVO> iterator = queryAddMonitorCar.iterator(); iterator
+						.hasNext();) {
+					CarMonitorVO carMonitorVO = (CarMonitorVO) iterator.next();
+					params.put("userId", userId);
+					params.put("carId", carMonitorVO.getCarId());
+					//查询该车辆是否被收藏
+					Integer queryCarMontiorCount = carMonitorService.queryCarMontiorCount(params);
+					if(null != queryCarMontiorCount && queryCarMontiorCount>0){
+						iterator.remove();
+					}
+					if(null != carMonitorVO.getCarTypeFirstCode()){
+						Integer carTypeFirstCode=carMonitorVO.getCarTypeFirstCode();
+						Integer carTypeSecondCode=carMonitorVO.getCarTypeSecondCode();
+						Integer carTypeThirdCode=carMonitorVO.getCarTypeThirdCode();
+						String carTypeStr=null;
+						if(StringUtils.isEmpty(carTypeFirstCode) && StringUtils.isEmpty(carTypeSecondCode) && StringUtils.isEmpty(carTypeThirdCode) && StringUtils.isEmpty(carMonitorVO.getDefineCarType())){
+							if(!StringUtils.isEmpty(carMonitorVO.getCarTypeName())){
+								carTypeStr =carMonitorVO.getCarTypeName();
+							}
+						}
+						if(carTypeFirstCode == null || "".equals(carTypeFirstCode)){
+							
+						}else{
+							if(carTypeSecondCode == null || "".equals(carTypeSecondCode)){
+								String	TypeName1 = dictService.queryCarTypeNameByCarTypeCode(carTypeFirstCode);
+								carMonitorVO.setCarType(carTypeFirstCode.toString());
+								carTypeStr =TypeName1;
+							}else{
+								if(carTypeThirdCode == null || "".equals(carTypeThirdCode)){
+									String	TypeName1 = dictService.queryCarTypeNameByCarTypeCode(carTypeFirstCode);
+									String  TypeName2 = dictService.queryCarTypeNameByCarTypeCode(carTypeSecondCode);
+									carMonitorVO.setCarType(carTypeSecondCode.toString());
+									carTypeStr =TypeName1+"-" +TypeName2;
+								}else{
+									String	TypeName1 = dictService.queryCarTypeNameByCarTypeCode(carTypeFirstCode);
+									String  TypeName2 = dictService.queryCarTypeNameByCarTypeCode(carTypeSecondCode);
+									String TypeName3 =dictService.queryCarTypeNameByCarTypeCode(carTypeThirdCode);
+									carMonitorVO.setCarType(carTypeThirdCode.toString());
+									carTypeStr =TypeName1+"-" +TypeName2+"-"+TypeName3;
+								}
+							}
+						}
+						carMonitorVO.setCarTypeName(carTypeStr);
+					}
+				}
+				
+//				if(null != queryCarMontiorCount && queryCarMontiorCount>0){
+//					queryAddMonitorCar.remove(i);
+//					if(i>0){
+//						
+//						i=i-1;
+//					}
+//					len--;
+//				}
+				
+			
+			model.put("code", ReturnDatas.SUCCESS_CODE);
+			model.put("addMonitorCars", queryAddMonitorCar);
+			model.put("totalPageNum", query.getTotalPageNum());
+		} catch (Exception e) {
+			model.clear();
+			model.put("code", ReturnDatas.SYSTEM_EXCEPTION);
+			model.put("msg", ReturnDatas.SYSTEM_EXCEPTION_MSG);
+			e.printStackTrace();
+		}
+		return model;
+	}
+	public static void main(String[] args) {
+		try {
+			String a = HttpUtils.sendHttpRequest("http://localhost:8080/aspp-server/monitor/deleteMonitorCar.do?"
+					+ "accessToken=5a8e5467f3a1434b7c265268bf76c338"
+					+ "&monitorRecId=10", HttpUtils.RequestMethod.GET, null);
+			System.out.println(a);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+}

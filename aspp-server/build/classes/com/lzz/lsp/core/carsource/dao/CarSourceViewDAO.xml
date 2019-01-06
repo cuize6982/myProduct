@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.carsource.dao.CarSourceViewDAO">
+	<resultMap type="CarSourceView" id="carSourceViewMap">
+		<id property="id" column="ID"/>
+		<result property="publisher" column="PUBLISHER"/>
+		<result property="fromPlace" column="FROM_PLACE"/>
+		<result property="toPlace" column="TO_PLACE"/>
+		<result property="fromPCode" column="FROM_P_CODE"/>
+		<result property="fromCCode" column="FROM_C_CODE"/>
+		<result property="fromTCode" column="FROM_T_CODE"/>
+		<result property="toPCode" column="TO_P_CODE"/>
+		<result property="toCCode" column="TO_C_CODE"/>
+		<result property="toTCode" column="TO_T_CODE"/>
+		<result property="sourceType" column="SOURCE_TYPE"/>
+		<result property="sourceTypeName" column="SOURCE_TYPE_NAME"/>
+		<result property="mark" column="MARK"/>
+		<result property="linkMan" column="LINK_MAN"/>
+		<result property="linkPhone" column="LINK_PHONE"/>
+		<result property="linkMobile1" column="LINK_MOBILE1"/>
+		<result property="linkMobile2" column="LINK_MOBILE2"/>
+		<result property="linkQQ" column="LINK_QQ"/>
+		<result property="infoContent" column="INFO_CONTENT"/>
+		<result property="carId" column="CAR_ID"/>
+		<result property="carSourceId" column="CAR_SOURCE_ID"/>
+		<result property="loadWeight" column="LOAD_WEIGHT"/>
+		
+		<result property="publishTime" column="PUBLISH_TIME"/>
+		<result property="publishId" column="PUBLISH_ID"/>
+		<result property="infoType" column="INFO_TYPE"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="publishFreq" column="PUBLISH_FREQ"/>
+		<result property="repateTimes" column="REPATE_TIMES"/>
+		<result property="status" column="STATUS"/>
+		<result property="userType" column="USER_TYPE"/>
+		<result property="isAuth" column="IS_AUTH"/>
+		
+		<result property="userTypeName" column="USER_TYPE_NAME"/>
+		<result property="publishTimeLong" column="PUBLISH_TIME_LONG"/>
+		<result property="carType" column="CAR_TYPE"/>
+		<result property="carTypeName" column="CAR_TYPE_NAME"/>
+		<result property="carTypeFirstCode" column="CAR_TYPE_FIRST_CODE"/>
+		<result property="carTypeSecondCode" column="CAR_TYPE_SECOND_CODE"/>
+		<result property="carTypeThirdCode" column="CAR_TYPE_THIRD_CODE"/>
+		<result property="carLength" column="CAR_LENGTH"/>
+		<result property="carNo" column="CAR_NO"/>
+		<result property="defineCarType" column="DEFINE_CAR_TYPE"/>
+	</resultMap>
+	
+	<select id="selectCarSourceView" resultMap="carSourceViewMap">
+		SELECT * FROM pisp_v_car_source vgs WHERE vgs.CAR_SOURCE_ID = #{carSourceId}
+	</select>
+	
+	<select id="selectCarSourceByCarSourceId" resultMap="carSourceViewMap">
+			SELECT
+		`cs`.`FROM_PLACE` AS `FROM_PLACE`,
+		`cs`.`FROM_P_CODE` AS `FROM_P_CODE`,
+		`cs`.`FROM_C_CODE` AS `FROM_C_CODE`,
+		`cs`.`FROM_T_CODE` AS `FROM_T_CODE`,
+		`cs`.`TO_PLACE` AS `TO_PLACE`,
+		`cs`.`TO_P_CODE` AS `TO_P_CODE`,
+		`cs`.`TO_C_CODE` AS `TO_C_CODE`,
+		`cs`.`TO_T_CODE` AS `TO_T_CODE`,
+		`cs`.`PUBLISHER` AS `PUBLISHER`,
+		(
+			CASE
+			WHEN (`cs`.`SOURCE_TYPE` = '01') THEN
+				'本地车'
+			WHEN (`cs`.`SOURCE_TYPE` = '02') THEN
+				'回程车'
+			END
+		) AS `SOURCE_TYPE_NAME`,
+		`cs`.`SOURCE_TYPE` AS `SOURCE_TYPE`,
+		`cs`.`MARK` AS `MARK`,
+		`cs`.`LINKMAN` AS `LINKMAN`,
+		`cs`.`LINK_MOBILE1` AS `LINK_MOBILE1`,
+		`cs`.`LINK_MOBILE2` AS `LINK_MOBILE2`,
+		`cs`.`LINK_PHONE` AS `LINK_PHONE`,
+		`cs`.`LINK_QQ` AS `LINK_QQ`,
+		`cs`.`INFO_CONTENT` AS `INFO_CONTENT`,
+		`cs`.`CAR_ID` AS `CAR_ID`,
+		`pi`.`PUBLISH_TIME` AS `PUBLISH_TIME`,
+		`pi`.`PUBLISH_ID` AS `PUBLISH_ID`,
+		`pi`.`INFO_ID` AS `ID`,
+		`pi`.`INFO_TYPE` AS `INFO_TYPE`,
+		`pi`.`USER_ID` AS `USER_ID`,
+		`pi`.`PUBLISH_FREQ` AS `PUBLISH_FREQ`,
+		`pi`.`REPATE_TIMES` AS `REPATE_TIMES`,
+		`pi`.`STATUS` AS `STATUS`,
+		`u`.`USER_TYPE` AS `USER_TYPE`,
+		`u`.`IS_AUTH` AS `IS_AUTH`,
+		(
+			CASE `u`.`USER_TYPE`
+			WHEN 1 THEN
+				'司机'
+			WHEN 2 THEN
+				'个人货主'
+			WHEN 3 THEN
+				'企业货主'
+			WHEN 4 THEN
+				'货运信息部'
+			WHEN 5 THEN
+				'综合物流公司'
+			END
+		) AS `USER_TYPE_NAME`,
+		(
+			unix_timestamp(`pi`.`PUBLISH_TIME`) * 1000
+		) AS `PUBLISH_TIME_LONG`,
+		`c`.`CAR_TYPE` AS `CAR_TYPE`,
+		`c`.`CAR_TYPE_FIRST_CODE` AS `CAR_TYPE_FIRST_CODE`,
+		`c`.`CAR_TYPE_SECOND_CODE` AS `CAR_TYPE_SECOND_CODE`,
+		`c`.`CAR_TYPE_THIRD_CODE` AS `CAR_TYPE_THIRD_CODE`,
+		`c`.`CAR_LENGTH` AS `CAR_LENGTH`,
+		`c`.`CAR_NO` AS `CAR_NO`,
+		`c`.`DEFINE_CAR_TYPE` AS `DEFINE_CAR_TYPE`,
+		(
+			CASE
+			WHEN (
+				(
+					`c`.`CAR_TYPE_FIRST_CODE` IS NOT NULL
+				)
+				AND (
+					`c`.`CAR_TYPE_SECOND_CODE` IS NOT NULL
+				)
+				AND (
+					`c`.`CAR_TYPE_THIRD_CODE` IS NOT NULL
+				)
+			) THEN
+				concat(
+					`ct1`.`CARTYPE_NAME`,
+					'-',
+					`ct2`.`CARTYPE_NAME`,
+					'-',
+					`ct3`.`CARTYPE_NAME`
+				)
+			WHEN (
+				(
+					`c`.`CAR_TYPE_FIRST_CODE` IS NOT NULL
+				)
+				AND (
+					`c`.`CAR_TYPE_SECOND_CODE` IS NOT NULL
+				)
+			) THEN
+				concat(
+					`ct1`.`CARTYPE_NAME`,
+					'-',
+					`ct2`.`CARTYPE_NAME`
+				)
+			WHEN (
+				`c`.`CAR_TYPE_FIRST_CODE` IS NOT NULL
+			) THEN
+				`ct1`.`CARTYPE_NAME`
+			END
+		) AS `CAR_TYPE_NAME`,
+		`cs`.`CAR_SOURCE_ID` AS `CAR_SOURCE_ID`
+	FROM
+		(
+			(
+				(
+					(
+						(
+							`pisp_car_source` `cs`
+							JOIN (
+								`pisp_publish_info` `pi`
+								LEFT JOIN `pisp_user` `u` ON (
+									(
+										`pi`.`USER_ID` = `u`.`USER_ID`
+									)
+								)
+							)
+						)
+						LEFT JOIN `pisp_car` `c` ON (
+							(`cs`.`CAR_ID` = `c`.`CAR_ID`)
+						)
+					)
+					LEFT JOIN `pisp_car_type_base_data` `ct1` ON (
+						(
+							`ct1`.`CARTYPE_CODE` = `c`.`CAR_TYPE_FIRST_CODE`
+						)
+					)
+				)
+				LEFT JOIN `pisp_car_type_base_data` `ct2` ON (
+					(
+						`ct2`.`CARTYPE_CODE` = `c`.`CAR_TYPE_SECOND_CODE`
+					)
+				)
+			)
+			LEFT JOIN `pisp_car_type_base_data` `ct3` ON (
+				(
+					`ct3`.`CARTYPE_CODE` = `c`.`CAR_TYPE_THIRD_CODE`
+				)
+			)
+		)
+	WHERE
+		(
+			(
+				`cs`.`CAR_SOURCE_ID` = `pi`.`INFO_ID`
+			)
+			AND (`pi`.`INFO_TYPE` = 2)
+			AND (`pi`.`IS_DELETE` = 0)
+			AND (`pi`.`STATUS` = 3)
+			AND (`cs`.`CAR_SOURCE_ID` = #{carSourceId})
+		)
+	</select>
+	
+	<select id="selectAllCarSourceViews" resultMap="carSourceViewMap">
+		SELECT * FROM pisp_v_car_source vgs
+	</select>
+	
+	<select id="updateCarSourceView" resultMap="carSourceViewMap">
+		SELECT * FROM pisp_v_car_source_copy vgs WHERE vgs.PUBLISH_ID = #{publishId}
+	</select>
+	
+</mapper>

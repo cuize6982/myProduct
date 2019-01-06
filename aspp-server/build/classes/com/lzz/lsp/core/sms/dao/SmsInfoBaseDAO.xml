@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.sms.dao.SmsInfoBaseDAO">
+	<resultMap type="SmsInfo" id="smsInfoMap">
+		<id property="id" column="SMS_INFO_ID"/>
+		<result property="supplier" column="SUPPLIER"/>
+		<result property="linkPhone" column="LINK_PHONE"/>
+		<result property="price" column="PRICE"/>
+		<result property="accountNo" column="ACCOUNT_NO"/>
+		<result property="accountType" column="ACCOUNT_TYPE"/>
+		<result property="surplusNum" column="SURPLUS_NUM"/>
+		<result property="isWarn" column="IS_WARN"/>
+		<result property="warnVal" column="WARN_VAL"/>
+		<result property="serviceStatus" column="SERVICE_STATUS"/>
+		<result property="warnMethod" column="WARN_METHOD"/>
+		<result property="dayMaxSendNum" column="DAY_MAX_SEND_NUM"/>
+		<result property="noticeMobiles" column="NOTICE_MOBILES"/>
+		<result property="noticeEmails" column="NOTICE_EMAILS"/>
+		<result property="createUser" column="CREATE_USER"/>
+		<result property="createTime" column="CREATE_TIME"/>
+		<result property="updateUser" column="UPDATE_USER"/>
+		<result property="updateTime" column="UPDATE_TIME"/>
+	</resultMap>
+	
+	<select id="getSmsInfo" parameterType="int" resultMap="smsInfoMap">
+		SELECT si.* FROM osmp_sms_info si WHERE si.ACCOUNT_TYPE = #{accountType}
+	</select>
+	
+	<update id="updateSmsInfo" parameterType="SmsInfo">
+		UPDATE osmp_sms_info si SET
+			<!-- si.LINK_PHONE = #{linkPhone,jdbcType=VARCHAR}, -->
+			si.IS_WARN = #{isWarn},
+			si.WARN_VAL = #{warnVal,jdbcType=INTEGER},
+			si.WARN_METHOD = #{warnMethod,jdbcType=VARCHAR},
+			si.SERVICE_STATUS = #{serviceStatus},
+			si.NOTICE_MOBILES = #{noticeMobiles,jdbcType=VARCHAR},
+			si.NOTICE_EMAILS = #{noticeEmails,jdbcType=VARCHAR},
+			si.DAY_MAX_SEND_NUM = #{dayMaxSendNum,jdbcType=INTEGER},
+			si.UPDATE_USER = #{updateUser,jdbcType=VARCHAR},
+			si.UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP}
+			WHERE si.ACCOUNT_TYPE = #{accountType}
+	</update>
+	
+	<update id="updateSmsInfoSpecific" parameterType="SmsInfo">
+		UPDATE osmp_sms_info si 
+		<set>
+			<if test="price != null">
+				si.PRICE = #{price,jdbcType=FLOAT},
+			</if>
+			<if test="surplusNum != null">
+			si.SURPLUS_NUM = #{surplusNum,jdbcType=INTEGER},
+			</if>
+			<if test="updateUser != null and updateUser != ''">
+			si.UPDATE_USER = #{updateUser,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+			si.UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+			</if>
+		</set>
+			WHERE si.ACCOUNT_TYPE = #{accountType}
+	</update>
+</mapper>

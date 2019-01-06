@@ -1,0 +1,545 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.agent.dao.AgentBaseDAO">
+	<resultMap type="AgentVO" id="agentVOMap">
+		<result property="agentId" column="AGENT_ID" />
+		<result property="agentUserId" column="AGENT_USER_ID" />
+		<result property="agentAccountName" column="AGENT_ACCOUNT_NAME" />
+		<result property="agentParentUserId" column="AGENT_PARENT_USER_ID" />
+		<result property="agentRuleId" column="AGENT_RULE_ID" />
+		<result property="agentCode" column="AGENT_CODE" />
+		<result property="agentStatus" column="AGENT_STATUS" />
+		<result property="agentName" column="ENTERPRISE_NAME" />
+		<result property="agentType" column="USER_TYPE" />
+		<result property="isAuth" column="IS_AUTH" />
+		<result property="recommendCount" column="RECOMMEND_COUNT" />
+		<result property="recommendDriverCount" column="RECOMMEND_DRIVER_COUNT" />
+		<result property="publishGoodsSourceCount" column="PUBLISH_GOODS_SOURCE_COUNT" />
+		<result property="publishCarSourceCount" column="PUBLISH_CAR_SOURCE_COUNT" />
+		<result property="linkMan" column="LINKMAN" />
+		<result property="linkMobile1" column="LINK_MOBILE1"/>
+		<result property="belongArea" column="BELONG_AREA"/>
+		<result property="belongPCode" column="BELONG_P_CODE"/>
+		<result property="belongCCode" column="BELONG_C_CODE"/>
+		<result property="belongTCode" column="BELONG_T_CODE"/>
+		<result property="surplusCount" column="SURPLUS_COUNT" />
+		<result property="payAccount" column="PAY_ACCOUNT" />
+		<result property="realName" column="REAL_NAME" />
+		<result property="userType" column="USER_TYPE" />
+		<result property="isAgent" column="IS_AGENT" />
+		<result property="livePlace" column="LIVE_PLACE" />
+		<result property="agentRule.agentRuleId" column="RAGENT_RULE_ID"/>
+		<result property="agentRule.agentRuleName" column="RAGENT_RULE_NAME"/>
+		<result property="agentRule.agentRuleCap" column="RAGENT_RULE_CAP"/>
+		<result property="userId" column="USER_ID" />
+		<result property="scoreId" column="SCORE_REC_ID"/>
+		<result property="scoreRuleId" column="SCORE_RULE_ID"/>
+		<result property="scoreName" column="SCORE_ITEM_NAME"/>
+		<result property="scoreValueNum" column="SCORE_VALUE"/>
+		<result property="scoreTime" column="GET_SCORE_TIME"/>
+		<result property="scoreStatus" column="SCORE_STATUS"/>
+	</resultMap>
+
+	<resultMap type="Agent" id="agentMap">
+		<result property="agentId" column="AGENT_ID" />
+		<result property="agentUserId" column="AGENT_USER_ID" />
+		<result property="agentAccountName" column="AGENT_ACCOUNT_NAME" />
+		<result property="agentParentUserId" column="AGENT_PARENT_USER_ID" />
+		<result property="agentRuleId" column="AGENT_RULE_ID" />
+		<result property="agentCode" column="AGENT_CODE" />
+		<result property="agentStatus" column="AGENT_STATUS" />
+		<result property="createUser" column="CREATE_USER" />
+		<result property="createTime" column="CREATE_TIME" />
+		<result property="updateUser" column="UPDATE_USER" />
+		<result property="updateTime" column="UPDATE_TIME" />
+	</resultMap>
+	
+	
+
+	<select id="getAgentStatustucsDriverNum" parameterType="java.lang.String" resultType="java.lang.Integer">
+		SELECT
+			count(ru.USER_ID)
+		FROM
+			pisp_user ru
+		WHERE
+			ru.RECOMMEND_CODE = #{accountName}
+		AND ru.USER_TYPE = 1
+	</select>
+
+	<select id="getAgentStatisticsNum" parameterType="java.util.Map" resultType="java.lang.Integer">
+	   SELECT
+				count(0)
+			FROM
+				osmp_agent roa
+			LEFT JOIN pisp_user ru ON ru.USER_ID = roa.AGENT_USER_ID
+				
+		<where>
+			ru.IS_AGENT = 1  
+			<if test="userId != null"> AND roa.AGENT_PARENT_USER_ID = #{userId}</if>
+			<if test="userType!=null">
+				AND ru.USER_TYPE = #{userType} 
+			</if>
+		</where>
+	</select>
+
+	<select id="getAgentPublishNum" parameterType="java.util.Map" resultType="java.lang.Integer">
+	   	select count(0)
+				from pisp_publish_info pi 
+		<where>
+			<if test="userId != null"> AND pi.USER_ID = #{userId}</if>
+			<if test="infoType!=null">
+				AND pi.INFO_TYPE = #{infoType} AND pi.`STATUS` = 3 AND pi.IS_DELETE = 0
+			</if>
+		</where>
+	</select>
+
+	<select id="queryAgentStatisticsUserInfo" parameterType="UserQuery" resultMap="com.lzz.lsp.core.user.dao.UserBaseDAO.userVOMapper">
+		   SELECT
+				eu.LINKMAN,
+				eu.ENTERPRISE_NAME,
+				u.USER_TYPE,
+				u.CREATE_TIME,
+				eu.BELONG_AREA,
+				u.IS_AUTH,
+				u.USER_ID,
+				u.NICKNAME,
+				eu.CORPORATION,
+				pu.LIVE_PLACE
+			FROM
+				pisp_user u
+			LEFT JOIN pisp_puser pu ON pu.USER_ID = u.USER_ID
+			LEFT JOIN pisp_euser eu ON eu.USER_ID = u.USER_ID
+		<where>
+			<!-- u.IS_AGENT=1 -->
+			<if test="recommendCode != null and recommendCode != '' ">
+			  and u.RECOMMEND_CODE = #{recommendCode} 
+			</if>
+			<if test="userType != null and userType.length>0">
+				 and u.USER_TYPE in 
+				 <foreach collection="userType" item="item" open="(" separator="," close=")">
+				 	#{item}
+				 </foreach>
+			</if>
+			<if test="areaPCode != null and areaPCode != 0"> AND ( pu.LIVE_P_CODE = #{areaPCode} OR eu.BELONG_P_CODE = #{areaPCode} )</if>
+			<if test="areaCCode != null and areaCCode != 0"> AND ( pu.LIVE_C_CODE = #{areaCCode} OR eu.BELONG_C_CODE = #{areaCCode} )</if>
+			<if test="areaTCode != null and areaTCode != 0"> AND ( pu.LIVE_T_CODE = #{areaTCode} OR eu.BELONG_T_CODE = #{areaTCode} )</if>
+			<if test="createTimeYear != null and createTimeYear != '' ">
+				and year(u.CREATE_TIME)= #{createTimeYear}
+			</if>
+			<if test="(createTimeYear != null and createTimeYear != '') and (createTimeMonths != null and createTimeMonths.length>0)">
+				and month(u.CREATE_TIME) in
+				<foreach collection="createTimeMonths" item="item" open="(" separator="," close=")">
+				 	#{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+	<select id="queryAgentInfos" resultMap="agentVOMap" parameterType="AgentQuery">
+		SELECT
+			oa.AGENT_USER_ID,
+			oa.AGENT_ACCOUNT_NAME,
+			oa.AGENT_PARENT_USER_ID,
+			oa.AGENT_RULE_ID,
+			oa.AGENT_CODE,
+			pu.USER_TYPE,
+			pu.IS_AUTH,
+			pe.ENTERPRISE_NAME,
+			oa.AGENT_STATUS,
+			pe.LINKMAN,
+			pe.LINK_MOBILE1,
+			oar.AGENT_RULE_ID AS RAGENT_RULE_ID,
+			oar.AGENT_RULE_NAME AS RAGENT_RULE_NAME,
+			oar.AGENT_RULE_CAP AS RAGENT_RULE_CAP,
+			(
+				SELECT
+					oar.AGENT_RULE_CAP - COUNT(0)
+				FROM
+					osmp_agent coa
+				WHERE
+					<!-- coa.AGENT_PARENT_USER_ID = oa.AGENT_USER_ID
+				AND --> coa.AGENT_RULE_ID = oar.AGENT_RULE_ID
+				AND coa.AGENT_STATUS = 1
+				<!-- AND coa.AGENT_USER_ID != oa.AGENT_USER_ID -->
+				AND coa.AGENT_PARENT_USER_ID != 0
+			) AS SURPLUS_COUNT,
+			(
+				SELECT
+					COUNT(0)
+				FROM
+					osmp_agent coa
+				WHERE
+					coa.AGENT_PARENT_USER_ID = oa.AGENT_USER_ID
+				AND coa.AGENT_RULE_ID = oar.AGENT_RULE_ID
+				AND coa.AGENT_STATUS = 1
+			) AS RECOMMEND_COUNT,
+			(
+				SELECT
+					count(ru.USER_ID)
+				FROM
+					pisp_user ru
+				WHERE
+					oa.AGENT_ACCOUNT_NAME = ru.RECOMMEND_CODE
+				AND ru.USER_TYPE = 1
+			) AS RECOMMEND_DRIVER_COUNT,
+			(
+				SELECT
+					COUNT(0)
+				FROM
+					pisp_publish_info ppi
+				WHERE
+					ppi.USER_ID = oa.AGENT_USER_ID
+				AND ppi.INFO_TYPE = 1
+			) AS PUBLISH_GOODS_SOURCE_COUNT,
+			(
+				SELECT
+					COUNT(0)
+				FROM
+					pisp_publish_info ppi
+				WHERE
+					ppi.USER_ID = oa.AGENT_USER_ID
+				AND ppi.INFO_TYPE = 2
+			) AS PUBLISH_CAR_SOURCE_COUNT
+		FROM
+			osmp_agent oa
+		LEFT JOIN pisp_user pu ON oa.AGENT_USER_ID = pu.USER_ID
+		LEFT JOIN pisp_euser pe ON pu.USER_ID = pe.USER_ID
+		LEFT JOIN osmp_agent_rule oar ON oa.AGENT_RULE_ID = oar.AGENT_RULE_ID
+		<where>
+			<if test="null != agentParentUserId">
+				AND oa.AGENT_PARENT_USER_ID = #{agentParentUserId}
+			</if>
+			<if test="null != agentAccountName and '' != agentAccountName">
+				AND oa.AGENT_ACCOUNT_NAME like CONCAT("%",#{agentAccountName},"%")
+			</if>
+			<if test="null != agentStatus and agentStatus.length > 0">
+				AND oa.AGENT_STATUS IN 
+				<foreach collection="agentStatus" item="item" index="index" open="(" separator="," close=")">
+						 #{item}
+				</foreach>
+			</if>
+		</where>
+	</select>
+
+	<select id="getAgentInfoByAgentUserId" parameterType="java.lang.Integer" resultMap="agentVOMap">
+		SELECT
+			oa.AGENT_USER_ID,
+			oa.AGENT_ACCOUNT_NAME,
+			oa.AGENT_PARENT_USER_ID,
+			oa.AGENT_RULE_ID,
+			oa.AGENT_CODE,
+			pu.USER_TYPE,
+			pu.IS_AUTH,
+			pe.ENTERPRISE_NAME,
+			oa.AGENT_STATUS,
+			pe.LINKMAN,
+			pe.LINK_MOBILE1,
+			oar.AGENT_RULE_ID AS RAGENT_RULE_ID,
+			oar.AGENT_RULE_NAME AS RAGENT_RULE_NAME,
+			oar.AGENT_RULE_CAP AS RAGENT_RULE_CAP,
+			(
+				SELECT
+					oar.AGENT_RULE_CAP - COUNT(0)
+				FROM
+					osmp_agent coa
+				WHERE
+					<!-- coa.AGENT_PARENT_USER_ID = oa.AGENT_USER_ID
+				AND --> coa.AGENT_RULE_ID = oar.AGENT_RULE_ID
+				AND coa.AGENT_STATUS = 1
+				<!-- AND coa.AGENT_USER_ID != oa.AGENT_USER_ID -->
+				AND coa.AGENT_PARENT_USER_ID != 0
+			) AS SURPLUS_COUNT,
+			(
+				SELECT
+					COUNT(0)
+				FROM
+					osmp_agent coa
+				WHERE
+					coa.AGENT_PARENT_USER_ID = oa.AGENT_USER_ID
+				AND coa.AGENT_RULE_ID = oar.AGENT_RULE_ID
+				AND coa.AGENT_STATUS = 1
+			) AS RECOMMEND_COUNT,
+			(
+				SELECT
+					count(ru.USER_ID)
+				FROM
+					pisp_user ru
+				WHERE
+					oa.AGENT_ACCOUNT_NAME = ru.RECOMMEND_CODE
+				AND ru.USER_TYPE = 1
+			) AS RECOMMEND_DRIVER_COUNT,
+			(
+				SELECT
+					COUNT(0)
+				FROM
+					pisp_publish_info ppi
+				WHERE
+					ppi.USER_ID = oa.AGENT_USER_ID
+				AND ppi.INFO_TYPE = 1
+			) AS PUBLISH_GOODS_SOURCE_COUNT,
+			(
+				SELECT
+					COUNT(0)
+				FROM
+					pisp_publish_info ppi
+				WHERE
+					ppi.USER_ID = oa.AGENT_USER_ID
+				AND ppi.INFO_TYPE = 2
+			) AS PUBLISH_CAR_SOURCE_COUNT
+		FROM
+			osmp_agent oa
+		LEFT JOIN pisp_user pu ON oa.AGENT_USER_ID = pu.USER_ID
+		LEFT JOIN pisp_euser pe ON pu.USER_ID = pe.USER_ID
+		LEFT JOIN osmp_agent_rule oar ON oa.AGENT_RULE_ID = oar.AGENT_RULE_ID
+		WHERE oa.AGENT_USER_ID = #{agentUserId}
+	</select>
+
+	<select id="getAgentInfoByAccountName" parameterType="java.lang.String" resultMap="agentVOMap">
+		SELECT
+			oa.AGENT_USER_ID,
+			oa.AGENT_ACCOUNT_NAME,
+			oa.AGENT_PARENT_USER_ID,
+			oa.AGENT_RULE_ID,
+			oa.AGENT_CODE,
+			pu.USER_TYPE,
+			pu.IS_AUTH,
+			pe.ENTERPRISE_NAME,
+			oa.AGENT_STATUS,
+			pe.LINKMAN,
+			pe.LINK_MOBILE1,
+			oar.AGENT_RULE_ID AS RAGENT_RULE_ID,
+			oar.AGENT_RULE_NAME AS RAGENT_RULE_NAME,
+			oar.AGENT_RULE_CAP AS RAGENT_RULE_CAP,
+			(
+				SELECT
+					oar.AGENT_RULE_CAP - COUNT(0)
+				FROM
+					osmp_agent coa
+				WHERE
+					<!-- coa.AGENT_PARENT_USER_ID = oa.AGENT_USER_ID
+				AND --> coa.AGENT_RULE_ID = oar.AGENT_RULE_ID
+				AND coa.AGENT_STATUS = 1
+				<!-- AND coa.AGENT_USER_ID != oa.AGENT_USER_ID -->
+				AND coa.AGENT_PARENT_USER_ID != 0
+			) AS SURPLUS_COUNT,
+			(
+				SELECT
+					COUNT(0)
+				FROM
+					osmp_agent coa
+				WHERE
+					coa.AGENT_PARENT_USER_ID = oa.AGENT_USER_ID
+				AND coa.AGENT_RULE_ID = oar.AGENT_RULE_ID
+				AND coa.AGENT_STATUS = 1
+			) AS RECOMMEND_COUNT,
+			(
+				SELECT
+					count(ru.USER_ID)
+				FROM
+					pisp_user ru
+				WHERE
+					oa.AGENT_ACCOUNT_NAME = ru.RECOMMEND_CODE
+				AND ru.USER_TYPE = 1
+			) AS RECOMMEND_DRIVER_COUNT,
+			(
+				SELECT
+					COUNT(0)
+				FROM
+					pisp_publish_info ppi
+				WHERE
+					ppi.USER_ID = oa.AGENT_USER_ID
+				AND ppi.INFO_TYPE = 1
+			) AS PUBLISH_GOODS_SOURCE_COUNT,
+			(
+				SELECT
+					COUNT(0)
+				FROM
+					pisp_publish_info ppi
+				WHERE
+					ppi.USER_ID = oa.AGENT_USER_ID
+				AND ppi.INFO_TYPE = 2
+			) AS PUBLISH_CAR_SOURCE_COUNT
+		FROM
+			osmp_agent oa
+		LEFT JOIN pisp_user pu ON oa.AGENT_USER_ID = pu.USER_ID
+		LEFT JOIN pisp_euser pe ON pu.USER_ID = pe.USER_ID
+		LEFT JOIN osmp_agent_rule oar ON oa.AGENT_RULE_ID = oar.AGENT_RULE_ID
+		WHERE oa.AGENT_ACCOUNT_NAME = #{agentAccountName} limit 1
+	</select>
+
+	<insert id="addAgentInfo" parameterType="Agent">
+		INSERT INTO osmp_agent (
+			AGENT_USER_ID,
+			AGENT_ACCOUNT_NAME,
+			AGENT_PARENT_USER_ID,
+			AGENT_RULE_ID,
+			AGENT_CODE,
+			AGENT_STATUS,
+			CREATE_USER,
+			CREATE_TIME
+		)
+		VALUES (
+			#{agentUserId},
+			#{agentAccountName},
+			#{agentParentUserId},
+			#{agentRuleId},
+			#{agentCode},
+			#{agentStatus},
+			#{createUser},
+			#{createTime}
+		)
+	</insert>
+
+	<update id="updateAgentInfo" parameterType="Agent">
+		UPDATE osmp_agent oa
+		SET 
+			oa.AGENT_CODE = #{agentCode},
+			oa.AGENT_PARENT_USER_ID = #{agentParentUserId},
+		 	oa.AGENT_RULE_ID = #{agentRuleId},
+		 	oa.AGENT_STATUS = #{agentStatus},
+		 	oa.UPDATE_USER = #{updateUser},
+		 	oa.UPDATE_TIME = #{updateTime}
+		WHERE
+			oa.AGENT_USER_ID = #{agentUserId}
+	</update>
+	
+	<select id="queryChildAgent" parameterType="java.lang.Integer" resultMap="agentMap">
+		SELECT
+			oa.AGENT_ID,
+			oa.AGENT_USER_ID,
+			oa.AGENT_ACCOUNT_NAME,
+			oa.AGENT_PARENT_USER_ID,
+			oa.AGENT_RULE_ID,
+			oa.AGENT_CODE,
+			oa.AGENT_STATUS
+		FROM
+			osmp_agent oa
+		WHERE
+			oa.AGENT_PARENT_USER_ID = #{agentParentUserId} AND oa.AGENT_STATUS = 1
+	</select>
+	
+	<select id="getAgentRuleByRuleName" parameterType="string" resultType="java.lang.Integer">
+		  SELECT count(0) from osmp_agent_rule oar
+		<where>
+			<if test="ruleName != null and ruleName != ''">oar.AGENT_RULE_NAME = #{ruleName}</if>
+		</where>
+	</select>
+	
+	<select id="getNumByAgentRuleId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+		SELECT COUNT(0) FROM osmp_agent oa 
+		<where>
+			  oa.AGENT_STATUS = 1
+			<if test="agentRuleId != null">AND oa.AGENT_RULE_ID = #{agentRuleId}</if>
+		</where>
+	</select>
+	
+	<select id="checkGeneralExistsByAgentRule" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+		SELECT
+			COUNT(0)
+		FROM
+			osmp_agent oa
+		WHERE
+			oa.AGENT_RULE_ID = #{agentRuleId}
+		AND oa.AGENT_USER_ID != #{agentUserId}
+		AND oa.AGENT_STATUS = 1
+		AND oa.AGENT_PARENT_USER_ID = 0
+	
+	</select>
+	
+	
+	
+	<select id="queryAllAgentInfos" resultMap="agentVOMap">
+		  SELECT oa.AGENT_USER_ID,oa.AGENT_PARENT_USER_ID,oa.AGENT_ACCOUNT_NAME from osmp_agent oa where oa.AGENT_STATUS = 1
+	</select>
+	
+	<select id="queryUserToSubAccount" parameterType="AgentQuery" resultMap="agentVOMap">
+	<if test="agentAccountName ==null or '' == agentAccountName">
+			SELECT
+			oa.AGENT_ACCOUNT_NAME,
+			ppc.PAY_ACCOUNT,
+			ppc.REAL_NAME,
+			pu.USER_TYPE,
+			pu.IS_AGENT,
+			pe.BELONG_AREA,
+			ppu.LIVE_PLACE,
+			oa.AGENT_PARENT_USER_ID,
+			pu.USER_ID
+			FROM
+			pisp_user pu
+			INNER JOIN pisp_pay_channel ppc ON ppc.USER_ID = pu.USER_ID
+			LEFT JOIN osmp_agent oa ON oa.AGENT_USER_ID = ppc.USER_ID
+			LEFT JOIN pisp_puser ppu ON ppu.USER_ID = ppc.USER_ID
+			LEFT JOIN pisp_euser pe ON pe.USER_ID = ppc.USER_ID
+			<where> 
+			ppc.USE_STATUS = 1 AND ppc.CHECK_STATUS = 1 AND ppc.CHANNEL_TYPE = 1
+			<!-- <if test="belongPCode != null">AND pu.REGISTER_P_CODE = #{belongPCode}</if>
+			<if test="belongCCode != null">AND pu.REGISTER_C_CODE = #{belongCCode}</if>
+			<if test="belongTCode != null">AND pu.REGISTER_T_CODE = #{belongTCode}</if> -->
+			<if test="isAgent != null">AND pu.IS_AGENT = #{isAgent}</if>
+			<if test="agentType != null and agentType ==0 ">AND oa.AGENT_PARENT_USER_ID = 0 </if>
+			<if test="agentType != null and agentType ==1 ">AND oa.AGENT_PARENT_USER_ID > 0 </if>
+			<if test="userType != null">AND pu.USER_TYPE = #{userType}</if>
+			<if test="belongArea !=null and belongArea !='' ">
+			    AND (ppu.LIVE_PLACE like CONCAT('%',#{belongArea},'%') or pe.BELONG_AREA like CONCAT('%',#{belongArea},'%'))
+		    </if>
+			
+			<if test="list != null">
+			     AND pu.USER_ID not in
+				<foreach item="item" index="index" collection="list"  open="(" separator="," close=")">
+			               		#{item}
+			    </foreach>
+			</if>
+		    
+			</where>
+	</if>
+	<if test="agentAccountName !=null and '' != agentAccountName">
+			SELECT
+			oag.AGENT_ACCOUNT_NAME,
+			ppc.PAY_ACCOUNT,
+			ppc.REAL_NAME,
+			pe.BELONG_AREA,
+			oag.AGENT_PARENT_USER_ID,
+			pe.USER_ID
+			FROM
+			osmp_agent oag
+			LEFT JOIN pisp_euser pe ON pe.USER_ID = oag.AGENT_USER_ID
+			LEFT JOIN pisp_pay_channel ppc ON ppc.USER_ID = oag.AGENT_USER_ID
+			<where>
+				ppc.USE_STATUS = 1 AND (ppc.CHECK_STATUS = 1 AND ppc.CHANNEL_TYPE = 1
+				
+				<if test="agentType != null and agentType == 1">
+				AND oag.AGENT_PARENT_USER_ID = (
+				SELECT
+				oa.AGENT_USER_ID
+				FROM
+				osmp_agent oa
+				WHERE
+				oa.AGENT_ACCOUNT_NAME = #{agentAccountName}
+				)
+				</if>
+				
+				<if test="agentType != null and agentType ==0 ">AND oag.AGENT_PARENT_USER_ID = 0 </if>
+				
+				<if test="belongPCode != null">AND pe.BELONG_P_CODE = #{belongPCode}</if>
+				<if test="belongCCode != null">AND pe.BELONG_C_CODE = #{belongCCode}</if>
+				<if test="belongTCode != null">AND pe.BELONG_T_CODE = #{belongTCode}</if>
+				<if test="userIds != null"> AND oag.AGENT_USER_ID not in(#{userIds})</if>
+					AND oag.AGENT_USER_ID = (
+					SELECT
+					oa.AGENT_USER_ID
+					FROM
+					osmp_agent oa
+					WHERE
+					oa.AGENT_ACCOUNT_NAME = #{agentAccountName}
+					))
+			</where>
+	</if>
+	</select>
+	
+	
+	
+	<select id="queryAgentMothInfo" resultMap="agentVOMap" parameterType="AgentQuery">
+   select o.AGENT_ACCOUNT_NAME,o.AGENT_USER_ID,p.GET_SCORE_TIME,sum(IFNULL(P.SCORE_VALUE,0))  from pisp_user_score_rec p 
+    left join osmp_agent o on p.USER_ID=o.AGENT_USER_ID  where o.AGENT_PARENT_USER_ID = 0 and date_format(p.GET_SCORE_TIME,'%Y-%m') ='2016-09'
+	</select>
+</mapper>

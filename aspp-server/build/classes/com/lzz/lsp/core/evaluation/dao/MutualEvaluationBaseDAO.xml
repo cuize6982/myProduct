@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.evaluation.dao.MutualEvaluationBaseDAO">
+	<resultMap type="MutualEvaluation" id="evaluationMapper">
+		<id property="evaluateId" column="EVALUATE_ID"/>
+		<result property="evaluateFrom" column="EVALUATE_FROM"/>
+		<result property="evaluateTo" column="EVALUATE_TO"/>
+		<result property="content" column="CONTENT"/>
+		<result property="star" column="STAR"/>
+		<result property="createTime" column="CREATE_TIME"/>
+		<result property="waybillNo" column="WAYBILL_NO"/>
+		<result property="isDelete" column="IS_DELETE"/>
+		<result property="type" column="TYPE"/>
+	</resultMap>
+	
+	 <select id="queryMutualEvaluations" parameterType="MutualEvaluation" resultMap="evaluationMapper">
+		SELECT
+			*
+		FROM
+			pisp_mutual_evaluation me
+		WHERE 1 = 1
+		<if test="evaluateFrom != null and evaluateFrom != ''">
+			AND me.EVALUATE_FROM = #{evaluateFrom}
+		</if>
+		<if test="evaluateTo != null and evaluateTo != ''">
+			AND me.EVALUATE_TO = #{evaluateTo}
+		</if>
+		<if test="waybillNo != null and waybillNo != ''">
+			AND me.WAYBILL_NO = #{waybillNo}
+		</if>
+		<if test="type != null and type != ''">
+			AND me.TYPE = #{type}
+		</if>
+	</select>
+	
+	<insert id="saveMutualEvaluation" parameterType="MutualEvaluation"  useGeneratedKeys="true" keyProperty="evaluateId" keyColumn="EVALUATE_ID" >
+  
+		INSERT INTO pisp_mutual_evaluation (
+			EVALUATE_FROM,
+			EVALUATE_TO,
+			CONTENT,
+			STAR,
+			CREATE_TIME,
+			WAYBILL_NO,
+			TYPE	
+		)
+		VALUES
+		(
+			#{evaluateFrom},
+			#{evaluateTo},
+			#{content},
+			#{star},
+			#{createTime},
+			#{waybillNo},
+			#{type}
+		)
+		
+		 <selectKey keyProperty="evaluateId" resultType="int" order="AFTER">
+            SELECT LAST_INSERT_ID();
+         </selectKey>
+		
+	</insert>
+	
+	<update id="updateMutualEvaluation" parameterType="MutualEvaluation">
+		UPDATE pisp_mutual_evaluation me
+		<set>
+			<if test="isDelete !=null and isDelete !=''">me.IS_DELETE =#{isDelete,jdbcType=VARCHAR},</if>
+		</set>
+		 where me.EVALUATE_ID = #{evaluateId,jdbcType=INTEGER}
+	</update>
+	
+	
+</mapper>

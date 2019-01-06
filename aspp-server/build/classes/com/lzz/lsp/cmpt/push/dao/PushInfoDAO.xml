@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.cmpt.push.dao.PushInfoDAO">
+	<resultMap type="PushInfo" id="pushInfoMap">
+		<result column="USER_ID" property="userId" />
+		<result column="APP_CODE" property="appCode" />
+		<result column="APP_SYSTEM" property="appSystem" />
+		<result column="CID" property="cId" />
+		<result column="LOGIN_TIME" property="loginTime" />
+	</resultMap>
+
+	<insert id="addPushInfo" parameterType="PushInfo">
+		INSERT INTO pisp_push_info (
+				USER_ID,
+				APP_CODE,
+				APP_SYSTEM,
+				CID,
+				LOGIN_TIME
+			)VALUES
+			(
+				#{userId},
+				#{appCode},
+				#{appSystem},
+				#{cId},
+				#{loginTime}
+			)
+	</insert>
+	
+	<update id="upDatePushInfo" parameterType="PushInfo">
+		UPDATE pisp_push_info ppi  SET
+		<if test="null != appCode and '' != appCode">ppi.APP_CODE = #{appCode},</if>
+		<if test="null != appSystem and '' != appSystem">ppi.APP_SYSTEM = #{appSystem},</if>
+		ppi.CID = #{cId}
+		WHERE ppi.USER_ID = #{userId}
+	</update>
+	
+	<select id="queryPushInfoByUserId" parameterType="java.lang.Integer" resultMap="pushInfoMap">
+		SELECT * FROM pisp_push_info ppi WHERE ppi.USER_ID = #{userId}
+	</select>
+	
+	<select id="queryPushInfosByCid" parameterType="String" resultMap="pushInfoMap">
+		SELECT * FROM pisp_push_info ppi WHERE ppi.CID = #{cId}
+	</select>
+	
+	
+</mapper>

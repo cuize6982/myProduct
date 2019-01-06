@@ -1,0 +1,695 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.waybill.dao.WaybillBaseDAO">
+	<resultMap type="WaybillVO" id="waybillVOMap" >
+		<result property="publishId" column="PUBLISH_ID"/>
+		<result property="infoId" column="INFO_ID"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="waybillId" column="WAYBILL_ID"/>
+		<result property="fromPlace" column="FROM_PLACE"/>
+		<result property="toPlace" column="TO_PLACE"/>
+		<result property="fromPCode" column="FROM_P_CODE"/>
+		<result property="toPCode" column="TO_P_CODE"/>
+		<result property="infoContent" column="INFO_CONTENT"/>
+		<result property="waybillNo" column="WAYBILL_NO"/>
+		<result property="haulier" column="HAULIER"/>
+		<result property="haulierName" column="HAULIER_NAME"/>
+		<result property="haulierPhone" column="HAULIER_PHONE"/>
+		<result property="status" column="STATUS"/>
+		<result property="transactionTime" column="TRANSACTION_TIME"/>
+		<result property="createTime" column="CREATE_TIME"/>
+		<result property="drivers" column="DRIVERS"/>
+		<result property="driversPhone" column="DRIVERS_PHONE"/>
+		<result property="locationName" column="LOCATION_NAME"/>
+		<result property="locateTime" column="LOCATE_TIME"/>
+		<result property="latitude" column="LATITUDE"/>
+		<result property="longitude" column="LONGITUDE"/>
+		<result property="isAuth" column="IS_AUTH"/>
+		<result property="goodsClass" column="GOODS_CLASS"/>
+		<result property="totalNum" column="TOTAL_NUM"/>
+		
+		<result property="weight" column="WEIGHT"/>
+		<result property="weightUnit" column="WEIGHT_UNIT"/>
+		<result property="volume" column="VOLUME"/>
+		<result property="volumeUnit" column="VOLUME_UNIT"/>
+		<result property="carLengthNeed" column="CAR_LENGTH_NEED"/>
+		<result property="carTypeNeed" column="CAR_TYPE_NEED"/>
+		<result property="carLengthNeedName" column="CAR_LENGTH_NEED_NAME"/>
+		<result property="carTypeNeedName" column="CAR_TYPE_NEED_NAME"/>
+		<result property="price" column="PRICE"/>
+		<result property="priceUnit" column="PRICE_UNIT"/>
+		<result property="linkman" column="LINKMAN"/>
+		<result property="linkMobile1" column="LINK_MOBILE1"/>
+		<result property="linkMobile2" column="LINK_MOBILE2"/>
+		<result property="linkPhone" column="LINK_PHONE"/>
+		<result property="publishTime" column="PUBLISH_TIME"/>
+		<result property="enterpriseName" column="ENTERPRISE_NAME"/>
+		<result property="sendGoodsDate" column="SEND_GOODS_DATE"/>
+		<result property="loadDate" column="LOAD_DATE"/>
+		<result property="goodsName" column="GOODS_NAME"/>
+		<result property="goodsType" column="GOODS_TYPE"/>
+		<result property="isStruct" column="IS_STRUCT"/>
+		<result property="address" column="ADDRESS"/>
+		
+		<result property="sendGoodsPerson" column="SEND_GOODS_PERSON"/>
+		<result property="sendGoodsMobile" column="SEND_GOODS_MOBILE"/>
+		<result property="sendGoodsAddress" column="SEND_GOODS_ADDRESS"/>
+		<result property="sendGoodsUnit" column="SEND_GOODS_UNIT"/>
+		<result property="receiveGoodsPerson" column="RECEIVE_GOODS_PERSON"/>
+		<result property="receiveGoodsMobile" column="RECEIVE_GOODS_MOBILE"/>
+		<result property="receiveGoodsAddress" column="RECEIVE_GOODS_ADDRESS"/>
+		<result property="receiveGoodsUnit" column="RECEIVE_GOODS_UNIT"/>
+		<result property="requireService" column="REQUIRE_SERVICE"/>
+		<result property="reMark" column="REMARK"/>
+		<result property="shipperName" column="SHIPPER_NAME"/>
+		<result property="shipperPhone" column="SHIPPER_PHONE"/>
+		<result property="shipperUnit" column="SHIPPER_UNIT"/>
+		<result property="processType" column="PROCESS_TYPE"/>
+		<result property="mark" column="MARK"/>
+		<result property="protocolPhoto" column="PROTOCOL_PHOTO"/>
+		<result property="placeKilometre" column="PLACE_KILOMETRE"/>
+		<result property="waybillType" column="WAYBILL_TYPE"/>
+	</resultMap>
+	
+	<select id="getRepeatWaybill" parameterType="java.util.Map" resultMap="waybillVOMap">
+		SELECT 
+			w.WAYBILL_NO
+		FROM 
+			pisp_waybill w 
+		WHERE 
+			w.INFO_TYPE = 1 
+		<if test="infoId != null">AND w.INFO_ID = #{infoId} </if>	
+		<if test="userId != null">AND w.HAULIER = #{userId} </if>	
+		<if test="status != null">AND w.STATUS = #{status}</if>	
+	</select>
+	
+	<!-- 保存运单信息 -->
+	<insert id="saveWaybill" parameterType="Waybill">
+		insert into pisp_waybill(
+				WAYBILL_NO,INFO_ID,SHIPPER_UNIT,
+				INFO_TYPE,PROCESS_TYPE,SHIPPER,HAULIER,SHIPPER_NAME,SHIPPER_PHONE,HAULIER_NAME,HAULIER_PHONE,
+				PROTOCOL_PHOTO,STATUS,SEND_GOODS_DATE,
+				REQUIRE_SERVICE,REMARK,SEND_GOODS_UNIT,
+				SEND_GOODS_PERSON,SEND_GOODS_MOBILE,
+				SEND_GOODS_ADDRESS,RECEIVE_GOODS_UNIT,RECEIVE_GOODS_PERSON,
+				RECEIVE_GOODS_MOBILE,RECEIVE_GOODS_ADDRESS,
+				TRANSACTION_TIME,USER_ID,CREATE_USER,CREATE_TIME,
+				FROM_PLACE,FROM_P_CODE,FROM_C_CODE,FROM_T_CODE,
+				TO_PLACE,TO_P_CODE,TO_C_CODE,TO_T_CODE,INFO_CONTENT
+				)
+		values(#{waybillNo},#{infoId},#{shipperUnit,jdbcType=VARCHAR},
+		       #{infoType},#{processType},#{shipper},
+		       #{haulier},#{shipperName,jdbcType=VARCHAR},#{shipperPhone,jdbcType=VARCHAR},#{haulierName,jdbcType=VARCHAR},#{haulierPhone,jdbcType=VARCHAR},#{protocolPhoto},#{status},
+		       #{sendGoodsDate},#{requireService},#{remark},
+		       #{sendGoodsUnit},#{sendGoodsPerson},#{sendGoodsMobile},
+		       #{sendGoodsAddress},#{receiveGoodsUnit},
+		       #{receiveGoodsPerson},#{receiveGoodsMobile},
+		       #{receiveGoodsAddress},#{transactionTime},#{userId},
+		       #{createUser},#{createTime},
+		       #{fromPlace},#{fromPCode},#{fromCCode},#{fromTCode},
+		       #{toPlace},#{toPCode},#{toCCode},#{toTCode},#{infoContent}
+		       )
+	</insert>
+	
+	<select id="queryCompletedWaybills" parameterType="WaybillQuery" resultMap="waybillVOMap">
+		SELECT
+			w.WAYBILL_ID,
+			w.WAYBILL_NO,
+			w.FROM_PLACE,
+			w.TO_PLACE,
+			w.`STATUS`,
+			w.CREATE_TIME,
+			w.SEND_GOODS_DATE,
+			w.PROCESS_TYPE,
+			w.REMARK,
+			w.INFO_ID,
+			w.SEND_GOODS_UNIT,
+			w.SEND_GOODS_PERSON,
+			w.SEND_GOODS_MOBILE,
+			w.SHIPPER_NAME,
+			w.SHIPPER_PHONE,
+			w.SHIPPER_UNIT,
+			w.HAULIER_NAME,
+			w.HAULIER_PHONE,
+			pi.PUBLISH_ID
+		FROM
+			pisp_waybill w
+		LEFT JOIN pisp_publish_info pi ON pi.INFO_TYPE = w.INFO_TYPE
+		AND pi.INFO_ID = w.INFO_ID
+		<where>
+			<if test="haulier != null"> AND w.HAULIER = #{haulier}</if>
+			<if test="shipper != null"> AND w.SHIPPER = #{shipper}</if>
+			<if test="userId != null"> AND (w.SHIPPER = #{userId} OR w.HAULIER = #{userId})</if>
+			<if test="status != null"> AND w.STATUS = #{status}</if>
+			<if test="waybillNo != null and waybillNo != ''"> AND w.WAYBILL_NO like '%${waybillNo}%'</if>
+			<if test="goodsName != null and goodsName != ''"> AND EXISTS
+			(SELECT 1 FROM pisp_waybill_goods wg WHERE w.WAYBILL_NO = wg.WAYBILL_NO
+			AND wg.GOODS_NAME LIKE '%${goodsName}%')
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryDriverWaybillInfos" parameterType="WaybillQuery" resultMap="waybillVOMap">
+		SELECT
+			pwb.*,
+			pwg.PRICE,
+			pricedict.VAL_NAME as PRICE_UNIT,
+			ppe.USER_TYPE,
+			ppe.REAL_NAME,
+			ppe.NICKNAME,
+			ppe.MOBILE_PHONE
+		FROM pisp_waybill pwb
+		LEFT JOIN pisp_waybill_goods pwg on pwg.WAYBILL_NO = pwb.WAYBILL_NO
+		LEFT JOIN pisp_v_user_puser_euser ppe ON pwb.USER_ID = ppe.USER_ID
+		LEFT JOIN pisp_dict_val pricedict ON pricedict.DICT_CODE = 'TRANSPORT_PRICE_UNIT' AND pricedict.VAL_CODE = pwg.PRICE_UNIT
+		<where>
+			<if test="infoId != null">
+				and pwb.INFO_ID = #{infoId}
+			</if>
+			<if test="infoType != null">
+				and pwb.INFO_TYPE = #{infoType}
+			</if>
+		</where>
+	</select>
+	
+	<select id="getPublishCompleteWaybillNum" parameterType="java.util.Map" resultType="java.lang.Integer">
+		SELECT COUNT(0) from pisp_waybill w
+		INNER JOIN pisp_publish_info pi ON pi.INFO_ID = w.INFO_ID AND pi.INFO_TYPE = w.INFO_TYPE
+		<if test="sourceType != null and sourceType !=''">INNER JOIN pisp_car_source cs ON w.INFO_ID = cs.CAR_SOURCE_ID</if>
+		<where>
+			<if test="infoType != null"> AND w.INFO_TYPE = #{infoType}</if>
+			<if test="sourceType != null and sourceType !=''"> AND cs.SOURCE_TYPE = #{sourceType}</if>
+			<if test="userId != null"> AND pi.USER_ID = #{userId}</if>
+			<if test="status != null"> AND w.STATUS = #{status}</if>
+		</where>
+	</select>
+	
+	<select id="getWaybillNum" parameterType="java.util.Map" resultType="java.lang.Integer">
+		SELECT COUNT(0) from pisp_waybill w
+		<where>
+			<if test="userId != null">
+				AND (w.SHIPPER = #{userId} OR w.HAULIER = #{userId} )
+			</if>
+			<if test="shipper != null">
+				AND w.SHIPPER = #{shipper}
+			</if>
+			<if test="haulier != null">
+				AND w.HAULIER = #{haulier}
+			</if>
+			<if test="status != null">
+				AND w.STATUS = #{status}
+			</if>
+			<if test="currentDate != null and currentDate !='' ">
+				AND date_format(w.TRANSACTION_TIME,'%Y-%m-%d') = #{currentDate}
+			</if>
+			<if test="createUserId != null">
+				AND w.USER_ID = #{createUserId}
+			</if>
+			<if test="createDate != null and createDate != ''">
+				AND date_format(w.CREATE_TIME,'%Y-%m-%d') = #{createDate}
+			</if>
+			<if test="idenFlag != null and processType != null">
+				<if test="idenFlag == 1"> AND w.PROCESS_TYPE = #{processType}</if>
+				<if test="idenFlag == 2"> AND w.PROCESS_TYPE != #{processType}</if>
+			</if>
+		</where>
+	</select>
+	
+	<select id="getProcessType" parameterType="String" resultType="java.lang.Integer">
+		SELECT w.PROCESS_TYPE 
+		FROM pisp_waybill w 
+		WHERE w.WAYBILL_NO = #{waybillNo}
+	</select>
+	
+	<select id="queryGoodsOwnerCompletedWaybills" parameterType="WaybillQuery" resultMap="waybillVOMap">
+		SELECT
+			w.WAYBILL_ID,
+			w.WAYBILL_NO,
+			w.HAULIER,
+			w.HAULIER_NAME,
+			w.HAULIER_PHONE,
+			w.SHIPPER,
+			w.SHIPPER_NAME,
+			w.SHIPPER_PHONE,
+			w.INFO_CONTENT,
+			w.PROCESS_TYPE,
+			w.CREATE_TIME,
+			w.PROTOCOL_PHOTO
+		FROM
+			pisp_waybill w
+		WHERE
+			w.`STATUS` = 99
+		AND w.PROCESS_TYPE != 1
+		<if test="shipper != null">AND w.SHIPPER = #{shipper}</if>
+		<if test="haulier != null">AND w.HAULIER = #{haulier}</if>
+		<if test="waybillNo != null and waybillNo != ''">AND w.WAYBILL_NO LIKE '%${waybillNo}%'</if>
+		ORDER BY w.CREATE_TIME DESC
+	</select>
+	
+	<select id="queryUnconfirmedWaybillInfo" parameterType="WaybillQuery" resultMap="waybillVOMap">
+		SELECT
+			*
+		FROM
+			(
+				SELECT
+					pi.PUBLISH_ID,
+					pi.INFO_ID,
+					gs.FROM_PLACE,
+					gs.TO_PLACE,
+					gs.INFO_CONTENT,
+					gs.GOODS_CLASS,
+					pi.PUBLISH_TIME,
+					(
+						SELECT
+							COUNT(w.WAYBILL_NO)
+						FROM
+							pisp_waybill w
+						WHERE
+							w.INFO_ID = pi.INFO_ID
+						AND w.INFO_TYPE = pi.INFO_TYPE
+						AND w. STATUS != 99
+						AND w.PROCESS_TYPE = 1
+					) AS TOTAL_NUM
+				FROM
+					pisp_publish_info pi
+				LEFT JOIN pisp_goods_source gs ON pi.INFO_ID = gs.GOODS_SOURCE_ID
+				<where>
+					<if test="infoType != null"> AND pi.INFO_TYPE = #{infoType}</if>
+					<if test="userId != null"> AND pi.USER_ID = #{userId}</if>
+					
+					<if test="fromPCode != null and fromPCode !=0 ">
+						and  gs.FROM_P_CODE = #{fromPCode}
+					</if>
+					<if test="fromCCode != null and fromCCode !=0">
+						and  gs.FROM_C_CODE = #{fromCCode}
+					</if>
+					<if test="fromTCode != null and fromTCode !=0">
+						and  gs.FROM_T_CODE = #{fromTCode}
+					</if>
+					<if test="toPCode != null and toPCode !=0">
+						 and gs.TO_P_CODE = #{toPCode}
+					</if>
+					<if test="toCCode != null and toCCode !=0">
+						 and gs.TO_C_CODE = #{toCCode}
+					</if>
+					<if test="toTCode != null and toTCode !=0">
+						 and gs.TO_T_CODE = #{toTCode}
+					</if>
+				</where>
+			) t
+		WHERE
+			t.TOTAL_NUM > 0
+		ORDER BY
+			t.PUBLISH_TIME DESC
+	</select>
+	
+	
+	<update id="updateWaybillInfo" parameterType="java.util.Map">
+		<if test="(infoId != null and infoType!=null) or (waybillNo != null) ">
+			update pisp_waybill pwb 
+			<set>
+				<if test="infoContent != null and infoContent!='' ">
+					pwb.INFO_CONTENT=#{infoContent},
+				</if>
+				<if test="protocolPhoto != null"> pwb.PROTOCOL_PHOTO=#{protocolPhoto},</if>
+				<if test="status != null"> pwb.STATUS=#{status},</if>
+				<if test="transactionTime != null"> pwb.TRANSACTION_TIME = #{transactionTime},</if>
+				<if test="updateUser != null and updateUser != ''"> pwb.UPDATE_USER = #{updateUser},</if>
+				<if test="updateTime != null"> pwb.UPDATE_TIME = #{updateTime},</if>
+			</set>
+			<where>
+				<if test="infoId != null"> AND pwb.INFO_ID = #{infoId}</if>
+				<if test="infoType != null"> AND pwb.INFO_TYPE =#{infoType}</if>
+				<if test="waybillNo != null and waybillNo != ''">
+					AND pwb.WAYBILL_NO = #{waybillNo}
+				</if>
+			</where>
+		</if>
+	</update>
+	
+	<select id="queryAppCompletedWaybill" parameterType="WaybillQuery" resultMap="waybillVOMap">
+		SELECT 
+			pwb.INFO_CONTENT,
+			pwb.WAYBILL_ID,
+			pwb.WAYBILL_NO,
+			pwb.HAULIER,
+			pwb.HAULIER_NAME,
+			pwb.HAULIER_PHONE,
+			pwb.PROTOCOL_PHOTO,
+			l.LOCATION_NAME,
+			l.LATITUDE,
+			l.LONGITUDE,
+			l.LOCATE_TIME,
+			gs.GOODS_CLASS,
+			gs.FROM_PLACE,
+			gs.TO_PLACE,
+			gs.WEIGHT,
+			weightdict.VAL_NAME AS WEIGHT_UNIT,
+			gs.VOLUME,
+			volumedict.VAL_NAME AS VOLUME_UNIT,
+			gs.CAR_LENGTH_NEED,
+			gs.CAR_LENGTH_NEED_NAME AS CAR_LENGTH_NEED_NAME,
+			gs.CAR_TYPE_NEED_NAME AS CAR_TYPE_NEED_NAME,
+			gs.PRICE,
+			pricedict.VAL_NAME AS PRICE_UNIT,
+			gs.LINKMAN,
+			gs.LINK_MOBILE1,
+			gs.LINK_MOBILE2,
+			gs.LINK_PHONE,
+			gs.LOAD_DATE,
+			gs.GOODS_NAME,
+			gs.PLACE_KILOMETRE,
+			dictType.VAL_NAME AS GOODS_TYPE,
+			gs.MARK,
+			pub.PUBLISH_TIME,
+			pwb.CREATE_TIME,
+			pwb.SEND_GOODS_DATE,
+			e.ENTERPRISE_NAME AS ENTERPRISE_NAME,
+			pub.IS_STRUCT,
+			e.ADDRESS
+		FROM pisp_waybill pwb 
+		LEFT JOIN pisp_publish_info pub ON pub.INFO_ID = pwb.INFO_ID AND pub.INFO_TYPE = pwb.INFO_TYPE
+		LEFT JOIN pisp_goods_source gs ON gs.GOODS_SOURCE_ID = pwb.INFO_ID AND pwb.INFO_TYPE = pub.INFO_TYPE
+		LEFT JOIN pisp_driver_location l ON l.DRIVER = pwb.HAULIER
+		LEFT JOIN pisp_user u ON u.USER_ID = pub.USER_ID
+		LEFT JOIN pisp_euser e ON e.USER_ID = u.USER_ID
+		LEFT JOIN pisp_dict_val weightdict ON weightdict.dict_code = 'GOODS_WEIGHT_UNIT' AND weightdict.val_code = gs.WEIGHT_UNIT
+		LEFT JOIN pisp_dict_val volumedict ON volumedict.dict_code = 'GOODS_WEIGHT_UNIT' AND volumedict.val_code = gs.VOLUME_UNIT
+		LEFT JOIN pisp_dict_val pricedict ON pricedict.dict_code = 'TRANSPORT_PRICE_UNIT' AND pricedict.val_code = gs.PRICE_UNIT
+		LEFT JOIN pisp_dict_val dictType ON dictType.dict_code = 'GOODS_TYPE' AND dictType.val_code = gs.goods_type
+		<where>
+			<if test="status != null">
+				AND pwb.STATUS = #{status}
+			</if>
+			<if test="haulier != null"> AND pwb.HAULIER = #{haulier}</if>
+			<if test="shipper != null"> AND pwb.SHIPPER = #{shipper}</if>
+			<if test="processType != null"> AND pwb.PROCESS_TYPE = #{processType}</if>
+		</where>
+		ORDER BY pwb.TRANSACTION_TIME DESC
+	</select>
+	
+	
+	<select id="queryPcCompletedWaybill" parameterType="WaybillQuery" resultMap="waybillVOMap">
+		SELECT 
+			pwb.INFO_CONTENT,
+			pwb.WAYBILL_ID,
+			pwb.WAYBILL_NO,
+			pwb.HAULIER,
+			pwb.HAULIER_NAME,
+			pwb.HAULIER_PHONE,
+			pwb.FROM_PLACE,
+			pwb.TO_PLACE,
+			l.LOCATION_NAME,
+			l.LATITUDE,
+			l.LONGITUDE,
+			l.LOCATE_TIME,
+			gs.GOODS_CLASS,
+			pwb.CREATE_TIME,
+			pwb.SHIPPER_NAME,
+			pwb.SHIPPER_PHONE,
+			pub.PUBLISH_ID,
+			pwb.PROTOCOL_PHOTO,
+			gs.PLACE_KILOMETRE
+		FROM pisp_waybill pwb 
+		LEFT JOIN pisp_driver_location l ON l.DRIVER = pwb.HAULIER
+		LEFT JOIN pisp_publish_info pub ON pub.INFO_ID = pwb.INFO_ID AND pub.INFO_TYPE = pwb.INFO_TYPE
+		LEFT JOIN pisp_goods_source gs ON gs.GOODS_SOURCE_ID = pwb.INFO_ID AND pwb.INFO_TYPE = 1
+		<where>
+			<if test="status != null">
+				AND pwb.STATUS = #{status}
+			</if>
+			<if test="haulier != null"> AND pwb.HAULIER = #{haulier}</if>
+			<if test="shipper != null"> AND pwb.SHIPPER = #{shipper}</if>
+			<if test="processType != null"> AND pwb.PROCESS_TYPE = #{processType}</if>
+			
+				<if test="fromPCode != null and fromPCode !=0 ">
+					and  gs.FROM_P_CODE = #{fromPCode}
+				</if>
+				<if test="fromCCode != null and fromCCode !=0">
+					and  gs.FROM_C_CODE = #{fromCCode}
+				</if>
+				<if test="fromTCode != null and fromTCode !=0">
+					and  gs.FROM_T_CODE = #{fromTCode}
+				</if>
+				<if test="toPCode != null and toPCode !=0">
+					 and gs.TO_P_CODE = #{toPCode}
+				</if>
+				<if test="toCCode != null and toCCode !=0">
+					 and gs.TO_C_CODE = #{toCCode}
+				</if>
+				<if test="toTCode != null and toTCode !=0">
+					 and gs.TO_T_CODE = #{toTCode}
+				</if>
+		</where>
+		ORDER BY pwb.TRANSACTION_TIME DESC
+	</select>
+	
+	<select id="queryWaybillDriverCarInfo" parameterType="java.util.Map" resultMap="com.lzz.lsp.core.car.dao.CarBaseDAO.carVOMap">
+		SELECT
+			c.CAR_ID,
+			c.CAR_NO,
+			c.CAR_PHOTO,
+			c.CAR_TYPE,
+			dv1.VAL_NAME AS CAR_LENGTH_NAME,
+			dv2.VAL_NAME AS CAR_TYPE_NAME,
+			c.LOAD_WEIGHT
+		FROM pisp_waybill_car pwc
+		LEFT JOIN pisp_car c ON pwc.CAR_ID = c.CAR_ID
+		LEFT JOIN pisp_dict_val dv1 ON dv1.VAL_CODE = c.CAR_LENGTH AND dv1.DICT_CODE='CAR_LENGTH'
+		LEFT JOIN pisp_dict_val dv2 ON dv2.VAL_CODE = c.CAR_TYPE AND dv2.DICT_CODE='CAR_TYPE'
+		<where>
+			<if test="waybillNo != null and waybillNo !='' ">
+				AND pwc.WAYBILL_NO = #{waybillNo}
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryAppDriverGrabWaybill" parameterType="WaybillQuery" resultMap="waybillVOMap">
+			SELECT
+				w.WAYBILL_ID,
+				w.WAYBILL_NO,
+				w.HAULIER,
+				w.HAULIER_NAME,
+				w.HAULIER_PHONE,
+				w.CREATE_TIME,
+				w.STATUS,
+				w.INFO_CONTENT,
+				u.IS_AUTH,
+				gs.FROM_PLACE,
+				gs.TO_PLACE,
+				gs.WEIGHT,
+				weightdict.VAL_NAME AS WEIGHT_UNIT,
+				gs.VOLUME,
+				volumedict.VAL_NAME AS VOLUME_UNIT,
+				gs.CAR_LENGTH_NEED,
+				gs.CAR_LENGTH_NEED_NAME AS CAR_LENGTH_NEED_NAME,
+				gs.CAR_TYPE_NEED_NAME AS CAR_TYPE_NEED_NAME,
+				gs.PRICE,
+				pricedict.VAL_NAME AS PRICE_UNIT,
+				gs.LINKMAN,
+				gs.LINK_MOBILE1,
+				gs.LINK_MOBILE2,
+				gs.LINK_PHONE,
+				gs.LOAD_DATE,
+				gs.GOODS_NAME,
+				gs.PLACE_KILOMETRE,
+				dictType.VAL_NAME AS GOODS_TYPE,
+				gs.MARK,
+				pub.PUBLISH_TIME,
+				gs.GOODS_CLASS,
+				e.ENTERPRISE_NAME AS ENTERPRISE_NAME,
+				pub.IS_STRUCT,
+				e.ADDRESS,
+				pub.PUBLISH_ID,<!-- ASPP运单成交后，实现关闭货源，所需字段 -->
+				pub.INFO_TYPE
+			FROM
+				pisp_waybill w 
+			LEFT JOIN pisp_publish_info pub  ON w.INFO_ID = pub.INFO_ID and w.INFO_TYPE = pub.INFO_TYPE
+			LEFT JOIN pisp_goods_source gs ON gs.GOODS_SOURCE_ID = pub.INFO_ID
+			<if test="driverFlag == 0 and userId != null">
+					LEFT JOIN pisp_user u ON u.USER_ID = pub.USER_ID <!-- #我抢的单(司机)  -->
+			</if>
+			<if test="driverFlag == 1">
+					LEFT JOIN pisp_user u ON u.USER_ID = w.HAULIER <!-- #司机抢的单（物流公司）-->
+			</if>
+			LEFT JOIN pisp_euser e ON e.USER_ID = u.USER_ID
+			LEFT JOIN pisp_dict_val weightdict ON weightdict.dict_code = 'GOODS_WEIGHT_UNIT' AND weightdict.val_code = gs.WEIGHT_UNIT
+			LEFT JOIN pisp_dict_val volumedict ON volumedict.dict_code = 'GOODS_WEIGHT_UNIT' AND volumedict.val_code = gs.VOLUME_UNIT
+			LEFT JOIN pisp_dict_val pricedict ON pricedict.dict_code = 'TRANSPORT_PRICE_UNIT' AND pricedict.val_code = gs.PRICE_UNIT
+			LEFT JOIN pisp_dict_val dictType ON dictType.dict_code = 'GOODS_TYPE' AND dictType.val_code = gs.goods_type
+			WHERE
+			w.STATUS != 99
+			AND w.PROCESS_TYPE = 1
+			<choose>
+				<when test="driverFlag == 0 and userId != null">
+					and w.USER_ID =#{userId} <!-- #我抢的单(司机)  -->
+				</when>
+				<when test="driverFlag == 1">
+					and w.INFO_ID = #{infoId} and w.INFO_TYPE = #{infoType}<!-- #司机抢的单（物流公司）-->
+				</when>
+			</choose>
+		ORDER BY
+			w.CREATE_TIME DESC
+	</select>
+	
+	<select id="queryPcDriverGrabWaybill" parameterType="WaybillQuery" resultMap="waybillVOMap">
+		SELECT
+			w.WAYBILL_ID,
+			w.WAYBILL_NO,
+			w.HAULIER,
+			w.HAULIER_NAME,
+			w.HAULIER_PHONE,
+			w.CREATE_TIME,
+			w.`STATUS`,
+			w.INFO_CONTENT,
+			w.SHIPPER_NAME,
+			w.SHIPPER_PHONE,
+			pub.PUBLISH_ID,
+			pgs.PLACE_KILOMETRE
+		FROM
+			pisp_waybill w
+		LEFT JOIN pisp_publish_info pub ON pub.INFO_ID = w.INFO_ID AND pub.INFO_TYPE = w.INFO_TYPE
+		LEFT JOIN pisp_goods_source pgs on pgs.GOODS_SOURCE_ID= pub.INFO_ID
+		WHERE
+			w.STATUS != 99
+			AND w.PROCESS_TYPE = 1
+			<choose>
+				<when test="driverFlag == 0 and userId != null">
+					and w.USER_ID =#{userId} <!-- #我抢的单(司机)  -->
+				</when>
+				<when test="driverFlag == 1">
+					and w.INFO_ID = #{infoId} and w.INFO_TYPE = #{infoType}<!-- #司机抢的单（物流公司）-->
+				</when>
+			</choose>
+			<if test="fromPCode != null and fromPCode !=0 ">
+					and  w.FROM_P_CODE = #{fromPCode}
+			</if>
+			<if test="fromCCode != null and fromCCode !=0">
+				and  w.FROM_C_CODE = #{fromCCode}
+			</if>
+			<if test="fromTCode != null and fromTCode !=0">
+				and  w.FROM_T_CODE = #{fromTCode}
+			</if>
+			<if test="toPCode != null and toPCode !=0">
+				 and w.TO_P_CODE = #{toPCode}
+			</if>
+			<if test="toCCode != null and toCCode !=0">
+				 and w.TO_C_CODE = #{toCCode}
+			</if>
+			<if test="toTCode != null and toTCode !=0">
+				 and w.TO_T_CODE = #{toTCode}
+			</if>
+		ORDER BY
+			w.CREATE_TIME DESC
+	</select>
+	
+	<select id="getWaybillMessage" resultMap="waybillVOMap">
+		<if test="waybillId != null or (waybillNo != null and waybillNo !='')">
+		SELECT
+			w.WAYBILL_ID,
+			w.WAYBILL_NO,
+			w.USER_ID,
+			w.INFO_ID,
+			w.INFO_TYPE,
+			w.INFO_CONTENT,
+			w.PROCESS_TYPE,
+			w.STATUS,
+			w.SHIPPER,
+			w.HAULIER,
+			w.SHIPPER_NAME,
+			w.SHIPPER_PHONE,
+			w.SHIPPER_UNIT,
+			w.HAULIER_NAME,
+			w.HAULIER_PHONE,
+			w.PROTOCOL_PHOTO,
+			w.SEND_GOODS_DATE,
+			w.REQUIRE_SERVICE,
+			w.REMARK,
+			w.SEND_GOODS_UNIT,
+			w.SEND_GOODS_PERSON,
+			w.SEND_GOODS_MOBILE,
+			w.FROM_PLACE,
+			w.FROM_P_CODE,
+			w.FROM_C_CODE,
+			w.FROM_T_CODE,
+			w.SEND_GOODS_ADDRESS,
+			w.RECEIVE_GOODS_UNIT,
+			w.RECEIVE_GOODS_PERSON,
+			w.RECEIVE_GOODS_MOBILE,
+			w.TO_PLACE,
+			w.TO_P_CODE,
+			w.TO_C_CODE,
+			w.TO_T_CODE,
+			w.RECEIVE_GOODS_ADDRESS,
+			w.TRANSACTION_TIME,
+			w.CREATE_USER,
+			w.CREATE_TIME,
+			w.UPDATE_USER,
+			w.UPDATE_TIME
+		FROM
+			pisp_waybill w
+		<where>
+			<if test="waybillId != null"> AND w.WAYBILL_ID = #{waybillId}</if>
+			<if test="waybillNo != null and waybillNo !=''"> AND w.WAYBILL_NO = #{waybillNo}</if>
+		</where>
+		</if>
+	</select>
+	
+	<select id="queryGoodsOwnerWaybills" parameterType="WaybillQuery" resultMap="waybillVOMap">
+		SELECT
+			w.INFO_CONTENT,
+			w.WAYBILL_ID,
+			w.WAYBILL_NO,
+			w.HAULIER_NAME,
+			w.HAULIER_PHONE,
+			w.CREATE_TIME,
+			w.SHIPPER_NAME,
+			w.SHIPPER_PHONE,
+			w.PROCESS_TYPE
+		FROM
+			pisp_waybill w
+		<where>
+		    w.PROCESS_TYPE !=1 AND w.`STATUS` != 99
+			<if test="haulier != null"> AND w.HAULIER = #{haulier}</if>
+			<if test="shipper != null"> AND w.SHIPPER = #{shipper}</if>
+			<if test="waybillNo != null and waybillNo!=''"> AND w.WAYBILL_NO like '%${waybillNo}%'</if><!-- 查询条件 -->
+		</where>
+		ORDER BY w.CREATE_TIME DESC
+	</select>
+	
+	<select id="queryMemberWaybills" parameterType="WaybillQuery" resultMap="com.lzz.lsp.core.waybill.dao.WaybillBaseDAO.waybillVOMap">
+		SELECT
+			w.WAYBILL_NO,
+			w.INFO_CONTENT,
+			w.CREATE_TIME,
+			w.TRANSACTION_TIME,
+			w.SHIPPER_NAME,
+			w.SHIPPER_PHONE,
+			w.SHIPPER_UNIT,
+			w.HAULIER_NAME,
+			w.HAULIER_PHONE
+		FROM
+			pisp_waybill w
+		<where>
+			<if test="userId != null">
+				AND (w.SHIPPER = #{userId} OR w.HAULIER = #{userId}) 
+			</if>
+			<choose>
+				<when test="status != null">AND w.STATUS = #{status}</when>
+				<otherwise>AND w.STATUS != 99</otherwise>
+			</choose>
+			<if test="createTimeStart != null">
+			 	 AND DATE(w.CREATE_TIME) &gt;= DATE(#{createTimeStart})
+			</if>
+			<if test="createTimeEnd != null">
+			 	 AND DATE(w.CREATE_TIME) &lt;= DATE(#{createTimeEnd})
+			</if>
+			<if test="transactionTimeStart != null">
+			 	 AND DATE(w.TRANSACTION_TIME) &gt;= DATE(#{transactionTimeStart})
+			</if>
+			<if test="transactionTimeEnd != null">
+			 	 AND DATE(w.TRANSACTION_TIME) &lt;= DATE(#{transactionTimeEnd})
+			</if>
+		</where>
+	</select>
+</mapper>

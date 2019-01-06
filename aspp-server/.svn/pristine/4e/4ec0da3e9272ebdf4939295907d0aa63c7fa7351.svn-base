@@ -1,0 +1,153 @@
+package com.lzz.aspp.web;
+
+import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.util.StringUtils;
+
+import com.lzz.lsp.base.constants.DataConstants;
+import com.lzz.lsp.base.constants.ReturnDatas;
+import com.lzz.lsp.base.qo.CarQuery;
+import com.lzz.lsp.base.vo.CarVO;
+import com.lzz.lsp.cmpt.dict.service.DictService;
+import com.lzz.lsp.core.car.service.CarBaseService;
+import com.lzz.lsp.util.CommonUtils;
+import com.lzz.lton.core.web.controller.BaseController;
+import com.lzz.lton.util.HttpUtils;
+
+
+
+
+/**
+ * 车辆controller
+ * @author tangshuai
+ * 2015年8月7日
+ */
+@Controller
+@RequestMapping("/car")
+public class CarController extends BaseController{
+
+	@Resource(name="carBaseService")
+	private CarBaseService carBaseService; 
+	
+	
+	@Resource(name = "dictService")
+	private DictService dictService;
+	/**
+	 * 获取附近平台的车辆
+	 * @param accessToken
+	 * @param pageNo
+	 * @param slng
+	 * @param slat
+	 * @param carType
+	 * @param carLength
+	 * @return
+	 * @author tangshuai
+	 */
+	@RequestMapping(value = "/getNearCarsOfPlatform.do", method = RequestMethod.GET)
+	@ResponseBody
+	//public Map<String, Object> getNearCarsOfPlatform(String accessToken,Integer pageNo,String slng,String slat,String dirverRunCityCode ,String[] carTypes,String[] carLengths){
+	public Map<String, Object> getNearCarsOfPlatform(String accessToken, CarQuery queryObject){
+		Map<String, Object> model = new HashMap<String, Object>();
+		try {
+			// 校验令牌
+			CommonUtils.checkAccessToken(accessToken, model);
+			/*//校验参数
+			CommonUtils.checkParams("pageNo", pageNo, model);
+			CarQuery queryObject = new CarQuery();
+			queryObject.setPageNo(pageNo);
+			queryObject.setSlng(slng);
+			queryObject.setSlat(slat);
+			if(!StringUtils.isBlank(dirverRunCityCode)){
+				queryObject.setDirverRunCityCode(Integer.valueOf(dirverRunCityCode));
+			}
+			queryObject.setCarTypes(carTypes);
+			queryObject.setCarLengths(carLengths);*/
+			queryObject.setUserType(DataConstants.DRIVER);
+			// 获取信息
+			List<CarVO> carVoList = carBaseService.queryCars(queryObject);
+			
+			
+			for (CarVO carVo : carVoList) {
+				
+				Integer carTypeFirstCode=carVo.getCarTypeFirstCode();
+				Integer carTypeSecondCode=carVo.getCarTypeSecondCode();
+				Integer carTypeThirdCode=carVo.getCarTypeThirdCode();
+				String carTypeStr=null;
+				if(StringUtils.isEmpty(carTypeFirstCode)){
+					
+				}else{
+					if(StringUtils.isEmpty(carTypeSecondCode)){
+					String	TypeName1 = dictService.queryCarTypeNameByCarTypeCode(carTypeFirstCode);
+					carVo.setCarTypeCode(carTypeFirstCode.toString());
+					carTypeStr =TypeName1;
+					}else{
+						if(StringUtils.isEmpty(carTypeThirdCode)){
+							String	TypeName1 = dictService.queryCarTypeNameByCarTypeCode(carTypeFirstCode);
+							String  TypeName2 = dictService.queryCarTypeNameByCarTypeCode(carTypeSecondCode);
+							carVo.setCarTypeCode(carTypeSecondCode.toString());
+							carTypeStr =TypeName1+"-" +TypeName2;
+						}else{
+							String	TypeName1 = dictService.queryCarTypeNameByCarTypeCode(carTypeFirstCode);
+							String  TypeName2 = dictService.queryCarTypeNameByCarTypeCode(carTypeSecondCode);
+							String TypeName3 =dictService.queryCarTypeNameByCarTypeCode(carTypeThirdCode);
+							carVo.setCarTypeCode(carTypeThirdCode.toString());
+							carTypeStr =TypeName1+"-" +TypeName2+"-"+TypeName3;
+						}
+					}
+				}
+				
+				carVo.setCarTypeName(carTypeStr);
+				/*//是否认证
+				if(DataConstants.USER_IS_AUTH == carVo.getIsAuth().intValue()){
+					//加密
+					carVo.setIdcardNo(CommonUtil.replaceIdCarNO(carVo.getIdcardNo()));
+					carVo.setDrivingLicensePhoto("已上传");;
+				} else {
+					carVo.setIdcardNo("未实名认证");
+					carVo.setDrivingLicensePhoto("未上传");;
+				}*/
+				//定位访问url
+				if(!StringUtils.isEmpty(carVo.getLocationName())){
+					//String locationUrl = "/base/service/toMapPoi.do?location="+carVo.getLongitude()+","+carVo.getLatitude()+"&poi="+URLEncoder.encode(carVo.getLocationName(),"utf-8");
+					//carVo.setLocationUrl(locationUrl);
+					carVo.setLocationUrl("/base/service/toMapPoi.do?location="+carVo.getLongitude()+","+carVo.getLatitude()+"&poi="+URLEncoder.encode(carVo.getLocationName(),"utf-8"));
+				}
+				/*else{
+					carVo.setLocationName("未开启定位");
+				}*/
+			}
+			model.put("code", ReturnDatas.SUCCESS_CODE);
+			model.put("nearCarsOfPlatformList", carVoList);
+			model.put("nearCarsCount", carBaseService.queryCarsCount(DataConstants.DRIVER) + 100000);
+			model.put("totalPageNum", queryObject.getTotalPageNum());
+		} catch (Exception e) {
+			if(model.isEmpty()){
+				model.put("code", ReturnDatas.SYSTEM_EXCEPTION);
+				model.put("msg", ReturnDatas.SYSTEM_EXCEPTION_MSG);
+			}
+			e.printStackTrace();
+		}
+		return model;
+	}
+	
+	public static void main(String[]args){
+		try {
+			//http://www.lzz56.com:9090/aspp-server/car/getNearCarsOfPlatform.do?pageNo=1&slng=116.315095&slat=40.04395&dirverRunCityCode=&carTypes=&carLengths=&accessToken=5a8e5467f3a1434b7c265268bf76c338
+			//&slng=116.315095&slat=40.04395
+			String str = HttpUtils.sendHttpRequest("http://127.0.0.1:8080/aspp-server/car/getNearCarsOfPlatform.do?pageNo=1&dirverRunCityCode=&carTypes=&carLengths=&accessToken=5a8e5467f3a1434b7c265268bf76c338", HttpUtils.RequestMethod.GET, null);
+			System.out.println(str);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+}

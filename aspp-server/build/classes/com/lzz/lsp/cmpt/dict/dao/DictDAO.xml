@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.cmpt.dict.dao.DictDAO">
+	<cache readOnly="true">
+		<property name="timeToIdleSeconds" value="3600"/> 
+	    <property name="timeToLiveSeconds" value="3600"/>  
+	    <property name="maxEntriesLocalHeap" value="1000"/>  
+	    <property name="maxEntriesLocalDisk" value="10000000"/>  
+	    <property name="memoryStoreEvictionPolicy" value="LRU"/>  
+	</cache>
+	<resultMap type="Dict" id="dictMap">
+		<result property="dictCode" column="DICT_CODE"/>
+		<result property="dictName" column="DICT_NAME"/>
+		<result property="descRiption" column="DESCRIPTION"/>
+		<result property="createUser" column="CREATE_USER"/>
+		<result property="createTime" column="CREATE_TIME"/>
+		<result property="updateUser" column="UPDATE_USER"/>
+		<result property="updateTime" column="UPDATE_TIME"/>
+		<!-- <collection property="dictVals" ofType="com.lzz.lsp.base.domain.DictVal" column="DICT_CODE">
+			<id property="id" column="DICT_VAL_ID"/>
+			<result property="dictCode" column="DICT_CODE"/>
+			<result property="valCode" column="VAL_CODE"/>
+			<result property="sortNo" column="SORT_NO"/>
+			<result property="isValid" column="IS_VALID"/>
+		</collection> -->
+	</resultMap>
+	
+	<resultMap type="CarType" id="carTypeMap">
+		<result property="carTypeNewCode" column="CARTYPE_CODE"/>
+		<result property="parentCode" column="PARENT_CODE"/>
+		<result property="typeName" column="CARTYPE_NAME"/>
+		<result property="lengthCode" column="LENGTH_CODE"/>
+		<result property="weightCode" column="WEIGHT_CODE"/>
+		<result property="isLeaf" column="IS_LEAF"/>
+		<result property="level" column="LEVEL"/>
+	</resultMap>
+	
+	
+	<resultMap id="BaseResultMap" type="com.lzz.lsp.base.domain.CarType">
+		<result property="carTypeNewCode" column="CARTYPE_CODE"/>
+		<result property="parentCode" column="PARENT_CODE"/>
+		<result property="typeName" column="CARTYPE_NAME"/>
+		<result property="lengthCode" column="LENGTH_CODE"/>
+		<result property="weightCode" column="WEIGHT_CODE"/>
+		<result property="isLeaf" column="IS_LEAF"/>
+		<result property="level" column="LEVEL"/>
+		<association property="childCarTypes" column="CARTYPE_CODE" select="getChilds"/>
+	</resultMap>
+	
+	
+	<sql id="Base_Column_List">
+		CARTYPE_CODE, PARENT_CODE, CARTYPE_NAME,LENGTH_CODE, WEIGHT_CODE, IS_LEAF, LEVEL
+	</sql>
+
+	<select id="queryCascadeCarTypesByLevel" resultMap="BaseResultMap" parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from  pisp_car_type_base_data where 1=1 
+		
+	   <if test="level != null"> 
+		   and LEVEL=#{level} 
+		</if>
+		  and IS_VALID != 0		
+	
+		
+	</select>
+	
+	<select id="queryLengthCodeAsc" resultType="java.lang.String" parameterType="java.lang.String">
+		SELECT p.VAL_NAME from pisp_dict_val p  WHERE p.DICT_CODE = 'CAR_LENGTH_RANGE_NEW' order by CONVERT(substring_index(p.VAL_CODE,"-",1), SIGNED) ASC
+	</select>
+	
+	
+	<select id="getChilds" resultMap="BaseResultMap" parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from  pisp_car_type_base_data where PARENT_CODE=#{CARTYPE_CODE}  AND  IS_VALID != 0
+	</select>
+	
+	
+	
+	<select id="queryDicts" parameterType="Dict" resultMap="dictMap">
+		SELECT
+			pd.*, pdvg.valCount AS valCount
+		FROM
+			pisp_dict pd LEFT JOIN
+		(
+			SELECT
+				pdv.DICT_CODE,
+				count(pdv.DICT_CODE) AS valCount
+			FROM
+				pisp_dict_val pdv
+			GROUP BY
+				pdv.DICT_CODE
+		) pdvg
+		ON
+			pdvg.DICT_CODE = pd.DICT_CODE 
+		<where>
+			<if test="null != dictCode and '' != dictCode">
+				AND pd.DICT_CODE LIKE CONCAT("%",#{dictCode},"%") 
+			</if>
+			<if test="null != dictName and '' != dictName">
+				AND pd.DICT_NAME LIKE CONCAT("%",#{dictName},"%")
+			</if>
+		</where>
+		ORDER BY pd.CREATE_TIME DESC
+	</select>
+	
+	<select id="getDictByDictCode" resultMap="dictMap" parameterType="java.lang.String">
+		SELECT * FROM pisp_dict pd WHERE pd.DICT_CODE = #{dictCode}
+	</select>
+	
+	<select id="queryLtLevelCarTypes" parameterType="java.lang.Integer" resultMap="carTypeMap">
+		SELECT
+			*
+		FROM
+			pisp_car_type_base_data pct
+		WHERE
+			pct.LEVEL &lt;= #{level} and pct.IS_VALID != 0
+		ORDER BY pct.CARTYPE_CODE DESC
+	</select>
+	
+	<select id="queryCarTypesByTcLevel" parameterType="java.util.Map" resultMap="carTypeMap">
+		SELECT
+			*
+		FROM
+			pisp_car_type_base_data pct
+		<where>
+		    pct.IS_VALID = 1
+			<if test="null != carTypeCode">
+				AND pct.PARENT_CODE =#{carTypeCode}
+			</if>
+			<if test="null != level">
+				AND pct.LEVEL = #{level}
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryCarTypesByLevel" parameterType="java.lang.Integer" resultMap="carTypeMap">
+		SELECT
+			*
+		FROM
+			pisp_car_type_base_data pct
+		WHERE pct.LEVEL = #{level} AND pct.IS_VALID != 0
+	</select>
+	
+	<select id="queryCarTypeNameByCarTypeCode" parameterType="java.lang.Integer" resultType="java.lang.String">
+		SELECT
+			pct.CARTYPE_NAME
+		FROM
+			pisp_car_type_base_data pct
+		WHERE pct.CARTYPE_CODE = #{carTypeCode}
+	</select>
+	
+	<select id="queryCarTypeList" resultMap="carTypeMap">
+		SELECT 
+			pct.CARTYPE_CODE,
+			pct.CARTYPE_NAME
+		FROM 
+		pisp_car_type_base_data pct
+	</select>
+	<insert id="addDict" parameterType="Dict">
+		INSERT INTO pisp_dict (
+								DICT_CODE,
+								DICT_NAME,
+								DESCRIPTION,
+								CREATE_USER,
+								CREATE_TIME
+							)
+							VALUES
+								(
+									#{dictCode},
+									#{dictName},
+									#{descRiption},
+									#{createUser},
+									#{createTime}
+								)
+	</insert>
+	
+	<update id="updateDict" parameterType="Dict">
+		UPDATE pisp_dict pd SET 
+			<if test="null != dictCode and '' != dictCode">pd.DICT_CODE = #{dictCode},</if>
+			<if test="null != dictName and '' != dictName">pd.DICT_NAME = #{dictName},</if>
+			<if test="null != descRiption and '' != descRiption">pd.DESCRIPTION = #{descRiption},</if>
+		pd.UPDATE_USER = #{updateUser}, pd.UPDATE_TIME = #{updateTime} where pd.DICT_CODE = #{dictCode};
+	</update>
+	
+	<delete id="delDict" parameterType="java.lang.String">
+		DELETE FROM pisp_dict WHERE DICT_CODE = #{dictCode}
+	</delete>
+</mapper>

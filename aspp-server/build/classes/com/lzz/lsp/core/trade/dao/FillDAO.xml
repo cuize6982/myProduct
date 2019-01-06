@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.trade.dao.FillDAO">
+    <resultMap type="FillRec" id="fillRecMap">
+        <result property="tradeNo" column="TRADE_NO"/>
+        <result property="userId" column="USER_ID"/>
+        <result property="fillAccount" column="FILL_ACCOUNT"/>
+        <result property="fillMoney" column="FILL_MONEY"/>
+        <result property="fillTime" column="FILL_TIME"/>
+        <result property="isManualFill" column="IS_MANUAL_FILL"/>
+        <result property="payWay" column="PAY_WAY"/>
+        <result property="beforeBalance" column="BEFORE_BALANCE"/>
+        <result property="afterBalance" column="AFTER_BALANCE"/>
+        <result property="payRecNo" column="PAY_REC_NO" />
+        <result property="createUser" column="CREATE_USER"/>
+		<result property="createTime" column="CREATE_TIME"/>
+		<result property="updateUser" column="UPDATE_USER"/>
+		<result property="updateTime" column="UPDATE_TIME"/>
+    </resultMap>
+    
+    <insert id="addFillRec" parameterType="fillRec">
+        INSERT INTO pisp_user_fill_rec(
+	        TRADE_NO,
+			USER_ID,
+			FILL_ACCOUNT,
+			FILL_MONEY,
+			FILL_TIME,
+			IS_MANUAL_FILL,
+			PAY_WAY,
+			BEFORE_BALANCE,
+			AFTER_BALANCE,
+			PAY_REC_NO,
+			CREATE_USER,
+			CREATE_TIME
+        )VALUES(
+        	#{tradeNo},#{userId},#{fillAccount},
+        	#{fillMoney},#{fillTime},#{isManualFill},
+        	#{payWay},#{beforeBalance},#{afterBalance},
+        	#{payRecNo},#{createUser},#{createTime}
+        )
+    </insert>
+    
+    <select id="getUserFillTotal" resultType="java.lang.Float" parameterType="java.lang.Integer">
+        SELECT IF(SUM(pufr.FILL_MONEY)>0,SUM(pufr.FILL_MONEY),0.0) FROM pisp_user_fill_rec pufr WHERE pufr.USER_ID = #{userId}
+    </select>
+</mapper>

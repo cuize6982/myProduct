@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.score.dao.ScoreGiftBaseDAO">
+	<resultMap type="ScoreGift" id="scoreGiftMap">
+		<result property="id" column="GIFT_ID"/>
+		<result property="giftName" column="GIFT_NAME"/>
+		<result property="giftType" column="GIFT_TYPE"/>
+		<result property="price" column="PRICE"/>
+		<result property="exchangeScore" column="EXCHANGE_SCORE"/>
+		<result property="totalNum" column="TOTAL_NUM"/>
+		<result property="surplusNum" column="SURPLUS_NUM"/>
+		<result property="giftImg" column="GIFT_IMG"/>
+		<result property="mark" column="MARK"/>
+		<result property="status" column="STATUS"/>
+		<result property="createUser" column="CREATE_USER"/>
+		<result property="createTime" column="CREATE_TIME"/>
+		<result property="updateUser" column="UPDATE_USER"/>
+		<result property="updateTime" column="UPDATE_TIME"/>
+	</resultMap>
+	
+	<select id="queryScoreGift" parameterType="ScoreGiftQuery" resultMap="scoreGiftMap">
+		SELECT 
+			osg.EXCHANGE_SCORE,
+			osg.GIFT_ID,
+			osg.GIFT_IMG,
+			osg.GIFT_NAME,
+			osg.GIFT_TYPE,
+			osg.MARK,
+			osg.PRICE,
+			osg.`STATUS`,
+			osg.SURPLUS_NUM,
+			osg.TOTAL_NUM
+		FROM osmp_score_gift osg 
+		WHERE 1 = 1
+		<if test="null != status">
+			AND osg.`STATUS` = #{status}		
+		</if>
+		<if test="null != giftName and '' != giftName">
+			AND osg.GIFT_NAME LIKE CONCAT('%',#{giftName},'%')
+		</if>
+		<if test="null != giftType and '' != giftType">
+			AND osg.GIFT_TYPE = #{giftType}
+		</if>
+		<if test="statusArr != null and statusArr.length>=0">
+				AND osg.`STATUS` in
+				<foreach collection="statusArr" item="item" index="index" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		ORDER BY osg.CREATE_TIME DESC
+	</select>
+	
+	<select id="getScoreGift" parameterType="integer" resultMap="scoreGiftMap">
+		SELECT 
+			osg.EXCHANGE_SCORE,
+			osg.GIFT_ID,
+			osg.GIFT_IMG,
+			osg.GIFT_NAME,
+			osg.GIFT_TYPE,
+			osg.MARK,
+			osg.PRICE,
+			osg.`STATUS`,
+			osg.SURPLUS_NUM,
+			osg.TOTAL_NUM
+		FROM osmp_score_gift osg 
+		WHERE osg.GIFT_ID = #{id}
+	</select>
+	<insert id="saveScoreGift" parameterType="ScoreGift">
+		INSERT INTO OSMP_SCORE_GIFT(GIFT_ID,GIFT_NAME,PRICE,TOTAL_NUM,SURPLUS_NUM,EXCHANGE_SCORE,GIFT_TYPE,
+		STATUS,GIFT_IMG,MARK,CREATE_USER,CREATE_TIME
+		)
+		VALUES(#{id,jdbcType=INTEGER},#{giftName,jdbcType=VARCHAR},#{price,jdbcType=FLOAT},#{totalNum,jdbcType=INTEGER},
+		#{surplusNum,jdbcType=INTEGER},#{exchangeScore,jdbcType=INTEGER},#{giftType,jdbcType=VARCHAR},
+		#{status,jdbcType=INTEGER},#{giftImg,jdbcType=INTEGER},#{mark,jdbcType=VARCHAR},#{createUser,jdbcType=VARCHAR},
+		#{createTime,jdbcType=TIMESTAMP}
+		);
+	</insert>
+	<update id="updateScoreGift" parameterType="ScoreGift">
+		UPDATE OSMP_SCORE_GIFT osg
+			<set>
+				osg.GIFT_NAME=#{giftName},
+				osg.PRICE=#{price},
+				osg.TOTAL_NUM=#{totalNum},
+				osg.SURPLUS_NUM=#{surplusNum},
+				osg.EXCHANGE_SCORE=#{exchangeScore},
+				osg.GIFT_TYPE=#{giftType},
+				osg.STATUS=#{status},
+				osg.GIFT_IMG=#{giftImg},
+				osg.MARK=#{mark},
+			</set>
+		WHERE osg.GIFT_ID=#{id}
+	</update> 
+	
+	<update id="updateScoreGiftInfo" parameterType="ScoreGift">
+		UPDATE OSMP_SCORE_GIFT osg
+			<set>
+				<if test="surplusNum != null">osg.SURPLUS_NUM=#{surplusNum},</if>
+				<if test="updateUser != null and updateUser != ''">osg.UPDATE_USER=#{updateUser},</if>
+				<if test="updateTime != null">osg.UPDATE_TIME=#{updateTime}</if>
+			</set>
+		WHERE osg.GIFT_ID=#{id}
+	</update>
+</mapper>

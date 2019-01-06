@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.loginSession.dao.LoginSessionDAO">
+	<resultMap type="LoginSession" id="loginSessionMapper">
+		<id property="id" column="ID"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="account" column="ACCOUNT"/>
+		<result property="useTerminal" column="USE_TERMINAL"/>
+		<result property="terminalVersion" column="TERMINAL_VERSION"/>
+		<result property="onlineTime" column="ONLINE_TIME"/>
+		<result property="offlineTime" column="OFFLINE_TIME"/>
+	</resultMap>
+	
+	
+	<insert id="saveLoginSession" parameterType="LoginSession">
+		INSERT INTO pisp_login_session (
+			USER_ID,
+			ACCOUNT,
+			USE_TERMINAL,
+			TERMINAL_VERSION,
+			ONLINE_TIME
+		)
+		VALUES
+		(
+			#{userId},
+			#{account},
+			#{useTerminal},
+			#{terminalVersion},
+			#{onlineTime}
+		)
+	</insert>
+	
+	
+	<update id="updateLoginSession" parameterType="LoginSession">
+		UPDATE pisp_login_session pls
+	    SET 
+		<if test="null != account and '' != account">pls.ACCOUNT = #{account}</if>
+		<if test="null != onlineTime and '' != onlineTime">,pls.ONLINE_TIME = #{onlineTime}</if>
+		<if test="null != offlineTime and '' != offlineTime">,pls.OFFLINE_TIME = #{offlineTime}</if>
+		,pls.USE_TERMINAL = #{useTerminal}
+		,pls.TERMINAL_VERSION = #{terminalVersion}
+		WHERE pls.USER_ID = #{userId}
+	</update>
+	
+	
+	
+	<select id="getLoginSession" parameterType="java.lang.Integer" resultMap="loginSessionMapper">
+		SELECT * from pisp_login_session us where us.USER_ID = #{userId}
+	</select>
+	
+</mapper>

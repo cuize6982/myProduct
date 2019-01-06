@@ -1,0 +1,53 @@
+package com.lzz.aspp.service;
+
+import java.util.List;
+import java.util.Map;
+
+import org.apache.ibatis.annotations.Param;
+
+import com.lzz.aspp.vo.AsppCarSourceVO;
+import com.lzz.lsp.base.vo.CarVO;
+
+public interface CarSourceService {
+	/**
+	 * <p>根据人员id、车源类型获取车源列表</p>
+	 * <p>执行流程：</p>
+	 * <p>注意事项：</p>
+	 * @author Liuyl 2015年5月15日
+	 * @param userId	用户id
+	 * @param publishType	发布类型
+	 * @param carSourceType	车源类型
+	 * @return
+	 */
+	public List<AsppCarSourceVO> getCarSources(Integer userId, String carSourceType);
+	
+	/**
+	 * 
+	 * <p>根据人员id、车源类型获取可发布的车源</p>
+	 * <p>执行流程：</p>
+	 * <p>注意事项：</p>
+	 * @author Liuyl 2015年5月15日
+	 * @param userId
+	 * @param carSourceType
+	 * @return
+	 */
+	public List<CarVO> getCanPublishCars(@Param("userId") Integer userId, 
+			@Param("carSourceType") String carSourceType);
+	
+	/**
+	 * <p>查询车源列表</p>
+	 * <p>执行流程：</p>
+	 * <p>注意事项：</p>
+	 * @author Liuyl 2015年8月6日
+	 * @param vo
+	 * @return
+	 */
+	public List<AsppCarSourceVO> queryCarSources(AsppCarSourceVO vo);
+	
+	/**
+	 * 获取车源是否能收藏
+	 * @param map
+	 * @return
+	 */
+	public List<AsppCarSourceVO> getCarSourceIsFavorite(Map<String, Object> map);
+}

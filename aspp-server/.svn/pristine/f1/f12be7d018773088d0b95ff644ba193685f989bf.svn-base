@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.waybill.dao.WaybillCarBaseDAO">
+
+	<resultMap type="WaybillCar" id="waybillCarMap">
+		<id property="waybillCarId" column="WAYBILL_CAR_ID"/>
+		<result property="waybillNo" column="WAYBILL_NO"/>
+		<result property="carId" column="CAR_ID"/>
+		<result property="drivers" column="DRIVERS"/>
+		<result property="driversPhone" column="DRIVERS_PHONE"/>
+	</resultMap>
+	
+	<resultMap type="WaybillCarVO" id="waybillCarMapVO">
+		<result property="waybillNo" column="WAYBILL_NO"/>
+		<result property="carId" column="CAR_ID"/>
+		<result property="drivers" column="DRIVERS"/>
+		<result property="driversPhone" column="DRIVERS_PHONE"/>
+		<result property="carLengthName" column="CAR_LENGTH_NAME"/>
+		<result property="carTypeName" column="CAR_TYPE_NAME"/>
+		<result property="carNo" column="CAR_NO"/>
+		<result property="carPhoto" column="CAR_PHOTO"/>
+		<result property="carType" column="CAR_TYPE"/>
+		<result property="idCardNo" column="IDCARD_NO"/>
+	</resultMap>
+	
+	<insert id="saveWaybillCar" parameterType="WaybillCar">
+		INSERT INTO pisp_waybill_car(WAYBILL_NO,CAR_ID
+		<if test="drivers != null and drivers != ''">,DRIVERS</if>
+		<if test="driversPhone != null and driversPhone != ''">,DRIVERS_PHONE</if>
+		)
+		VALUES(#{waybillNo},#{carId}
+		<if test="drivers != null and drivers != ''">,#{drivers}</if>
+		<if test="driversPhone != null and driversPhone != ''">,#{driversPhone}</if>
+		)
+	</insert>
+	
+	<select id="getWaybillCar" parameterType="string" resultMap="waybillCarMapVO">
+		<if test="waybillNo != null and waybillNo != ''">
+		SELECT
+			c.CAR_NO,
+			(SELECT pdv.VAL_NAME FROM pisp_dict_val pdv WHERE pdv.DICT_CODE = 'CAR_TYPE' and pdv.VAL_CODE = c.CAR_TYPE) AS CAR_TYPE_NAME,
+		    (SELECT pdv.VAL_NAME FROM pisp_dict_val pdv WHERE pdv.DICT_CODE = 'CAR_LENGTH' and pdv.VAL_CODE = c.CAR_LENGTH) AS CAR_LENGTH_NAME,
+			c.CAR_LENGTH,
+			c.CAR_TYPE,
+			c.CAR_PHOTO,
+			c.IDCARD_NO,
+			wc.DRIVERS,
+			wc.DRIVERS_PHONE,
+			wc.WAYBILL_NO,
+			wc.CAR_ID
+		FROM
+			pisp_waybill_car wc
+			LEFT JOIN pisp_car c ON wc.CAR_ID = c.CAR_ID
+		WHERE wc.WAYBILL_NO = #{waybillNo}
+		</if>
+	</select>
+	
+	<insert id="saveWaybillCarList" parameterType="list">
+		<if test="waybillCars != null and waybillCars.size() > 0">
+			INSERT INTO pisp_waybill_car(WAYBILL_NO,CAR_ID,DRIVERS,DRIVERS_PHONE
+			)
+			VALUES
+			<foreach collection="waybillCars" item="item" separator=",">
+				(#{item.waybillNo},#{item.carId},#{item.drivers},#{item.driversPhone}
+				)
+			</foreach>
+		</if>
+	</insert>
+</mapper>

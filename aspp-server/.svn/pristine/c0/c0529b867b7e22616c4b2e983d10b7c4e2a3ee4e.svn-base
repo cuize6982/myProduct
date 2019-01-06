@@ -1,0 +1,13 @@
+#################\u672c\u5730############################
+#ssmp.client.url=http://101.251.233.82/ssmp/
+#solr \u914d\u7f6e
+#solr.server.goodssource.url=http://101.251.233.82/solr/goodsSourceCore
+#solr.server.carsource.url=http://101.251.233.82/solr/carSourceCore
+
+
+#################\u53d1\u5e03\u7ebf\u4e0a############################
+ssmp.client.url=http://192.168.1.6/ssmp/
+#solr \u914d\u7f6e
+solr.server.goodssource.url=http://192.168.1.6/solr/goodsSourceCore
+solr.server.carsource.url=http://192.168.1.6/solr/carSourceCore
+template.loader.path=file:/home/upload/pisp/template

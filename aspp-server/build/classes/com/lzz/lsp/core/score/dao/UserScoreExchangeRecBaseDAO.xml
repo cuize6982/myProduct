@@ -1,0 +1,437 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.score.dao.UserScoreExchangeRecBaseDAO">
+	<resultMap type="UserScoreExchangeRecVO" id="userScoreExchangeRecVOMap" >
+		<result property="exchangeRecId" column="EXCHANGE_REC_ID"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="giftId" column="GIFT_ID"/>
+		<result property="giftName" column="GIFT_NAME"/>
+		<result property="exchangeScore" column="EXCHANGE_SCORE"/>
+		<result property="osmpExchangeScore" column="OSMPEXCHANGE_SCORE"/>
+		<result property="status" column="STATUS"/>
+		<result property="exchangeTime" column="EXCHANGE_TIME"/>
+		<result property="createUser" column="CREATE_USER"/>
+		<result property="createTime" column="CREATE_TIME"/>
+		<result property="consigneeName" column="CONSIGNEE_NAME"/>
+		<result property="consigneePhone" column="CONSIGNEE_PHONE"/>
+		<result property="consigneeAddress" column="CONSIGNEE_ADDRESS"/>
+		<result property="operationNumber" column="OPERATION_NUMBER"/>
+		<result property="rechargeTime" column="RECHARGE_TIME"/>
+		<result property="rechargeMoney" column="RECHARGE_MONEY"/>
+		<result property="expressNumber" column="EXPRESS_NUMBER"/>
+		<result property="operator" column="OPERATOR"/>
+		<result property="giftImg" column="GIFT_IMG"/>
+		<result property="giftType" column="GIFT_TYPE"/>
+		<!-- 下面的是对应当前用户的信息 -->
+		<result property="accountName" column="ACCOUNT_NAME"/>
+		<result property="nickName" column="NICKNAME"/>
+		<result property="enterpriseName" column="ENTERPRISE_NAME"/>
+		<result property="userType" column="USER_TYPE"/>
+		<result property="userSumScore" column="SCORE"/>
+		<result property="linkMan" column="LINKMAN"/>
+		<result property="linkMobile1" column="LINK_MOBILE1"/>
+		<result property="useScore" column="USE_SCORE"/>
+		<result property="useScoreMoney" column="PAYEE_TRANSFER_MONEY"/>
+		<result property="noExchangeScore" column="NO_EXCHANGED_SCORE"/>
+		<result property="scoreRecIds" column="SCORE_REC_IDS"/>
+		<!-- 下面的是对应礼品数量的信息 -->
+		<result property="giftTotalNum" column="TOTAL_NUM"/>
+		<result property="giftSurplusNum" column="SURPLUS_NUM"/>
+		<!-- osmp兑换积分明细修改之后数据20160107 -->
+		<result property="scoreExchangeRecId" column="SCORE_EXCHANGE_REC_ID"/>
+		<result property="payeeName" column="PAYEE_NAME"/>
+		<result property="paveeBankCode" column="PAVEE_BANK_CODE"/>
+		<result property="paveeBankNo" column="PAVEE_BANK_NO"/>
+		<result property="payeeBankCode" column="PAYEE_BANK_CODE"/>
+		<result property="payeeBankNo" column="PAYEE_BANK_NO"/>
+		<result property="payeeTransferMoney" column="PAYEE_TRANSFER_MONEY"/>
+		<result property="payeeTransferSerialNo" column="PAYEE_TRANSFER_SERIAL_NO"/>
+		<result property="timeSlot" column="TIME_SLOT"/>
+		<result property="moneyCount" column="MONEY_COUNT"/>
+		<result property="subsidyId" column="SUBSIDY_ID"/>
+		<result property="subsidyMoney" column="SUBSIDY_MONEY"/>
+		<result property="updateUser" column="UPDATE_USER"/>
+		<result property="updateTime" column="UPDATE_TIME"/>
+	</resultMap>
+	
+	<insert id="saveUserScoreExchange" parameterType="UserScoreExchangeRec">
+		INSERT INTO osmp_user_score_exchange_rec (
+			USER_ID,
+			GIFT_ID,
+			GIFT_NAME,
+			`STATUS`,
+			EXCHANGE_SCORE,
+			EXCHANGE_TIME,
+			CONSIGNEE_NAME,
+			CONSIGNEE_PHONE,
+			CONSIGNEE_ADDRESS,
+			ZIP_CODE,
+			CREATE_USER,
+			CREATE_TIME,
+			UPDATE_USER,
+			UPDATE_TIME
+		)
+		VALUES
+			(
+				#{userId},
+				#{giftId},
+				#{giftName},
+				#{status},
+				#{exchangeScore},
+				#{exchangeTime},
+				#{consigneeName,jdbcType=VARCHAR},
+				#{consigneePhone,jdbcType=VARCHAR},
+				#{consigneeAddress,jdbcType=VARCHAR},
+				#{zipCode,jdbcType=VARCHAR},
+				#{createUser},
+				#{createTime},
+				#{updateUser},
+				#{updateTime}
+			)
+	</insert>
+	
+	<update id="updateUserScoreExchangeById" parameterType="UserScoreExchangeRec">
+		UPDATE osmp_user_score_exchange_rec ouser
+		SET ouser.`STATUS` = #{status},
+		ouser.UPDATE_USER = #{updateUser},
+		ouser.UPDATE_TIME = #{updateTime},
+		ouser.EXCHANGE_TIME = #{exchangeTime}
+		WHERE
+			ouser.EXCHANGE_REC_ID = #{exchangeRecId}
+	</update>
+	
+	<select id="queryUserScoreExchange" parameterType="UserScoreExchangeRecQuery" resultMap="userScoreExchangeRecVOMap">
+		SELECT
+			oser.SCORE_EXCHANGE_REC_ID,
+			oser.USER_ID,
+			oser.ACCOUNT_NAME,
+			oser.PAYEE_NAME,
+			oser.PAVEE_BANK_CODE,
+			oser.PAVEE_BANK_NO,
+			oser.PAYEE_BANK_CODE,
+			oser.PAYEE_BANK_NO,
+			oser.PAYEE_TRANSFER_MONEY,
+			oser.PAYEE_TRANSFER_SERIAL_NO,
+			oser.CREATE_USER,
+			oser.CREATE_TIME,
+			oser.EXCHANGE_SCORE
+		FROM
+			osmp_score_exchange_rec oser
+		where
+			oser.USER_ID = #{userId}
+			<if test="payeeTransferSerialNo !=null and payeeTransferSerialNo !=''">
+				AND oser.PAYEE_TRANSFER_SERIAL_NO LIKE CONCAT('%',#{payeeTransferSerialNo},'%')
+			</if>
+			<if test="null != exchangeStartTime and '' != exchangeStartTime">
+				AND oser.CREATE_TIME &gt;= #{exchangeStartTime}
+			</if>
+			<if test="null != exchangeEndTime and '' != exchangeEndTime">
+				AND oser.CREATE_TIME &lt;= #{exchangeEndTime}
+			</if>
+		ORDER BY oser.CREATE_TIME desc
+	</select>
+	
+<!-- 	<select id="queryUserScoreExchange" parameterType="UserScoreExchangeRecQuery" resultMap="userScoreExchangeRecVOMap">
+		SELECT
+			ouser.CREATE_TIME,
+			ouser.CREATE_USER,
+			ouser.EXCHANGE_REC_ID,
+			CONCAT('-', ouser.EXCHANGE_SCORE) AS EXCHANGE_SCORE,
+			ouser.EXCHANGE_TIME,
+			ouser.GIFT_ID,
+			ouser.GIFT_NAME,
+			ouser.`STATUS`,
+			ouser.UPDATE_TIME,
+			ouser.UPDATE_USER,
+			ouser.USER_ID,
+			osg.GIFT_IMG,
+			ouser.EXCHANGE_SCORE AS OSMPEXCHANGE_SCORE
+		FROM
+			osmp_user_score_exchange_rec ouser
+		LEFT JOIN osmp_score_gift osg ON ouser.GIFT_ID = osg.GIFT_ID
+		WHERE 1 = 1
+		<if test="null != giftName and '' != giftName">
+			AND ouser.GIFT_NAME like CONCAT('%', #{giftName}, '%')
+		</if>
+		<if test="null != exchangeScore">
+			AND ouser.EXCHANGE_SCORE = #{exchangeScore}
+		</if>
+		<if test="null != status">
+			AND ouser.`STATUS` = #{status}
+		</if>
+		<if test="null != giftId">
+			AND ouser.GIFT_ID = #{giftId}
+		</if>
+		<if test="null != exchangeStartTime and '' != exchangeStartTime">
+			AND ouser.EXCHANGE_TIME &gt;= #{exchangeStartTime}
+		</if>
+		<if test="null != exchangeEndTime and '' != exchangeEndTime">
+			AND ouser.EXCHANGE_TIME &lt;= #{exchangeEndTime}
+		</if>
+		<if test="null != createStartTime and '' != createStartTime">
+			AND ouser.CREATE_TIME &gt;= #{createStartTime}
+		</if>
+		<if test="null != createEndTime and '' != createEndTime">
+			AND ouser.CREATE_TIME &lt;= #{createEndTime}
+		</if>
+		<if test="null != userId">
+			AND ouser.USER_ID = #{userId}
+		</if>
+		ORDER BY ouser.CREATE_TIME desc
+	</select> -->
+	
+	<select id="getUserScoreExchangeCount" parameterType="integer" resultType="integer">
+		<if test="userId != null">
+		SELECT COUNT(0) FROM osmp_user_score_exchange_rec us
+		WHERE
+			us.USER_ID = #{userId};
+		</if>
+	</select>
+	
+	<!--<select id="queryUserScoreExchangesForOsmp" parameterType="UserScoreExchangeRecQuery" resultMap="userScoreExchangeRecVOMap">
+		SELECT 
+			a.EXCHANGE_REC_ID,
+			a.EXCHANGE_SCORE,
+			a.GIFT_ID,
+			a.GIFT_NAME,
+			a.EXCHANGE_TIME,
+			a.`STATUS`,
+			a.CREATE_USER,
+			a.CREATE_TIME,
+			b.USER_ID,
+			b.ACCOUNT_NAME,-->
+			<!-- b.NICKNAME, -->
+			<!--b.USER_TYPE,
+			b.SCORE,
+			CASE 
+				WHEN p.REAL_NAME IS NULL THEN b.NICKNAME ELSE p.REAL_NAME
+			END AS NICKNAME,
+			e.ENTERPRISE_NAME 
+		FROM 
+		osmp_user_score_exchange_rec a 
+		LEFT JOIN pisp_user b ON a.user_id = b.USER_ID
+		LEFT JOIN pisp_euser e ON e.USER_ID=b.USER_ID
+		LEFT JOIN pisp_puser p ON p.USER_ID = b.USER_ID 
+		LEFT JOIN osmp_score_gift c ON c.GIFT_ID=a.GIFT_ID
+		WHERE 1 = 1
+		<if test="null != accountName and '' != accountName">
+			AND b.ACCOUNT_NAME like CONCAT('%', #{accountName}, '%')
+		</if>
+		<if test="null != nickName and '' != nickName">
+			AND b.NICKNAME like CONCAT('%', #{nickName}, '%')
+		</if>
+		<if test="userType != null and userType.length>0">
+			 AND 
+			 <foreach collection="userType" open="(" close=")" item="item" separator="or">
+			 	b.USER_TYPE like CONCAT('%',#{item},'%') 
+			 </foreach>
+		</if>
+		<if test="giftType != null and giftType.length>0">
+			 AND 
+			 <foreach collection="giftType" open="(" close=")" item="item" separator="or">
+			 	c.GIFT_TYPE like CONCAT('%',#{item},'%') 
+			 </foreach>
+		</if>
+		<if test="null != status">
+			AND a.status = #{status}
+		</if>
+		ORDER BY a.CREATE_TIME desc
+	</select>-->
+	
+	<select id="queryUserScoreExchangesForOsmp" parameterType="UserScoreExchangeRecQuery" resultMap="userScoreExchangeRecVOMap">
+		SELECT
+			pu.USER_ID,
+			pu.ACCOUNT_NAME,
+			pu.USER_TYPE,
+			pe.ENTERPRISE_NAME,
+			pe.LINKMAN,
+			pe.LINK_MOBILE1,
+			pu.SCORE,
+			IFNULL(
+				pu.USE_SCORE,
+				0
+			) AS USE_SCORE
+		<if test="status == 1">
+			,exchanged_rec.PAYEE_NAME
+			,exchanged_rec.PAVEE_BANK_CODE
+			,exchanged_rec.PAVEE_BANK_NO
+			,exchanged_rec.PAYEE_TRANSFER_SERIAL_NO
+			,exchanged_rec.EXCHANGE_TIME
+			,exchanged_rec.PAYEE_TRANSFER_MONEY
+			,1 AS status
+			,exchanged_rec.CREATE_USER
+		</if>
+		<if test="status == 0">
+			,no_exchanged_rec.NO_EXCHANGED_SCORE
+			,no_exchanged_rec.SCORE_REC_IDS
+			,0 AS status
+		</if>
+		FROM
+			pisp_user pu
+		INNER JOIN pisp_euser pe ON pu.USER_ID = pe.USER_ID
+		<if test="status == 1">
+		INNER JOIN(
+			SELECT
+				oser.USER_ID,
+				oser.PAYEE_NAME,
+				pdv.VAL_NAME as PAVEE_BANK_CODE,
+				oser.PAVEE_BANK_NO,
+				oser.PAYEE_TRANSFER_SERIAL_NO,
+				oser.PAYEE_TRANSFER_MONEY,
+				oser.CREATE_TIME AS EXCHANGE_TIME,
+				oser.CREATE_USER
+			FROM
+				osmp_score_exchange_rec oser	
+			LEFT JOIN pisp_dict_val pdv on pdv.VAL_CODE=oser.PAVEE_BANK_CODE AND pdv.DICT_CODE = 'BANK_NAME_SHORT' 
+		) exchanged_rec ON exchanged_rec.USER_ID = pu.USER_ID
+		</if>
+		<if test="status == 0">
+		INNER JOIN(
+			SELECT
+				SUM(pusr.SCORE_VALUE) AS NO_EXCHANGED_SCORE,
+				pusr.USER_ID,
+				pusr.GET_SCORE_TIME,
+				GROUP_CONCAT(pusr.SCORE_REC_ID) AS SCORE_REC_IDS
+			FROM
+				pisp_user_score_rec pusr
+			WHERE 
+				pusr.SCORE_STATUS = 0
+				AND pusr.GET_SCORE_TIME &gt;= #{getScoreStartTime}
+				AND pusr.GET_SCORE_TIME &lt;= #{getScoreEndTime}
+			GROUP BY pusr.USER_ID
+		) no_exchanged_rec ON no_exchanged_rec.USER_ID = pu.USER_ID
+		</if>
+		<if test="agentType != null and agentType.length>0">
+		INNER JOIN osmp_agent oa ON oa.AGENT_USER_ID = pu.USER_ID AND oa.AGENT_STATUS =1
+		</if>
+		WHERE pu.IS_AGENT = 1 
+		<if test="null != accountName and '' != accountName">
+			AND pu.ACCOUNT_NAME like CONCAT('%', #{accountName}, '%')
+		</if>
+		<if test="null != enterpriseName and '' != enterpriseName">
+			AND pe.ENTERPRISE_NAME like CONCAT('%', #{enterpriseName}, '%')
+		</if>
+		<if test="null != linkMan and '' != linkMan">
+			AND pe.LINKMAN like CONCAT('%', #{linkMan}, '%')
+		</if>
+		<if test="null != linkMobile1 and '' != linkMobile1">
+			AND pe.LINK_MOBILE1 like CONCAT('%', #{linkMobile1}, '%')
+		</if>
+		<if test="null != exchangeStartTime and '' != exchangeStartTime">
+			AND exchanged_rec.EXCHANGE_TIME &gt;= #{exchangeStartTime}
+		</if>
+		<if test="null != exchangeEndTime and '' != exchangeEndTime">
+			AND exchanged_rec.EXCHANGE_TIME &lt;= #{exchangeEndTime}
+		</if>
+		<if test="null !=userId">
+			AND pu.USER_ID =#{userId}
+		</if>
+		<if test="agentType != null and agentType.length ==1 ">
+			 <foreach collection="agentType" item="item" >
+			 	<if test="item == 0">
+			 		AND oa.AGENT_PARENT_USER_ID = 0 
+			 	</if>
+			 	<if test="item == 1">
+			 		AND oa.AGENT_PARENT_USER_ID > 0 
+			 	</if>
+			 </foreach>
+		</if>
+		<if test="agentType != null and agentType.length ==2 ">
+		AND(
+			 <foreach collection="agentType" item="item" >
+			 	<if test="item == 0">
+			 		 oa.AGENT_PARENT_USER_ID = 0 
+			 	</if>
+			 </foreach>
+			 <foreach collection="agentType" item="item" >
+			 	<if test="item == 0">
+			 		OR oa.AGENT_PARENT_USER_ID > 0 
+			 	</if>
+			 </foreach>
+		)
+		</if>
+		<if test="status == 0">
+			ORDER BY pu.UPDATE_TIME DESC
+		</if>
+		<if test="status == 1">
+			ORDER BY exchanged_rec.EXCHANGE_TIME DESC
+		</if>
+	</select>
+	<select id="getUserScoreExchangeForOsmp" parameterType="java.lang.Integer" resultMap="userScoreExchangeRecVOMap">
+		SELECT 
+			a.EXCHANGE_REC_ID,
+			a.EXCHANGE_SCORE,
+			a.GIFT_NAME,
+			a.CONSIGNEE_NAME,
+			a.CONSIGNEE_PHONE,
+			a.CONSIGNEE_ADDRESS,
+			a.OPERATION_NUMBER,
+			a.RECHARGE_TIME,
+			a.RECHARGE_MONEY,
+			a.EXPRESS_NUMBER,
+			a.OPERATOR,
+			b.ACCOUNT_NAME,
+			b.SCORE,
+			c.TOTAL_NUM,
+			c.SURPLUS_NUM,
+			c.GIFT_TYPE
+		FROM 
+		osmp_user_score_exchange_rec a LEFT JOIN 
+		pisp_user b on a.user_id = b.USER_ID LEFT JOIN
+		osmp_score_gift c on c.GIFT_ID = a.GIFT_ID
+		WHERE a.EXCHANGE_REC_ID = #{exchangeRecId}
+	</select>
+	
+	<update id="updateUserScoreExchangeByIdForOsmp" parameterType="UserScoreExchangeRec">
+		UPDATE osmp_user_score_exchange_rec ouser
+		<set>
+			ouser.RECHARGE_TIME = #{rechargeTime}
+			<if test="null != operationNumber and '' != operationNumber">
+				,ouser.OPERATION_NUMBER = #{operationNumber}
+			</if>
+			<if test="null != rechargeMoney">
+				,ouser.RECHARGE_MONEY = #{rechargeMoney}
+			</if>
+			<if test="null != expressNumber and '' != expressNumber">
+				,ouser.EXPRESS_NUMBER = #{expressNumber}
+			</if>
+			,ouser.status = #{status}
+			,ouser.OPERATOR = #{operator}
+		</set>
+		WHERE
+			ouser.EXCHANGE_REC_ID = #{exchangeRecId}
+	</update>
+	
+	<insert id="saveScoreExchange" parameterType="ScoreExchangeRec">
+		INSERT INTO osmp_score_exchange_rec (
+			USER_ID,
+			ACCOUNT_NAME,
+			EXCHANGE_SCORE,
+			PAYEE_NAME,
+			PAVEE_BANK_CODE,
+			PAVEE_BANK_NO,
+			PAYEE_BANK_CODE,
+			PAYEE_BANK_NO,
+			PAYEE_TRANSFER_MONEY,
+			PAYEE_TRANSFER_SERIAL_NO,
+			CREATE_USER,
+			CREATE_TIME
+		)
+		VALUES
+			(
+				#{userId},
+				#{accountName},
+				#{exchangeScore},
+				#{payeeName},
+				#{paveeBankCode},
+				#{paveeBankNo},
+				#{payeeBankCode},
+				#{payeeBankNo},
+				#{payeeTransferMoney},
+				#{payeeTransferSerialNo},
+				#{createUser},
+				#{createTime}
+			)
+	</insert>
+	
+</mapper>

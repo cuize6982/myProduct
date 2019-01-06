@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.cmpt.dict.dao.DictValDAO">
+	<resultMap type="DictVal" id="dictValMap">
+		<id property="id" column="DICT_VAL_ID"/>
+		<result property="dictCode" column="DICT_CODE"/>
+		<result property="valCode" column="VAL_CODE"/>
+		<result property="valName" column="VAL_NAME"/>
+		<result property="sortNo" column="SORT_NO"/>
+		<result property="isValid" column="IS_VALID"/>
+		<result property="createUser" column="CREATE_USER"/>
+		<result property="createTime" column="CREATE_TIME"/>
+		<result property="updateUser" column="UPDATE_USER"/>
+		<result property="updateTime" column="UPDATE_TIME"/>
+	</resultMap>
+	
+	<select id="getDictVal" parameterType="java.util.Map" resultMap="dictValMap">
+		SELECT
+			*
+		FROM
+			pisp_dict_val pdv
+		WHERE
+			pdv.DICT_CODE = #{dictCode}
+		AND 
+			pdv.VAL_CODE = #{valCode}
+	</select>
+	
+	<select id="queryDictVals" parameterType="java.lang.String" resultMap="dictValMap">
+		SELECT
+			*
+		FROM
+			pisp_dict_val pdv
+		WHERE
+			pdv.DICT_CODE = #{dictCode}
+			AND IS_VALID = 1
+		ORDER BY pdv.SORT_NO ASC
+	</select>
+	
+	<select id="getDictValByDictValId" parameterType="java.lang.Integer" resultMap="dictValMap">
+	    SELECT * FROM pisp_dict_val pdv WHERE pdv.DICT_VAL_ID = #{id}
+	</select>
+	
+	<delete id="delDIctValByDictCode" parameterType="java.lang.String">
+		DELETE FROM pisp_dict_val WHERE DICT_CODE = #{dictCode}
+	</delete>
+	
+	<delete id="delDictValByDictValId" parameterType="java.lang.Integer">
+		DELETE FROM pisp_dict_val WHERE DICT_VAL_ID = #{id}
+	</delete>
+	
+	<insert id="addBacthDictVal" parameterType="java.util.List">
+		INSERT INTO pisp_dict_val(
+			DICT_VAL_ID,
+			DICT_CODE,
+			VAL_CODE,
+			VAL_NAME,
+			SORT_NO,
+			IS_VALID,
+			CREATE_USER,
+			CREATE_TIME
+			)VALUES
+			<foreach collection="dictVals" item="item" separator=",">
+			(#{item.id},#{item.dictCode},#{item.valCode},#{item.valName},#{item.sortNo},#{item.isValid},#{item.createUser},#{item.createTime})
+		</foreach>
+	</insert>
+	
+	<insert id="addDictVal" parameterType="DictVal">
+	INSERT INTO pisp_dict_val(
+	DICT_CODE,
+	VAL_CODE,
+	VAL_NAME,
+	SORT_NO,
+	IS_VALID,
+	CREATE_USER,
+	CREATE_TIME
+	)VALUES(
+	#{dictCode},#{valCode},#{valName},#{sortNo},#{isValid},#{createUser},#{createTime})
+	</insert>
+	
+	<update id="upDateDictVal" parameterType="DictVal">
+	UPDATE pisp_dict_val SET VAL_CODE = #{valCode}, VAL_NAME = #{valName},
+		SORT_NO = #{sortNo}, IS_VALID = #{isValid}, UPDATE_USER =
+		#{updateUser}, UPDATE_TIME = #{updateTime}
+	WHERE DICT_VAL_ID = #{id}
+	</update>
+	
+</mapper>

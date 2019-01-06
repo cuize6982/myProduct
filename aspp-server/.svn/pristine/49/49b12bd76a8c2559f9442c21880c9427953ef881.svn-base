@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:aop="http://www.springframework.org/schema/aop" 
+		xmlns:context="http://www.springframework.org/schema/context" 
+		xmlns:tx="http://www.springframework.org/schema/tx" 
+		xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd  
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.1.xsd  
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd  
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd ">
+	    
+	<!--定义属性信息源-->
+	<bean id="ssmpClient" class="com.lzz.ssmp.client.SSMPClient">
+		<property name="ssmpServer" value="${ssmp.client.url}"/>
+		<property name="sysCode" value="ASPP"/>
+	</bean>
+	<!--中国气象-->
+	<bean id="chinaWeatherService" class="com.lzz.lsp.cmpt.weather.service.impl.ChinaWeatherServiceImpl">
+		<!-- <property name="ak" value="gYK8fp3ungF7o0uSvYY8GG2f"/> -->
+		<property name="key" value="b3930f_SmartWeatherAPI_c509bac"/>
+		<property name="appIdAll" value="932828e51e77cc89"/>
+		<property name="appIdSIX" value="932828"/>
+		<property name="url" value="http://open.weather.com.cn/data/?"/>
+	</bean>
+	<!--lbs定位服务-->
+	<bean id="lbsService" class="com.lzz.lsp.core.lbs.service.impl.LbsServiceImpl">
+		<constructor-arg name="servcieUrl" value="http://115.29.167.103:7003/LbsLogistics.asmx?wsdl"/>
+	</bean>
+	
+	<!--短消息服务-->
+	<bean id="noticeSMS" class="com.lzz.lsp.cmpt.sms.service.support.NoticeSMS">
+		<constructor-arg name="account" value="101100-WEB-HUAX-100477"/>
+		<constructor-arg name="password" value="QRQAMGOP"/>
+	</bean>
+	<bean id="advertiseSMS" class="com.lzz.lsp.cmpt.sms.service.support.AdvertiseSMS">
+		<constructor-arg name="account" value="101100-WEB-HUAX-087027"/>
+		<constructor-arg name="password" value="RKBXMGDY"/>
+	</bean>
+	
+	<!--baidu 简单消息服务 -->
+	<bean id="defaultBceCredentials" class="com.baidubce.auth.DefaultBceCredentials">
+		<constructor-arg name="accessKeyId" value="3a7ea86ccb24475ebd17d23381409137"/>
+		<constructor-arg name="secretKey" value="95cab18276d241618c2c22cc9f7250e0"/>
+	</bean>
+	
+	<bean id="smsClientConfiguration" class="com.baidubce.services.sms.SmsClientConfiguration">
+		<property name="credentials" ref="defaultBceCredentials"/>
+	</bean>
+	                                       
+	<bean id="simpleMessageService" class="com.lzz.lsp.cmpt.sms.baidu.SimpleMessageService">
+		<!-- 属性注入 -->
+		<property name="config" ref="smsClientConfiguration"/>
+		<!-- Map注入 -->  
+		<property name="tplConfigMap">  
+		 <map>  
+		  <entry key="REG_VCODE">  
+		   <value>smsTpl:9d7682a261514f26a8736afd8a237d1c</value>  
+		  </entry>
+		  <entry key="FIND_PWD_VCODE">  
+		   <value>smsTpl:e5f4633ab7b647acb0267e5a67e9db04</value>  
+		  </entry>
+		  <entry key="PAY_VCODE">  
+		   <value>smsTpl:1ee49f083ae64d618a59f314b2538abd</value>  
+		  </entry>
+		  <entry key="LOGIN_CODE">  
+		   <value>smsTpl:9d7682a261514f26a8736afd8a237d1c</value>  
+		  </entry>
+		  <entry key="ADD_ACCOUNT">  
+		   <value>smsTpl:9d7682a261514f26a8736afd8a237d1c</value>  
+		  </entry>
+		  <entry key="INVITE_REG">  
+		   <value>null</value>  
+		  </entry>
+		  <entry key="FREIGHT_GOODS">  
+		   <value>null</value>  
+		  </entry>
+		 </map>  
+		</property>
+	</bean>
+	
+ <!--定义货源信息Solr查询-->
+	<bean id="goodsSourceSolrQuery" class="com.lzz.lsp.core.goodssource.service.impl.GoodsSourceSolrQuery">
+	    <constructor-arg name="solrServerUrl" value="${solr.server.goodssource.url}" />
+	</bean>
+	
+	<!--定义车源信息Solr查询-->
+	<bean id="carSourceSolrQuery" class="com.lzz.lsp.core.carsource.service.impl.CarSourceSolrQuery">
+	    <constructor-arg name="solrServerUrl" value="${solr.server.carsource.url}" />
+	</bean>
+ </beans>

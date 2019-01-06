@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.cmpt.district.dao.DistrictDAO">
+	<resultMap type="District" id="districtMap">
+		<result property="distCode" column="DIST_CODE"/>
+		<result property="parentCode" column="PARENT_CODE"/>
+		<result property="fullName" column="FULL_NAME"/>
+		<result property="distName" column="DIST_NAME"/>
+		<result property="pinYin" column="PIN_YIN"/>
+		<result property="isLeaf" column="IS_LEAF"/>
+		<result property="level" column="LEVEL"/>
+		<result property="pFullName" column="P_FULL_NAME"/>
+		<result property="cFullName" column="C_FULL_NAME"/>
+		<result property="dFullName" column="D_FULL_NAME"/>
+	</resultMap>
+	
+	<select id="queryDistricts" parameterType="District" resultMap="districtMap">
+		SELECT
+			*
+		FROM
+			pisp_district pd
+		<where>
+			<if test="null != distCode and '' != distCode">
+				AND pd.DIST_CODE = #{distCode}
+			</if>
+			<if test="null != parentCode and '' != parentCode">
+				AND pd.PARENT_CODE = #{parentCode}
+			</if>
+			<if test="null != fullName and '' != fullName">
+				AND pd.FULL_NAME like "%${fullName}%"
+			</if>
+			<if test="null != distName and '' != distName">
+				AND pd.DIST_NAME like "%${distName}%"
+			</if>
+			<if test="null != pinYin and '' != pinYin">
+				AND pd.PIN_YIN like "%${pinYin}%"
+			</if>
+			<if test="null != isLeaf and '' != isLeaf">
+				AND pd.IS_LEAF = #{isLeaf}
+			</if>
+			<if test="null != level and '' != level">
+				AND pd.LEVEL = #{level}
+			</if>
+		</where>
+	</select>
+	
+	
+		
+	<select id="querySimpleDistricts" parameterType="District" resultMap="districtMap">
+		SELECT
+			pd.DIST_CODE,
+			pd.PARENT_CODE,
+			pd.FULL_NAME,
+			pd.LEVEL
+		FROM
+		pisp_district pd
+		
+	</select>
+	
+	
+	
+	
+	<select id="queryLtLevelDistricts" parameterType="java.lang.Integer" resultMap="districtMap">
+		SELECT
+			*
+		FROM
+			pisp_district pd
+		where
+			pd.LEVEL &lt;= #{level}
+		ORDER BY pd.DIST_CODE DESC
+	</select>
+	
+	<select id="getDistrict" parameterType="java.lang.String" resultMap="districtMap">
+		SELECT
+			*
+		FROM
+			pisp_district pd
+		WHERE
+			pd.DIST_CODE = #{distCode}
+	</select>
+	
+	<select id="getDistrictByName" parameterType="java.lang.String" resultMap="districtMap">
+		SELECT
+			*
+		FROM
+			pisp_district pd
+		WHERE
+			pd.FULL_NAME LIKE CONCAT('%', #{cityName}, '%') AND pd.LEVEL != 3
+	</select>
+	
+	
+	<update id="updateDistrictBatch" parameterType="java.util.List">
+		UPDATE pisp_district pd
+			<trim prefix="SET" suffixOverrides=",">
+            	<trim prefix="PARENT_CODE = case" suffix="end,">
+                	<foreach collection="list" item="i" index="index">
+						<if test="i.parentCode != null">
+                        	when pd.DIST_CODE = #{i.distCode} then #{i.parentCode}
+                        </if>
+                 	</foreach>
+              	</trim>
+              	
+              	<trim prefix="FULL_NAME = case" suffix="end," >
+                	<foreach collection="list" item="i" index="index">
+                    	<if test="i.fullName != null">
+                        	when pd.DIST_CODE = #{i.distCode} then #{i.fullName}
+                        </if>
+                 	</foreach>
+              	</trim>
+              	
+              	<trim prefix="DIST_NAME = case" suffix="end," >
+                	<foreach collection="list" item="i" index="index">
+                    	<if test="i.distName != null">
+                        	when pd.DIST_CODE = #{i.distCode} then #{i.distName}
+                    	</if>
+					</foreach>
+           		</trim>
+              	
+              	<trim prefix="PIN_YIN = case" suffix="end," >
+                	<foreach collection="list" item="i" index="index">
+                    	<if test="i.pinYin != null">
+                        	when pd.DIST_CODE = #{i.distCode} then #{i.pinYin}
+                    	</if>
+					</foreach>
+           		</trim>
+              	
+              	<trim prefix="IS_LEAF = case" suffix="end," >
+                	<foreach collection="list" item="i" index="index">
+                    	<if test="i.isLeaf != null">
+                        	when pd.DIST_CODE = #{i.distCode} then #{i.isLeaf}
+                    	</if>
+					</foreach>
+           		</trim>
+              	
+	            <trim prefix="LEVEL = case" suffix="end,">
+					<foreach collection="list" item="i" index="index">
+						<if test="i.level != null">
+							when pd.DIST_CODE = #{i.distCode} then #{i.level}
+						</if>
+					</foreach>
+	            </trim>
+            </trim>
+            WHERE 
+			<foreach collection="list" separator="or" item="i" index="index" >
+				pd.DIST_CODE = #{i.distCode}
+          	</foreach>
+	</update>
+	
+	<insert id="addDistrict" parameterType="District">
+		INSERT INTO pisp_district(
+			DIST_CODE, 
+			PARENT_CODE,
+			FULL_NAME,
+			DIST_NAME,
+			PIN_YIN,
+			IS_LEAF,
+			LEVEL,
+			CREATE_USER,
+			CREATE_TIME
+			)VALUES(
+				#{distCode},
+				#{parentCode},
+				#{fullName},
+				#{distName},
+				#{pinYin},
+				#{isLeaf},
+				#{level},
+				#{createUser},
+				#{createTime}
+			)
+	</insert>
+	
+	<insert id="addDistrictBatch" parameterType="java.util.List">
+		INSERT INTO pisp_district(
+			DIST_CODE,
+			PARENT_CODE,
+			FULL_NAME,
+			DIST_NAME,
+			PIN_YIN,
+			IS_LEAF,
+			LEVEL,
+			CREATE_USER,
+			CREATE_TIME
+		)VALUES
+		<foreach collection="disList" item="item" separator=",">
+			(
+			#{distCode},
+			#{parentCode},
+			#{fullName},
+			#{distName},
+			#{pinYin},
+			#{isLeaf},
+			#{level},
+			#{createUser},
+			#{createTime}
+		</foreach>
+	</insert>
+	
+	<update id="updateDistrict" parameterType="District">
+		UPDATE pisp_district pd SET 
+		<if test="null != parentCode and '' != parentCode">PARENT_CODE = #{parentCode},</if>
+		<if test="null != fullName and '' != fullName">FULL_NAME = #{fullName},</if>
+		<if test="null != distName and '' != distName">DIST_NAME = #{distName},</if>
+		<if test="null != pinYin and '' != pinYin">PIN_YIN = #{pinYin},</if>
+		<if test="null != isLeaf and '' != isLeaf">IS_LEAF = #{isLeaf},</if>
+		<if test="null != level and '' != level">LEVEL = #{level},</if>
+		pd.UPDATE_USER = #{updateUser}, pd.UPDATE_TIME = #{updateTime}
+		WHERE pd.DIST_CODE = #{distCode}
+	</update>
+	
+	<delete id="delDistrict" parameterType="java.lang.Integer">
+		DELETE FROM pisp_district WHERE DIST_CODE = #{distCode}
+	</delete>
+	<select id="queryDistrictFullName" parameterType="java.util.Map" resultMap="districtMap">
+		SELECT 
+			pd1.FULL_NAME as P_FULL_NAME,
+			pd2.FULL_NAME as C_FULL_NAME,
+			pd3.FULL_NAME as D_FULL_NAME
+		FROM pisp_district pd1 
+		LEFT JOIN pisp_district pd2 ON pd1.dist_code = pd2.PARENT_CODE
+		LEFT JOIN pisp_district pd3 ON pd2.DIST_CODE = pd3.PARENT_CODE
+		<where>
+			<if test="sendProvinceCode !=null">
+				AND pd1.DIST_CODE=#{sendProvinceCode}
+			</if>
+			<if test="sendCityCode !=null">
+				AND pd2.DIST_CODE =#{sendCityCode}
+			</if>
+			<if test="distCode3 !=null">
+				AND pd3.DIST_CODE =#{distCode3}
+			</if>
+		</where>
+		order by pd1.DIST_CODE desc limit 1
+	</select>
+	
+</mapper>

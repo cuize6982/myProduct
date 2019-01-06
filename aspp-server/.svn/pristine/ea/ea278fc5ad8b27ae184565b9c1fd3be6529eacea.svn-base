@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.agent.dao.AgentMonthBalanceDAO">
+	<resultMap type="AgentVO" id="agentVOMap">
+		<result property="agentAccountName" column="GENERAL_AGENT_ACCOUNT_NAME" />
+		<result property="linkMan" column="LINKMAN" />
+		<result property="enterpriseName" column="ENTERPRISE_NAME" />
+		<result property="subsidyId" column="SUBSIDY_ID" />
+		<result property="timeSlot" column="TIME_SLOT" />
+		<result property="moneyCount" column="MONEY_COUNT" />
+		<result property="payeeTransferMoney" column="PAYEE_TRANSFER_MONEY" />
+		<result property="payeeTransferSerialNo" column="PAYEE_TRANSFER_SERIAL_NO" />
+		<result property="updateUser" column="UPDATE_USER" />
+		<result property="updateTime" column="UPDATE_TIME" />
+		<result property="userId" column="USER_ID" />
+		<result property="payeeName" column="PAYEE_NAME" />
+		<result property="userBankNo" column="USER_BANK_NO" />
+		<result property="paveeBankCode" column="PAVEE_BANK_CODE" />
+	</resultMap>
+	<select id="queryAgentSubsidyUnExchangeRecs" parameterType="AgentQuery" resultMap="agentVOMap">
+		SELECT 
+			ogas.SUBSIDY_ID,
+			ogas.GENERAL_AGENT_ACCOUNT_NAME,
+			ogas.TIME_SLOT,
+			ogas.MONEY_COUNT,
+			pe.ENTERPRISE_NAME,
+			pe.LINKMAN,
+			pu.USER_ID
+		FROM pisp_user pu
+		LEFT JOIN pisp_euser pe ON pu.USER_ID = pe.USER_ID
+		LEFT JOIN osmp_general_agent_subsidy ogas ON ogas.GENERAL_AGENT_ACCOUNT_NAME = pu.ACCOUNT_NAME
+		WHERE ogas.IS_PAY=0
+			<if test="agentAccountName !=null and agentAccountName !=''">
+				AND ogas.GENERAL_AGENT_ACCOUNT_NAME LIKE CONCAT('%', #{agentAccountName}, '%') 
+			</if>
+			<if test="enterpriseName !=null and enterpriseName !=''">
+				AND(pe.ENTERPRISE_NAME like CONCAT('%', #{enterpriseName}, '%') OR pe.LINKMAN like CONCAT('%', #{enterpriseName}, '%'))
+			</if>
+			<if test="timeSlot !=null and timeSlot !=''">
+				AND ogas.TIME_SLOT like CONCAT('%', #{timeSlot}, '%')
+			</if>
+		ORDER BY ogas.CREATE_TIME DESC
+	</select>
+	
+	<select id="queryAgentSubsidyExchangedRecs" parameterType="AgentQuery" resultMap="agentVOMap">
+		SELECT 
+			ogas.SUBSIDY_ID,
+			ogas.GENERAL_AGENT_ACCOUNT_NAME,
+			ogas.TIME_SLOT,
+			ogas.PAYEE_NAME,
+			ogas.PAYEE_TRANSFER_MONEY,
+			ogas.PAYEE_TRANSFER_SERIAL_NO,
+			ogas.PAVEE_BANK_CODE,
+			ogas.UPDATE_USER,
+			ogas.UPDATE_TIME,
+			pe.ENTERPRISE_NAME,
+			pe.LINKMAN,
+			pu.USER_ID,
+			pub.USER_BANK_NO
+		FROM pisp_user pu
+		LEFT JOIN pisp_euser pe ON pu.USER_ID = pe.USER_ID
+		LEFT JOIN osmp_general_agent_subsidy ogas ON ogas.GENERAL_AGENT_ACCOUNT_NAME = pu.ACCOUNT_NAME
+		LEFT JOIN pisp_user_bank pub ON pu.USER_ID = pub.USER_ID
+		WHERE ogas.IS_PAY=1
+			<if test="agentAccountName !=null and agentAccountName !=''">
+				AND ogas.GENERAL_AGENT_ACCOUNT_NAME LIKE CONCAT('%', #{agentAccountName}, '%') 
+			</if>
+			<if test="enterpriseName !=null and enterpriseName !=''">
+				AND (pe.ENTERPRISE_NAME like CONCAT('%', #{enterpriseName}, '%') OR pe.LINKMAN like CONCAT('%', #{enterpriseName}, '%'))
+			</if>
+			<if test="timeSlot !=null and timeSlot !=''">
+				AND ogas.TIME_SLOT like CONCAT('%', #{timeSlot}, '%')
+			</if>
+		ORDER BY ogas.UPDATE_TIME DESC
+	</select>
+	
+	<update id="updateAgentSubsidyInfo" parameterType="AgentSubsidy">
+		UPDATE osmp_general_agent_subsidy ogas
+		SET
+			ogas.GENERAL_AGENT_USER_ID=#{generalAgentUserId},
+			ogas.PAYEE_NAME=#{payeeName},
+			ogas.PAVEE_BANK_CODE=#{paveeBankCode},
+			ogas.PAYEE_BANK_NO=#{payeeBankNo},
+			ogas.PAYEE_TRANSFER_MONEY=#{payeeTransferMoney},
+			ogas.PAYEE_TRANSFER_SERIAL_NO=#{payeeTransferSerialNo},
+			ogas.IS_PAY=#{isPay},
+			ogas.UPDATE_USER=#{updateUser},
+			ogas.UPDATE_TIME=#{updateTime}
+		WHERE ogas.SUBSIDY_ID=#{subsidyId}
+	</update>
+
+</mapper>

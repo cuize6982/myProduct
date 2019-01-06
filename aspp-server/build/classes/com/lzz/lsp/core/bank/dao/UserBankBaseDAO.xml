@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.bank.dao.UserBankBaseDAO">
+	<resultMap type="UserBank" id="userBankMap">
+		<result property="userId" column="USER_ID"/>
+		<result property="bankCode" column="BANK_CODE"/>
+		<result property="userBankNo" column="USER_BANK_NO"/>
+		<result property="openName" column="OPEN__NAME"/>
+	</resultMap>
+
+	<select id="getUserBank" parameterType="java.lang.Integer" resultMap="userBankMap">
+		SELECT
+			pub.USER_ID,
+			pub.BANK_CODE,
+			pub.USER_BANK_NO,
+			pub.OPEN__NAME
+		FROM
+			pisp_user_bank pub
+		WHERE
+			pub.USER_ID = #{userId}
+	</select>
+
+	<insert id="saveUserBank" parameterType="UserBank">
+		INSERT INTO PISP_USER_BANK(
+			USER_ID,
+			BANK_CODE,
+			USER_BANK_NO,
+			OPEN__NAME
+		)VALUES(
+			#{userId},
+			#{bankCode},
+			#{userBankNo},
+			#{openName}
+		)
+	</insert>
+</mapper>

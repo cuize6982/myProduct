@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.template.dao.TemplateParamInfoBaseDAO">
+	<resultMap type="TemplateParamInfo" id="templateParamInfoMap">
+		<id property="paramId" column="PARAM_ID"/>
+		<result property="templateCode" column="TEMPLATE_CODE"/>
+		<result property="paramCode" column="PARAM_CODE"/>
+		<result property="paramName" column="PARAM_NAME"/>
+		<result property="defaultValue" column="DEFAULT_VALUE"/>
+		<result property="mark" column="MARK"/>
+	</resultMap>
+
+	<select id="queryTemplateParamInfos" parameterType="string" resultMap="templateParamInfoMap">
+		SELECT tpi.* FROM osmp_template_param_info tpi WHERE tpi.TEMPLATE_CODE = #{templateCode}
+	</select>
+	
+	<insert id="saveTemplateParamInfoList" parameterType="list">
+		<if test="templateParamInfos != null and templateParamInfos.size() > 0">
+			INSERT INTO osmp_template_param_info(TEMPLATE_CODE,PARAM_CODE,PARAM_NAME,DEFAULT_VALUE,MARK)
+			VALUES
+				<foreach collection="templateParamInfos" item="item" separator="," >
+					(#{item.templateCode},#{item.paramCode},#{item.paramName},#{item.defaultValue,jdbcType=VARCHAR},#{item.mark,jdbcType=VARCHAR})
+				</foreach>
+		</if>
+	</insert>
+	
+	<delete id="deleteTemplateParamInfo" parameterType="string">
+		DELETE FROM osmp_template_param_info WHERE TEMPLATE_CODE = #{templateCode}
+	</delete>
+	
+</mapper>

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.auth.dao.AuthBaseDAO">
+	<resultMap type="UserAuthRec" id="userAuthRecMap">
+		<result property="userAuthId" column="USER_AUTH_ID"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="authType" column="AUTH_TYPE"/>
+		<result property="authWay" column="AUTH_WAY"/>
+		<result property="authContent" column="AUTH_CONTENT"/>
+		<result property="authNodeNo" column="AUTH_NODE_NO"/>
+		<result property="authStatus" column="AUTH_STATUS"/>
+		<result property="authPerson" column="AUTH_PERSON"/>
+		<result property="authTime" column="AUTH_TIME"/>
+		<result property="mark" column="MARK"/>
+		<result property="createTime" column="CREATE_TIME"/>
+		<result property="createUser" column="CREATE_USER"/>
+		<result property="updateTime" column="UPDATE_TIME"/>
+		<result property="updateUser" column="UPDATE_USER"/>
+	</resultMap>
+
+	<select id="queryAuthRecs" parameterType="UserAuthRecQuery" resultMap="userAuthRecMap">
+		SELECT * FROM pisp_user_auth_rec pur
+		<where>
+			<if test="null != userId and '' != userId">AND pur.USER_ID = #{userId}</if>
+			<if test="null != authType and '' != authType">AND pur.AUTH_TYPE = #{authType}</if>
+			<if test="null != authWay and '' != authWay">AND pur.AUTH_WAY = #{authWay}</if>
+			<if test="null != authContent and '' != authContent">AND pur.AUTH_CONTENT = #{authContent}</if>
+			<if test="null != authNodeNo and '' != authNodeNo">AND pur.AUTH_NODE_NO = #{authNodeNo}</if>
+			<if test="null != authStatus and '' != authStatus">AND pur.AUTH_STATUS = #{authStatus}</if>
+			<if test="null != authPerson and '' != authPerson">AND pur.AUTH_PERSON = #{authPerson}</if>
+			<if test="null != authTime and '' != authTime">AND pur.AUTH_TIME = #{authTime}</if>
+			<if test="null != mark and '' != mark">AND pur.MARK = #{mark}</if>
+		</where>
+	</select>
+
+	<select id="getUserLastAuthRec" parameterType="java.lang.Integer" resultMap="userAuthRecMap">
+		SELECT * FROM pisp_user_auth_rec pur WHERE pur.USER_AUTH_ID = (
+			SELECT MAX(pmax.USER_AUTH_ID) FROM pisp_user_auth_rec pmax WHERE pmax.USER_ID = #{userId}
+		)
+	</select>
+
+	<insert id="addAuthRec" parameterType="UserAuthRec">
+		INSERT INTO pisp_user_auth_rec(
+			USER_ID,
+			AUTH_TYPE,
+			AUTH_WAY,
+			AUTH_CONTENT,
+			AUTH_NODE_NO,
+			AUTH_STATUS,
+			AUTH_PERSON,
+			AUTH_TIME,
+			MARK,
+			CREATE_TIME,
+			CREATE_USER
+		)VALUES(
+			#{userId},
+			#{authType},
+			#{authWay},
+			#{authContent},
+			#{authNodeNo},
+			#{authStatus},
+			#{authPerson},
+			#{authTime},
+			#{mark},
+			#{createTime},
+			#{createUser}
+		)
+	</insert>
+
+	<update id="upDateAuthRec" parameterType="UserAuthRec">
+		UPDATE pisp_user_auth_rec 
+			SET 
+				AUTH_TYPE = #{authType},
+				AUTH_WAY = #{authWay},
+				AUTH_CONTENT = #{authContent},
+				AUTH_NODE_NO = #{authNodeNo},
+				AUTH_STATUS = #{authStatus},
+				AUTH_TIME = #{authTime},
+				MARK = #{mark},
+				UPDATE_TIME =#{updateTime}, UPDATE_USER = #{updateUser}
+			WHERE USER_AUTH_ID = #{userAuthId}
+	</update>
+
+	<update id="updateAuthRecInfo" parameterType="UserAuthRec">
+		UPDATE pisp_user_auth_rec 
+		SET 
+			AUTH_STATUS = #{authStatus}, 
+			AUTH_PERSON = #{authPerson},
+			AUTH_TIME = #{authTime},
+			AUTH_WAY = #{authWay},
+			MARK = #{mark},
+			UPDATE_USER = #{updateUser},
+			UPDATE_TIME = #{updateTime}
+		WHERE USER_AUTH_ID = #{userAuthId}
+	</update>
+	
+</mapper>

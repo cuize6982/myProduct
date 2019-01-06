@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.general.dao.GeneralAgentSubsidyBaseDAO">
+	<resultMap type="GeneralAgentSubsidy" id="generalAgentSubsidyMap" >
+		<id property="subsidyId" column="SUBSIDY_ID"/>
+		<result property="generalAgentAccountName" column="GENERAL_AGENT_ACCOUNT_NAME"/>
+		<result property="generalAgentUserId" column="GENERAL_AGENT_USER_ID"/>
+		<result property="timeSlot" column="TIME_SLOT"/>
+		<result property="moneyCount" column="MONEY_COUNT"/>
+		<result property="payeeName" column="PAYEE_NAME"/>
+		<result property="paveeBankCode" column="PAVEE_BANK_CODE"/>
+		<result property="payeeBankNo" column="PAYEE_BANK_NO"/>
+		<result property="payeeTransferMoney" column="PAYEE_TRANSFER_MONEY"/>
+		<result property="payeeTransferSerialNo" column="PAYEE_TRANSFER_SERIAL_NO"/>
+		<result property="isPay" column="IS_PAY"/>
+	</resultMap>
+	
+	
+	<insert id="saveGeneralAgentSubsidyInfo" parameterType="GeneralAgentSubsidy">
+		insert into osmp_general_agent_subsidy(
+					GENERAL_AGENT_ACCOUNT_NAME,
+					GENERAL_AGENT_USER_ID,
+					TIME_SLOT,
+					MONEY_COUNT,
+					PAYEE_NAME,
+					PAVEE_BANK_CODE,
+					PAYEE_BANK_NO,
+					PAYEE_TRANSFER_MONEY,
+					PAYEE_TRANSFER_SERIAL_NO,
+					IS_PAY,
+					CREATE_USER,
+					CREATE_TIME
+			  )
+		values(
+					#{generalAgentAccountName},
+					#{generalAgentUserId},
+					#{timeSlot},
+					#{moneyCount},
+					#{payeeName},
+					#{paveeBankCode},
+					#{payeeBankNo},
+					#{payeeTransferMoney},
+					#{payeeTransferSerialNo},
+					#{isPay},
+					#{createUser},
+					#{createTime}
+		       )
+	</insert>
+</mapper>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.lbs.dao.LbsDAO">
+	<resultMap type="LbsOpenRec" id="lbsOpenRecMap" >
+		<id property="lbsOpenId" column="LBS_OPEN_ID"/>
+		<result property="mobile" column="MOBILE"/>
+		<result property="lastOpenTime" column="LAST_OPEN_TIME"/>
+	</resultMap>
+	<insert id="saveLbsRec" parameterType="LbsRec">
+		insert into lbs_rec(LBS_REC_ID,MOBILE,LOCATIION_TIME,IS_SUCCESS,RETURN_INFO)
+		VALUES
+		(#{lbsRecId,jdbcType=INTEGER},#{mobile,jdbcType=VARCHAR},#{locationTime,jdbcType=TIMESTAMP}
+		,#{isSuccess,jdbcType=INTEGER},#{returnInfo,jdbcType=VARCHAR})
+	</insert>
+	<insert id="saveLbsOpenRec" parameterType="LbsOpenRec">
+		INSERT INTO lbs_open_rec(LBS_OPEN_ID, MOBILE, LAST_OPEN_TIME) 
+		VALUES 
+		(#{lbsOpenId,jdbcType=INTEGER},#{mobile,jdbcType=VARCHAR},#{lastOpenTime,jdbcType=TIMESTAMP});
+	</insert>
+	<delete id="delLbsOpenRecByMobile" parameterType="java.lang.String">
+		DELETE FROM lbs_open_rec WHERE mobile = #{mobile}
+	</delete>
+	<select id="getLbsOpenRecByMobile" parameterType="java.lang.String" resultMap="lbsOpenRecMap">
+		SELECT * from lbs_open_rec loc where loc.mobile = #{mobile}
+	</select>
+</mapper>

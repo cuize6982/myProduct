@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:aop="http://www.springframework.org/schema/aop" 
+		xmlns:context="http://www.springframework.org/schema/context" 
+		xmlns:tx="http://www.springframework.org/schema/tx" 
+		xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd  
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.1.xsd  
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd  
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd ">
+	    
+	<!--①：规约所有进行扫描的类，以完成Bean创建和自动依赖注入的功能-->
+	<context:component-scan base-package="com.lzz"/>
+	<context:property-placeholder location="classpath:conf/props/**/*.properties"/>
+	
+	<!--定义属性信息源-->
+	<bean id="propertiesSource" class="com.lzz.lton.core.io.PropertiesSource">
+		<property name="path" value="classpath:conf/props/*/*.properties"/>
+		<property name="propertiesResourceParser">
+			<bean class="com.lzz.lton.core.io.support.MapPropertiesResourceParser"/>
+		</property>
+	</bean>
+	
+	<!-- 配置数据源 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driverClassName}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+		<!-- 连接池启动时的初始值 -->
+		<property name="initialSize" value="${jdbc.initialSize}" />
+		<!-- 连接池的最大值 -->
+		<property name="maxActive" value="${jdbc.maxActive}" />
+		<!-- 最大空闲值，当经过一个高峰时间后，连接池可以慢慢将已经用不到的链接慢慢释放一部分，一直减小到maxIdle为止 -->
+		<property name="maxIdle" value="${jdbc.maxIdle}" />
+		<!-- 最小空闲值，当空闲的连接数小于闸值时，连接池就会预申请去一些连接，以免洪峰来时来不急申请 -->
+		<property name="minIdle" value="${jdbc.minIdle}" />
+        <!--removeAbandoned: 是否自动回收超时连接--> 
+		<property name="removeAbandoned" value="true"/> 
+		<!--removeAbandonedTimeout: 超时时间(以秒数为单位)--> 
+		<property name="removeAbandonedTimeout" value="180"/> 
+		<!--maxWait: 超时等待时间以毫秒为单位 6000毫秒/1000等于60秒--> 
+		<property name="maxWait" value="3000"/> 
+		<property name="validationQuery" value="SELECT NOW() FROM DUAL"/>  
+		<property name="testOnBorrow" value="true"/>
+    	
+	</bean>
+	
+	<!--配置Spring JdbcTemplate-->
+	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+	
+	<!--事务配置 -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="create*" propagation="REQUIRED" rollback-for="Exception"/>
+			<tx:method name="add*" propagation="REQUIRED" rollback-for="Exception"/>
+			<tx:method name="save*" propagation="REQUIRED" rollback-for="Exception"/>
+			<tx:method name="publish*" propagation="REQUIRED" rollback-for="Exception"/>
+			<tx:method name="commit*" propagation="REQUIRED" rollback-for="Exception"/>
+			<tx:method name="generate*" propagation="REQUIRED" rollback-for="Exception"/>
+			<tx:method name="favorite*" propagation="REQUIRED" rollback-for="Exception"/>
+			<tx:method name="extract*" propagation="REQUIRED" rollback-for="Exception"/>
+			<tx:method name="set*" propagation="REQUIRED" rollback-for="Exception"/>
+			<tx:method name="update*" propagation="REQUIRED" rollback-for="Exception"/>
+			<tx:method name="modify*" propagation="REQUIRED" rollback-for="Exception"/>
+			<tx:method name="delete*" propagation="REQUIRED" rollback-for="Exception"/>
+			<tx:method name="remove*" propagation="REQUIRED" rollback-for="Exception"/>
+			<tx:method name="cancel*" propagation="REQUIRED" rollback-for="Exception"/>
+			<tx:method name="do*" propagation="REQUIRED" rollback-for="Exception"/>
+			<tx:method name="login*" propagation="REQUIRED" rollback-for="Exception"/>
+			<tx:method name="register*" propagation="REQUIRED" rollback-for="Exception"/>
+			<tx:method name="bind*" propagation="REQUIRED" rollback-for="Exception"/>
+			<tx:method name="submit*" propagation="REQUIRED" rollback-for="Exception"/>
+			<tx:method name="*" read-only="true"/>
+		</tx:attributes>
+	</tx:advice>
+
+	<aop:config>
+		<aop:pointcut id="txPointcut" expression="execution(* com.lzz.aspp.*.*.*ServiceImpl.*(..)) OR execution(* com.lzz.lsp.*.*.*.*.*ServiceImpl.*(..)) OR execution(* com.lzz.lsp.*.*.*.*ServiceImpl.*(..))"/>
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="txPointcut" order="1"/>
+	</aop:config>
+
+	<!--MyBatis配置 -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+	  <property name="dataSource" ref="dataSource" />
+	  <property name="configLocation" value="classpath:conf/mybatis/config.xml"/>
+	</bean>	
+	
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+       <property name="basePackage" value="com.lzz.aspp.**.dao,com.lzz.lsp.**.dao" />
+    </bean>
+    
+    <!--EhCache配置 -->
+    <bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+		<property name="configLocation">
+			<value>classpath:conf/cache/ehcache.xml</value>
+		</property>
+	</bean>
+
+	<bean id="cacheFactory" class="com.lzz.lton.core.cache.EhCacheFactory">
+		<property name="cacheManager" ref="cacheManager"/>
+	</bean>
+    
+</beans>

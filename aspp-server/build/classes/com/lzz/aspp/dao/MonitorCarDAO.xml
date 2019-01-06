@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.aspp.dao.MonitorCarDAO">
+	<resultMap type="com.lzz.lsp.base.vo.CarMonitorVO" id="monitorCarMap">
+		<result property="carId" column="CAR_ID"/>
+		<result property="carNo" column="CAR_NO"/>
+		<result property="driver" column="DRIVER"/>
+		<result property="driverPhone" column="DRIVER_PHONE"/>
+		<result property="carType" column="CAR_TYPE"/>
+		<result property="carTypeName" column="CAR_TYPE_NAME"/>
+		<result property="carLengthName" column="CAR_LENGTH_NAME"/>
+		<result property="loadWeight" column="LOAD_WEIGHT"/>
+		<result property="carPhoto" column="CAR_PHOTO"/>
+		<result property="locationName" column="LOCATION_NAME"/>
+		<result property="locateTime" column="LOCATE_TIME"/>
+		<result property="longitude" column="LONGITUDE"/>
+		<result property="latitude" column="LATITUDE"/>
+		<result property="defineCarType" column="DEFINE_CAR_TYPE"/>
+		<result property="carTypeFirstCode" column="CAR_TYPE_FIRST_CODE"/>
+		<result property="carTypeSecondCode" column="CAR_TYPE_SECOND_CODE"/>
+		<result property="carTypeThirdCode" column="CAR_TYPE_THIRD_CODE"/>
+	</resultMap>
+	
+	<select id="queryAddMonitorCar" parameterType="CarMonitorQuery" resultMap="monitorCarMap">
+		SELECT
+			*
+		FROM
+			(
+					(SELECT
+						pc.*, 
+						0 AS orderNo,
+						len.VAL_NAME AS CAR_LENGTH_NAME,
+						type.VAL_NAME AS CAR_TYPE_NAME
+					FROM
+						PISP_CAR pc
+					LEFT JOIN pisp_user_car puc ON pc.CAR_ID = puc.CAR_ID
+					LEFT JOIN pisp_user pu ON pu.USER_ID = puc.USER_ID
+					LEFT JOIN pisp_dict_val len ON len.VAL_CODE = pc.CAR_LENGTH AND len.DICT_CODE = 'CAR_LENGTH'
+					LEFT JOIN pisp_dict_val type ON type.VAL_CODE = pc.CAR_TYPE AND type.DICT_CODE = 'CAR_TYPE'
+					WHERE
+						pc.IS_DELETE = 0
+					AND pu.USER_TYPE = 1)
+				UNION
+					(SELECT
+						ppc.*, 
+						1 AS orderNo,
+						plen.VAL_NAME AS CAR_LENGTH_NAME,
+						ptype.VAL_NAME AS CAR_TYPE_NAME
+					FROM
+						pisp_user_car ppuc
+					LEFT JOIN pisp_car ppc ON ppuc.CAR_ID = ppc.CAR_ID
+					LEFT JOIN pisp_dict_val plen ON plen.VAL_CODE = ppc.CAR_LENGTH AND plen.DICT_CODE = 'CAR_LENGTH'
+					LEFT JOIN pisp_dict_val ptype ON ptype.VAL_CODE = ppc.CAR_TYPE AND ptype.DICT_CODE = 'CAR_TYPE'
+					WHERE
+						ppuc.USER_ID = #{userId}
+					AND ppc.IS_DELETE = 0)
+			) car
+			<where>
+				AND car.CAR_ID NOT IN (SELECT pucm.MONITOR_CAR_ID FROM pisp_user_car_monitor pucm WHERE pucm.MONITOR_PERSON = #{userId} AND pucm.MONITOR_CAR_ID = car.CAR_ID)
+				<if test="null != driver and '' != driver">
+					AND	car.DRIVER LIKE '%${driver}%'
+				</if>
+				<if test="null != driverPhone and '' != driverPhone">
+					AND car.DRIVER_PHONE LIKE '%${driverPhone}%'
+				</if>
+			</where>
+		ORDER BY
+			car.orderNo DESC
+	</select>
+</mapper>

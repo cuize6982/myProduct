@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.runcity.dao.RunCityBaseDAO">
+	<resultMap type="DriverRunCity" id="drcMapper">
+		<id property="runCityId" column="RUN_CITY_ID"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="cityCode" column="CITY_CODE"/>
+		<result property="toProvinceCode" column="TO_PROVINCE_CODE"/>
+		<result property="areaCode" column="AREA_CODE"/>
+		<result property="createTime" column="CREATE_TIME"/>
+		<result property="updateTime" column="UPDATE_TIME"/>
+		<result property="createUser" column="CREATE_USER"/>
+		<result property="updateUser" column="UPDATE_USER"/>
+		<result property="runCity" column="runCity"/>
+	</resultMap>
+	
+	<!-- 保存常跑城市信息 -->
+	<insert id="saveDriverRunCity" parameterType="DriverRunCity">
+		insert into 
+			pisp_driver_run_city(
+					RUN_CITY_ID,
+					USER_ID,
+					CITY_CODE,
+					TO_PROVINCE_CODE,
+					CREATE_TIME,
+					UPDATE_TIME,
+					CREATE_USER,
+					UPDATE_USER,
+					AREA_CODE) 
+			values(#{runCityId},
+					#{userId},
+					#{cityCode},
+					#{toProvinceCode},
+					#{createTime},
+					#{updateTime},
+					#{createUser},
+					#{updateUser},
+					#{areaCode})
+	</insert>
+	
+	<delete id="deleteRuncityByRunCityId" parameterType="java.lang.Integer">
+		DELETE FROM pisp_driver_run_city WHERE RUN_CITY_ID = #{runCityId}
+	</delete>
+	
+	<delete id="deleteRuncityByUserId" parameterType="java.lang.Integer">
+		DELETE FROM pisp_driver_run_city WHERE USER_ID = #{userId}
+	</delete>
+	
+	
+	<select id="queryRunCitys" parameterType="java.lang.Integer" resultMap="drcMapper">
+		SELECT
+			pdrc.CITY_CODE,
+			pdrc.CREATE_TIME,
+			pdrc.CREATE_USER,
+			pdrc.RUN_CITY_ID,
+			pdrc.TO_PROVINCE_CODE,
+			pdrc.USER_ID,
+			pdrc.AREA_CODE,
+			tpt.DIST_NAME AS areaCodeName,
+			rci.DIST_NAME AS runCity,
+			tpc.DIST_NAME AS runCityParentName
+		FROM
+			pisp_driver_run_city pdrc
+		LEFT JOIN pisp_district rci ON rci.DIST_CODE = pdrc.CITY_CODE
+		LEFT JOIN pisp_district tpc ON tpc.DIST_CODE = pdrc.TO_PROVINCE_CODE
+		LEFT JOIN pisp_district tpt ON tpt.DIST_CODE = pdrc.AREA_CODE
+		WHERE
+			pdrc.USER_ID = #{userId}
+		ORDER BY pdrc.CREATE_TIME asc
+	</select>
+	
+	<!-- 根据用户ID获取该用户常跑城市 -->
+	<select id="getCurrentUserRunCityInfo" resultMap="drcMapper" parameterType="java.lang.Integer">
+		SELECT group_concat(run.RUN_CITYS)AS runCity FROM (select  IFNULL(CITY_CODE,TO_PROVINCE_CODE) AS RUN_CITYS  from pisp_driver_run_city where USER_ID=#{userId}) AS run
+	</select>
+	<!-- 根据用户ID获取该用户常跑城市CODE -->
+	<select id="getCurrentUserRunCityInfoByUserId" resultMap="drcMapper" parameterType="java.lang.Integer">
+		
+		SELECT
+			group_concat(IFNULL(TO_PROVINCE_CODE,''), '',IFNULL(CITY_CODE, ''), '',IFNULL(AREA_CODE, ''),'') AS runCity
+		FROM
+			pisp_driver_run_city
+		WHERE
+			USER_ID = #{userId}
+	
+	</select>
+</mapper>

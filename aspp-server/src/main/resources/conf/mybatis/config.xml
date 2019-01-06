@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+	<configuration>
+		<settings>
+			<!--设置日志记录使用方式-->
+			<setting name="logImpl" value="LOG4J" />
+		</settings>
+		<!-- 配置类型别名-->
+		<typeAliases>
+		  	<package name="com.lzz.lsp.base.domain"/>
+		  	<package name="com.lzz.lsp.base.qo"/>
+		  	<package name="com.lzz.lsp.base.vo"/>
+		  	<package name="com.lzz.aspp.vo"/>
+		</typeAliases>
+		<!-- 翻页插件拦截器-->
+		<plugins>
+			<plugin interceptor="com.lzz.lton.core.query.MyBatisPaginationInterceptor">
+				<property name="dialect" value="mysql" />
+			</plugin>
+		</plugins>
+	</configuration>

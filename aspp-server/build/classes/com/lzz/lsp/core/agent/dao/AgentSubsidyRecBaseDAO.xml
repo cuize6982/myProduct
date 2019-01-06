@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.agent.dao.AgentSubsidyRecBaseDAO">
+	<resultMap id="AgentSubsidyRecMap" type="com.lzz.lsp.base.domain.AgentSubsidyRec">
+		<id column="REC_ID" property="recId" jdbcType="INTEGER" />
+		<result column="GENERAL_USER_ID" property="generalUserId" jdbcType="INTEGER" />
+		<result column="SECOND_USER_ID" property="secondUserId" jdbcType="INTEGER" />
+		<result column="TIME_SLOT" property="timeSlot" jdbcType="VARCHAR" />
+		<result column="MONEY_COUNT" property="moneyCount" jdbcType="DECIMAL" />
+		<result column="SCORE_RULE_ID" property="scoreRuleId" jdbcType="INTEGER" />
+		<result column="SCORE_ITEM_NAME" property="scoreItemName" jdbcType="VARCHAR" />
+		<result column="BUS_ID" property="busId" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<sql id="Base_Column_List" >
+	  REC_ID, GENERAL_USER_ID, SECOND_USER_ID, TIME_SLOT, MONEY_COUNT, SCORE_RULE_ID, SCORE_ITEM_NAME, 
+	  BUS_ID
+	</sql>
+	
+	<select id="getInfo" parameterType="map" resultMap="AgentSubsidyRecMap">
+	    select 
+	    <include refid="Base_Column_List" />
+	    from osmp_general_agent_subsidy_rec asr
+	    <where>
+	    	<if test="generalUserId != null">AND asr.GENERAL_USER_ID = #{generalUserId}</if>
+	    	<if test="secondUserId != null">AND asr.SECOND_USER_ID = #{secondUserId}</if>
+	    	<if test="timeSlot != null">AND asr.TIME_SLOT = #{timeSlot}</if>
+	    	<if test="scoreRuleId != null">AND asr.SCORE_RULE_ID = #{scoreRuleId}</if>
+	    </where>
+	</select>
+	
+	<insert id="insert" parameterType="AgentSubsidyRec" >
+	  insert into osmp_general_agent_subsidy_rec (GENERAL_USER_ID, SECOND_USER_ID, 
+	    TIME_SLOT, MONEY_COUNT, SCORE_RULE_ID, 
+	    SCORE_ITEM_NAME, BUS_ID)
+	  values (#{generalUserId,jdbcType=INTEGER}, #{secondUserId,jdbcType=INTEGER}, 
+	    #{timeSlot,jdbcType=VARCHAR}, #{moneyCount,jdbcType=DECIMAL}, #{scoreRuleId,jdbcType=INTEGER}, 
+	    #{scoreItemName,jdbcType=VARCHAR}, #{busId,jdbcType=VARCHAR})
+	</insert>
+	
+	<update id="updateNotNullByPrimaryKey" parameterType="AgentSubsidyRec" >
+	  update osmp_general_agent_subsidy_rec
+	  <set>
+	    <if test="generalUserId != null" >
+	      GENERAL_USER_ID = #{generalUserId,jdbcType=INTEGER},
+	    </if>
+	    <if test="secondUserId != null" >
+	      SECOND_USER_ID = #{secondUserId,jdbcType=INTEGER},
+	    </if>
+	    <if test="timeSlot != null" >
+	      TIME_SLOT = #{timeSlot,jdbcType=VARCHAR},
+	    </if>
+	    <if test="moneyCount != null" >
+	      MONEY_COUNT = #{moneyCount,jdbcType=DECIMAL},
+	    </if>
+	    <if test="scoreRuleId != null" >
+	      SCORE_RULE_ID = #{scoreRuleId,jdbcType=INTEGER},
+	    </if>
+	    <if test="scoreItemName != null and scoreItemName != ''" >
+	      SCORE_ITEM_NAME = #{scoreItemName,jdbcType=VARCHAR},
+	    </if>
+	    <if test="busId != null and busId != ''" >
+	      BUS_ID = #{busId,jdbcType=VARCHAR},
+	    </if>
+	  </set>
+	  where REC_ID = #{recId,jdbcType=INTEGER}
+	</update>
+</mapper>

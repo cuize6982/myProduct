@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.myaccount.dao.MyAccountDAO">
+	<resultMap type="PayChannel" id="payChannelMap">
+		<id property="id" column="ID"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="payAccount" column="PAY_ACCOUNT"/>
+		<result property="phoneBank" column="PHONE_BANK"/>
+		<result property="useStatus" column="USE_STATUS"/>
+		<result property="checkStatus" column="CHECK_STATUS"/>
+		<result property="createTime" column="CREATE_TIME"/>
+		<result property="channelType" column="CHANNEL_TYPE"/>
+		<result property="realName" column="REAL_NAME"/>
+		<result property="isPay" column="IS_PAY"/>
+		<result property="accountName" column="ACCOUNT_NAME"/>
+		<result property="isDefault" column="IS_DEFAULT"/>
+		<result property="bank" column="BANK"/>
+		<result property="bankProvince" column="BANK_PROVINCE"/>
+		<result property="bankPCode" column="BANK_PCODE"/>
+		<result property="bankCity" column="BANK_CITY"/>
+		<result property="bankCCode" column="BANK_CCODE"/>
+	</resultMap>
+	
+	<insert id="addMyAccount" parameterType="PayChannel">
+		insert into pisp_pay_channel(
+		USER_ID,
+		PAY_ACCOUNT,
+		PHONE_BANK,
+		USE_STATUS,
+		CHECK_STATUS,
+		CREATE_TIME,
+		CHANNEL_TYPE,
+		REAL_NAME,
+		IS_PAY,
+		BANK,
+		BANK_PROVINCE,
+		BANK_PCODE,
+		BANK_CITY,
+		BANK_CCODE
+		)
+		values(
+		#{userId,jdbcType=INTEGER},
+		#{payAccount,jdbcType=VARCHAR},
+		#{phoneBank,jdbcType=VARCHAR},
+		#{useStatus,jdbcType=INTEGER},
+		#{checkStatus,jdbcType=INTEGER},
+		#{createTime,jdbcType=TIMESTAMP},
+		#{channelType,jdbcType=INTEGER},
+		#{realName,jdbcType=VARCHAR},
+		#{isPay,jdbcType=INTEGER},
+		#{bank,jdbcType=VARCHAR},
+		#{bankProvince,jdbcType=VARCHAR},
+		#{bankPCode,jdbcType=VARCHAR},
+		#{bankCity,jdbcType=VARCHAR},
+		#{bankCCode,jdbcType=VARCHAR}
+	  )
+	</insert>
+	
+	<select id="getPayChannelList"  resultMap="payChannelMap">
+		SELECT * FROM pisp_pay_channel pc WHERE pc.USER_ID = #{userId}
+	</select>
+	
+	<delete id="deleteMyAccount" parameterType="java.util.Map">
+		DELETE FROM pisp_pay_channel 
+	    WHERE  1 = 1
+	    <if test="null !=userId and '' !=userId">AND USER_ID = #{userId}</if>
+	    <if test="null !=channelType and '' !=channelType"> AND CHANNEL_TYPE = #{channelType}</if>
+	    <if test="null !=channelId and '' !=channelId">AND ID = #{channelId}</if>
+	</delete>
+	
+	<select id="findMyAccount"  resultType="Integer">
+		SELECT count(0) FROM pisp_pay_channel pc WHERE pc.USER_ID = #{userId} AND CHANNEL_TYPE = #{channelType}
+	</select>
+	
+	<select id="getPayChannel"  resultMap="payChannelMap">
+		SELECT * FROM pisp_pay_channel pc WHERE pc.USER_ID = #{userId} AND CHANNEL_TYPE = #{channelType}  limit 0,1
+	</select>
+	
+	<update id="updateChannelStatus" parameterType="Map">
+		UPDATE pisp_pay_channel pc 
+		<set>
+			<if test="useStatus != null  and useStatus != '' or useStatus ==0">pc.USE_STATUS = #{useStatus},</if>
+			<if test="checkStatus != null  and checkStatus != '' or checkStatus ==0">pc.CHECK_STATUS = #{checkStatus},</if>
+			<if test="isPay != null  and  isPay != '' or isPay ==0 ">pc.IS_PAY = #{isPay},</if>
+		</set>
+		WHERE 1 = 1 
+		<if test="userId != null  and userId != '' "> AND pc.USER_ID = #{userId} </if>
+		<if test="channelId != null  and channelId != '' "> AND pc.ID = #{channelId} </if>
+	</update>
+	
+	<select id="getPayChannelById" parameterType="Integer"  resultMap="payChannelMap">
+		SELECT * FROM pisp_pay_channel pc WHERE pc.ID = #{channelId}
+	</select>
+	
+	<select id="getPayChannelByAccount" parameterType="String"  resultMap="payChannelMap">
+		SELECT * FROM pisp_pay_channel pc WHERE pc.PAY_ACCOUNT = #{payAccount}  limit 0,1
+	</select>
+	
+	
+	<select id="queryChannelListPage" parameterType="PayChannelQuery" resultMap="payChannelMap">
+		SELECT 
+		u.ACCOUNT_NAME,
+		pc.* 
+		FROM pisp_pay_channel pc  
+		LEFT JOIN pisp_user u ON pc.USER_ID = u.USER_ID
+		where 1 = 1
+		
+		<if test="channelType !=null and channelType !='' ">
+			AND pc.CHANNEL_TYPE = #{channelType}
+		</if>
+		
+		<if test="payAccount !=null and payAccount !='' ">
+			AND pc.PAY_ACCOUNT  LIKE '%${payAccount}%'
+		</if>
+		
+		<if test="isPay != null and isPay !=''  or isPay ==0 ">
+			AND pc.IS_PAY= #{isPay}
+		</if>
+		
+		<if test="checkStatus !=null and checkStatus !='' or checkStatus ==0">
+			AND pc.CHECK_STATUS =  #{checkStatus}
+		</if>
+		
+		<if test="useStatus !=null and useStatus !='' or useStatus ==0">
+			AND pc.USE_STATUS =  #{useStatus}
+		</if>
+		
+		<if test="accountName !=null and accountName !='' ">
+			AND u.ACCOUNT_NAME  LIKE '%${accountName}%'
+		</if>
+		
+		<!-- AND (pc.CHECK_STATUS = 0 or pc.CHECK_STATUS = 2) -->
+		ORDER BY pc.CREATE_TIME DESC
+	</select>
+	
+	<select id="checkIsHaveValidAccounts"  resultType="Integer" parameterType="PayChannel">
+		SELECT count(0) FROM pisp_pay_channel pc 
+		<where>
+			USE_STATUS = 1 AND CHECK_STATUS = 1
+			<if test="userId !=null and userId !='' ">
+				AND pc.USER_ID = #{userId} 
+			</if>
+			<if test="channelType !=null and channelType !='' ">
+				AND CHANNEL_TYPE = #{channelType} 
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryChannelList"   parameterType="PayChannel" resultMap="payChannelMap" >
+		SELECT *  FROM pisp_pay_channel pc 
+		<where>
+			<if test="userId !=null and userId !='' ">
+				AND pc.USER_ID = #{userId} 
+			</if>
+			<if test="channelType !=null and channelType !='' ">
+				AND CHANNEL_TYPE = #{channelType} 
+			</if>
+			<if test="isValid !=null and isValid == 1">
+				AND USE_STATUS = 1 AND CHECK_STATUS = 1
+			</if>
+			
+		</where>
+	</select>
+	
+	<update id="setDefaultChannel" parameterType="Map">
+		UPDATE pisp_pay_channel pc  set pc.IS_DEFAULT = 1
+		WHERE  pc.USER_ID = #{userId} and pc.CHANNEL_TYPE = #{channelType}
+	</update>
+	
+	
+	<update id="cancelDefaultChannel" parameterType="Map">
+		UPDATE pisp_pay_channel pc  set pc.IS_DEFAULT = 0
+		WHERE  pc.USER_ID = #{userId} and pc.CHANNEL_TYPE != #{channelType}
+	</update>
+	
+	<!-- add by dlg -->
+	<select id="getPayChannelByAccountwx" parameterType="String"  resultMap="payChannelMap">		
+		SELECT * FROM pisp_pay_channel pc WHERE pc.USER_ID = #{userId} and pc.CHANNEL_TYPE = '3'
+	</select>
+	<!-- add by dlg -->
+	<update id="updatePayChannelwx" parameterType="Map">
+		UPDATE pisp_pay_channel pc  set pc.PAY_ACCOUNT = #{payAccount}, pc.REAL_NAME= #{realName}
+		WHERE  pc.USER_ID = #{userId} and pc.CHANNEL_TYPE = #{channelType}
+	</update>
+	
+</mapper>

@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.goodssource.dao.GoodsSourceViewDAO">
+	<resultMap type="GoodsSourceView" id="goodsSourceViewMap">
+		<id property="publishId" column="PUBLISH_ID"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="infoType" column="INFO_TYPE"/>
+		<result property="infoId" column="INFO_ID"/>
+		<result property="publishFreq" column="PUBLISH_FREQ"/>
+		<result property="repateTimes" column="REPATE_TIMES"/>
+		<result property="status" column="STATUS"/>
+		<result property="auditor" column="AUDITOR"/>
+		<result property="publishTime" column="PUBLISH_TIME"/>
+		<result property="isStruct" column="IS_STRUCT"/>
+		<result property="backstageWrite" column="BACKSTAGE_WRITE"/>
+		<result property="sum" column="SUM"/>
+		
+		<result property="goodsSourceId" column="GOODS_SOURCE_ID"/>
+		<result property="fromPlace" column="FROM_PLACE"/>
+		<result property="toPlace" column="TO_PLACE"/>
+		<result property="fromPCode" column="FROM_P_CODE"/>
+		<result property="fromCCode" column="FROM_C_CODE"/>
+		<result property="fromTCode" column="FROM_T_CODE"/>
+		<result property="toPCode" column="TO_P_CODE"/>
+		<result property="toCCode" column="TO_C_CODE"/>
+		<result property="toTCode" column="TO_T_CODE"/>
+		<result property="goodsName" column="GOODS_NAME"/>
+		<result property="goodsTypeName" column="GOODS_TYPE_NAME"/>
+		<result property="goodsClass" column="GOODS_CLASS"/>
+		<result property="sourceType" column="SOURCE_TYPE"/>
+		<result property="weight" column="WEIGHT"/>
+		<result property="price" column="PRICE"/>
+		<result property="carTypeNeedName" column="CAR_TYPE_NEED_NAME"/>
+		<result property="carLengthNeedName" column="CAR_LENGTH_NEED_NAME"/>
+		<result property="carLengthNeed" column="CAR_LENGTH_NEED"/>
+		<result property="carLengthNeedMin" column="CAR_LENGTH_NEED_MIN"/>
+		<result property="carLengthNeedMax" column="CAR_LENGTH_NEED_MAX"/>
+		<result property="volume" column="VOLUME"/>
+		<result property="defineCarType" column="DEFINE_CAR_TYPE"/>
+		<result property="carTypeFirstCode" column="CAR_TYPE_FIRST_CODE"/>
+		<result property="carTypeSecondCode" column="CAR_TYPE_SECOND_CODE"/>
+		<result property="carTypeThirdCode" column="CAR_TYPE_THIRD_CODE"/>
+		<result property="carTypeFirstName" column="CAR_TYPE_FIRST_NAME"/>
+		<result property="carTypeSecondName" column="CAR_TYPE_SECOND_NAME"/>
+		<result property="carTypeThirdName" column="CAR_TYPE_THIRD_NAME"/>
+		<result property="claimGoodsDays" column="CLAIM_GOODS_DAYS"/>
+		<result property="goodsSourceInfoType" column="GOODS_SOURCE_INFO_TYPE"/>
+		<result property="loadDate" column="LOAD_DATE"/>
+		<result property="payWay" column="PAY_WAY"/>
+		<result property="commonPhrase" column="COMMON_PHRASE"/>
+		<result property="linkMan" column="LINK_MAN"/>
+		<result property="linkPhone" column="LINK_PHONE"/>
+		<result property="linkMobile1" column="LINK_MOBILE1"/>
+		<result property="linkMobile2" column="LINK_MOBILE2"/>
+		<result property="mark" column="MARK"/>
+		<result property="publisher" column="PUBLISHER"/>
+		<result property="infoContent" column="INFO_CONTENT"/>
+		<result property="placeKilometre" column="PLACE_KILOMETRE"/>
+		
+		<result property="userType" column="USER_TYPE"/>
+		<result property="isAuth" column="IS_AUTH"/>
+		<result property="address" column="ADDRESS"/>
+		
+		<result property="createUser" column="CREATE_USER"/>
+		<result property="createTime" column="CREATE_TIME"/>
+		<result property="updateUser" column="UPDATE_USER"/>
+		<result property="updateTime" column="UPDATE_TIME"/>
+		
+		<result property="registerPCode" column="REGISTER_P_CODE"/>
+		<result property="registerCCode" column="REGISTER_C_CODE"/>
+		<result property="registerTCode" column="REGISTER_T_CODE"/>
+		<result property="isVisible" column="IS_VISIBLE"/>
+	</resultMap>
+	
+	<select id="selectGoodsSourceView" resultType="Integer" resultMap="goodsSourceViewMap">
+		SELECT * FROM pisp_v_goods_source vgs WHERE vgs.GOODS_SOURCE_ID = #{goodsSourceId}
+	</select>
+	
+	<select id="selectAllGoodsSourceView" resultMap="goodsSourceViewMap">
+		SELECT * FROM pisp_v_goods_source vgs GROUP BY vgs.PUBLISH_TIME DESC LIMIT 0,100000
+	</select>
+	
+	<select id="updateGoodsSourceView" resultMap="goodsSourceViewMap">
+		SELECT * FROM pisp_v_goods_source vgs WHERE vgs.PUBLISH_ID = #{publishId}
+	</select>
+	
+	
+	<select id="selectGoodsSourceByGoodsSourceId" resultType="Integer" resultMap="goodsSourceViewMap">
+		SELECT
+		`gs`.`FROM_PLACE` AS `FROM_PLACE`,
+		`gs`.`FROM_P_CODE` AS `FROM_P_CODE`,
+		`gs`.`FROM_C_CODE` AS `FROM_C_CODE`,
+		`gs`.`FROM_T_CODE` AS `FROM_T_CODE`,
+		`gs`.`TO_PLACE` AS `TO_PLACE`,
+		`gs`.`TO_P_CODE` AS `TO_P_CODE`,
+		`gs`.`TO_C_CODE` AS `TO_C_CODE`,
+		`gs`.`TO_T_CODE` AS `TO_T_CODE`,
+		`gs`.`CAR_LENGTH_NEED` AS `CAR_LENGTH_NEED`,
+		`gs`.`CAR_LENGTH_NEED_NAME` AS `CAR_LENGTH_NEED_NAME`,
+		`gs`.`CAR_TYPE_NEED_NAME` AS `CAR_TYPE_NEED_NAME`,
+		`gs`.`GOODS_CLASS` AS `GOODS_CLASS`,
+		`gs`.`INFO_CONTENT` AS `INFO_CONTENT`,
+		`gs`.`GOODS_NAME` AS `GOODS_NAME`,
+		`gs`.`SOURCE_TYPE` AS `SOURCE_TYPE`,
+		`gs`.`PUBLISHER` AS `PUBLISHER`,
+		`gs`.`LOAD_DATE` AS `LOAD_DATE`,
+		`gs`.`PAY_WAY` AS `PAY_WAY`,
+		`gs`.`COMMON_PHRASE` AS `COMMON_PHRASE`,
+		`gs`.`MARK` AS `MARK`,
+		(
+			SELECT
+				`dv1`.`VAL_NAME`
+			FROM
+				`pisp_dict_val` `dv1`
+			WHERE
+				(
+					(
+						`dv1`.`DICT_CODE` = 'GOODS_TYPE'
+					)
+					AND (
+						`dv1`.`VAL_CODE` = `gs`.`GOODS_TYPE`
+					)
+				)
+		) AS `GOODS_TYPE_NAME`,
+		`gs`.`WEIGHT` AS `WEIGHT`,
+	
+	IF (
+		isnull(`gs`.`WEIGHT_UNIT`),
+		'',
+		'吨'
+	) AS `WEIGHT_UNIT_NAME`,
+	 `gs`.`PRICE` AS `PRICE`,
+	 (
+		SELECT
+			`dv3`.`VAL_NAME`
+		FROM
+			`pisp_dict_val` `dv3`
+		WHERE
+			(
+				(
+					`dv3`.`DICT_CODE` = 'TRANSPORT_PRICE_UNIT'
+				)
+				AND (
+					`dv3`.`VAL_CODE` = `gs`.`PRICE_UNIT`
+				)
+			)
+	) AS `PRICE_UNIT_NAME`,
+	 `gs`.`VOLUME` AS `VOLUME`,
+	
+	IF (
+		isnull(`gs`.`VOLUME_UNIT`),
+		'',
+		'立方'
+	) AS `VOLUME_UNIT_NAME`,
+	 `gs`.`LINKMAN` AS `LINKMAN`,
+	 `gs`.`LINK_MOBILE1` AS `LINK_MOBILE1`,
+	 `gs`.`LINK_MOBILE2` AS `LINK_MOBILE2`,
+	 `gs`.`LINK_PHONE` AS `LINK_PHONE`,
+	 `pi`.`INFO_ID` AS `ID`,
+	 `pi`.`INFO_TYPE` AS `INFO_TYPE`,
+	 `pi`.`PUBLISH_ID` AS `PUBLISH_ID`,
+	 `pi`.`PUBLISH_TIME` AS `PUBLISH_TIME`,
+	 `pi`.`IS_STRUCT` AS `IS_STRUCT`,
+	 `pi`.`USER_ID` AS `USER_ID`,
+	 `pi`.`STATUS` AS `STATUS`,
+	 `pi`.`PUBLISH_FREQ` AS `PUBLISH_FREQ`,
+	 `pi`.`REPATE_TIMES` AS `REPATE_TIMES`,
+	 `pi`.`BACKSTAGE_WRITE` AS `BACKSTAGE_WRITE`,
+	 `u`.`IS_AUTH` AS `IS_AUTH`,
+	 `u`.`USER_TYPE` AS `USER_TYPE`,
+	 (
+		unix_timestamp(`pi`.`PUBLISH_TIME`) * 1000
+	) AS `PUBLISH_TIME_LONG`,
+	 `gs`.`PLACE_KILOMETRE` AS `PLACE_KILOMETRE`,
+	 `gs`.`DEFINE_CAR_TYPE` AS `DEFINE_CAR_TYPE`,
+	 `gs`.`CAR_TYPE_FIRST_CODE` AS `CAR_TYPE_FIRST_CODE`,
+	 `gs`.`CAR_TYPE_SECOND_CODE` AS `CAR_TYPE_SECOND_CODE`,
+	 `gs`.`CAR_TYPE_THIRD_CODE` AS `CAR_TYPE_THIRD_CODE`,
+	 `gs`.`CLAIM_GOODS_DAYS` AS `CLAIM_GOODS_DAYS`,
+	 `gs`.`GOODS_SOURCE_INFO_TYPE` AS `GOODS_SOURCE_INFO_TYPE`,
+	 `gs`.`CAR_LENGTH_NEED_MAX` AS `CAR_LENGTH_NEED_MAX`,
+	 `gs`.`CAR_LENGTH_NEED_MIN` AS `CAR_LENGTH_NEED_MIN`,
+	 `pi`.`SUM` AS `SUM`,
+	 `gs`.`GOODS_SOURCE_ID` AS `GOODS_SOURCE_ID`,
+	 `eu`.`ADDRESS` AS `ADDRESS`,
+	 `u`.`REGISTER_P_CODE` AS `REGISTER_P_CODE`,
+	 `u`.`REGISTER_C_CODE` AS `REGISTER_C_CODE`,
+	 `u`.`REGISTER_T_CODE` AS `REGISTER_T_CODE`,
+	 `pi`.`IS_VISIBLE` AS `IS_VISIBLE`
+	FROM
+		(
+			`pisp_goods_source` `gs`
+			JOIN (
+				(
+					`pisp_publish_info` `pi`
+					LEFT JOIN `pisp_user` `u` ON (
+						(
+							`pi`.`USER_ID` = `u`.`USER_ID`
+						)
+					)
+				)
+				LEFT JOIN `pisp_euser` `eu` ON (
+					(
+						`eu`.`USER_ID` = `u`.`USER_ID`
+					)
+				)
+			)
+		)
+	WHERE
+		(
+			(
+				`pi`.`INFO_ID` = `gs`.`GOODS_SOURCE_ID`
+			)
+			AND (`pi`.`INFO_TYPE` = 1)
+			AND (`pi`.`IS_DELETE` = 0)
+			AND (`pi`.`STATUS` = 3)
+			AND (`gs`.`GOODS_SOURCE_ID` = #{goodsSourceId})
+		)
+	</select>
+	
+</mapper>

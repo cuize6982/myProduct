@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.cmpt.score.dao.ScoreCalculationDAO">
+ 	<resultMap type="com.lzz.lsp.base.vo.UserVO" id="AgentuserVOMapper">
+		<id property="userId" column="USER_ID"/>
+		<result property="userType" column="USER_TYPE"/>
+		<result property="score" column="SCORE"/>
+		<result property="useScore" column="USE_SCORE"/>
+		<result property="isAgent" column="IS_AGENT"/>
+		<result property="isAuth" column="IS_AUTH"/>
+		<result property="belongArea" column="BELONG_AREA"/>
+		<result property="belongAreaPCode" column="BELONG_P_CODE"/>
+		<result property="belongAreaCCode" column="BELONG_C_CODE"/>
+		<result property="belongAreaTCode" column="BELONG_T_CODE"/>
+		<result property="enterpriseName" column="ENTERPRISE_NAME"/>
+		<result property="linkMobile" column="LINKMOBILE"/>
+		<result property="accountName" column="ACCOUNT_NAME"/>
+		<result property="linkman" column="LINKMAN"/>
+	</resultMap>
+	
+	<resultMap type="com.lzz.lsp.base.vo.GoodsSourceVO" id="AgentgoodsSourceVOMap" >
+		<result property="publishId" column="PUBLISH_ID"/>
+		<result property="fromPCode" column="FROM_P_CODE"/>
+		<result property="fromCCode" column="FROM_C_CODE"/>
+		<result property="fromTCode" column="FROM_T_CODE"/>
+		<result property="toPCode" column="TO_P_CODE"/>
+		<result property="toCCode" column="TO_C_CODE"/>
+		<result property="toTCode" column="TO_T_CODE"/>
+		<result property="infoType" column="INFO_TYPE"/>
+		<result property="goodsSourceId" column="GOODS_SOURCE_ID"/>
+		<result property="goodsSourceType" column="GOODS_SOURCE_TYPE"/>
+		<result property="publishTime" column="PUBLISH_TIME"/>
+	</resultMap>
+	
+	
+	<resultMap type="com.lzz.lsp.cmpt.score.entity.ScoreProcessEntiy" id="ScoreProcessEntiyVOMap" >
+		<result property="waybillId" column="WAYBILL_ID"/>
+		<result property="waybillNo" column="WAYBILL_NO"/>
+		<result property="waybillVerifyTime" column="TRANSACTION_TIME"/>
+		<result property="goodsSourceId" column="INFO_ID"/>
+		<result property="driverUserId" column="HAULIER"/>
+		<result property="waybillType" column="WAYBILL_TYPE"/>
+		<collection property="carIds" column="{waybillNo = WAYBILL_NO}" select="com.lzz.lsp.cmpt.score.dao.ScoreCalculationDAO.getWayBillCarsForNo"></collection>
+	</resultMap>
+	
+ 
+ 
+  <select id="queryAgentUserInfo"  resultMap="AgentuserVOMapper">
+	  	SELECT
+			u.USER_ID,
+			u.ACCOUNT_NAME,
+			u.USER_TYPE,
+			u.SCORE,
+			u.USE_SCORE,
+			u.IS_AGENT,
+			u.IS_AUTH
+		FROM
+			pisp_user u
+		WHERE (SELECT count(pit.PUBLISH_ID) from pisp_publish_info pit WHERE pit.USER_ID = u.USER_ID AND pit.info_type =1 AND DATE(pit.CREATE_TIME) = DATE(#{publishTime})) >=13
+		AND u.USER_TYPE in(4,5) AND u.IS_AGENT = 1
+  </select>
+    
+   
+	
+	<select id="queryGoodsSourceInfoForUserId" resultMap="AgentgoodsSourceVOMap">
+		SELECT gs.GOODS_SOURCE_ID,
+				pi.PUBLISH_TIME,
+			   if(gs.FROM_P_CODE=gs.TO_P_CODE,"1","2") AS GOODS_SOURCE_TYPE
+			FROM pisp_publish_info pi 
+			LEFT JOIN  pisp_goods_source gs ON pi.INFO_ID = gs.GOODS_SOURCE_ID 
+		WHERE pi.INFO_TYPE = 1  AND TO_DAYS(pi.CREATE_TIME) = TO_DAYS(#{date})
+		<if test="agentUserId != null">AND pi.USER_ID = #{agentUserId}</if>
+	</select>
+	
+	
+	<select id="queryWaybillInfo" parameterType="Integer" resultMap="ScoreProcessEntiyVOMap">
+			SELECT 
+				pw.WAYBILL_ID,
+				pw.WAYBILL_NO,
+				pw.TRANSACTION_TIME,
+				pw.INFO_ID,
+				pw.HAULIER,
+			    if(gs.FROM_P_CODE=gs.TO_P_CODE,"1","2") AS WAYBILL_TYPE
+			FROM pisp_waybill pw 
+			LEFT JOIN pisp_waybill_goods pwg ON pwg.WAYBILL_NO = pw.WAYBILL_NO
+			LEFT JOIN pisp_goods_source gs ON gs.GOODS_SOURCE_ID = pw.INFO_ID
+			WHERE pw.`STATUS` = 99 AND pw.PROCESS_TYPE = 1 AND pw.INFO_TYPE = 1
+				AND (TO_DAYS(NOW()) - TO_DAYS(pw.TRANSACTION_TIME) = 1)
+			<if test="goodsSourceId != null">AND pw.INFO_ID = #{goodsSourceId}</if>
+			
+	</select>
+	
+	
+	<select id="getWayBillCarsForNo" parameterType="java.util.HashMap" resultType="Integer">
+		SELECT pwc.CAR_ID FROM pisp_waybill_car pwc
+		<where>
+			<if test="waybillNo != null and waybillNo != ''">pwc.WAYBILL_NO = #{waybillNo}</if>
+		</where>
+	</select>
+	
+	<select id="getWayballInfo" resultMap="com.lzz.lsp.core.waybill.dao.WaybillBaseDAO.waybillVOMap">
+		SELECT
+			w.WAYBILL_ID,
+			w.WAYBILL_NO,
+			w.FROM_PLACE,
+			w.TO_PLACE,
+			w.`STATUS`,
+			w.CREATE_TIME,
+			w.SEND_GOODS_DATE,
+			w.PROCESS_TYPE,
+			w.REMARK,
+			w.INFO_ID,
+			w.SEND_GOODS_UNIT,
+			w.SEND_GOODS_PERSON,
+			w.SEND_GOODS_MOBILE,
+			w.SHIPPER_NAME,
+			w.SHIPPER_PHONE,
+			w.SHIPPER_UNIT,
+			w.HAULIER_NAME,
+			w.HAULIER_PHONE,
+			w.TRANSACTION_TIME,
+			if(w.FROM_P_CODE=w.TO_P_CODE,"1","2") AS WAYBILL_TYPE
+		FROM
+			pisp_waybill w
+		LEFT JOIN pisp_waybill_car wc ON wc.WAYBILL_NO = w.WAYBILL_NO
+		<where>
+			AND w.STATUS = 99
+			<if test="carId != null"> AND wc.CAR_ID = #{carId}</if>
+			<choose>
+				<when test="waybillType != null and waybillType != ''">AND w.FROM_P_CODE != w.TO_P_CODE</when>
+				<otherwise>AND w.FROM_P_CODE = w.TO_P_CODE</otherwise>
+			</choose>
+			<if test="transactionTime != null">
+				AND w.TRANSACTION_TIME &lt; #{transactionTime}
+			</if>
+		</where>
+		 ORDER BY w.TRANSACTION_TIME DESC LIMIT 1
+	</select>
+	
+	<select id="getWaybillInfo" parameterType="java.util.Map" resultMap="com.lzz.lsp.core.waybill.dao.WaybillBaseDAO.waybillVOMap">
+		SELECT 
+			w.WAYBILL_NO
+		FROM 
+			pisp_waybill w 
+		WHERE 
+			w.INFO_TYPE = 1 
+		<if test="infoId != null">AND w.INFO_ID = #{infoId} </if>	
+		<if test="userId != null">AND w.HAULIER = #{userId} </if>	
+		<if test="status != null">AND w.STATUS = #{status}</if>	
+	</select>
+
+	<!-- AND DATE(ppi.CREATE_TIME) = DATE(#{publishTime}) -->
+	<select id="queryWaybillInfoByUserId" resultMap="ScoreProcessEntiyVOMap">
+			SELECT 
+				pw.WAYBILL_ID,
+				pw.WAYBILL_NO,
+				pw.TRANSACTION_TIME,
+				pw.INFO_ID,
+				pw.HAULIER,
+			    if(gs.FROM_P_CODE=gs.TO_P_CODE,"1","2") AS WAYBILL_TYPE
+			FROM pisp_waybill pw,
+			pisp_publish_info ppi,pisp_goods_source gs
+			WHERE pw.INFO_ID = ppi.INFO_ID
+			AND ppi.INFO_ID = gs.GOODS_SOURCE_ID
+			AND pw.INFO_TYPE = ppi.INFO_TYPE
+			AND ppi.INFO_TYPE = 1
+			AND pw.`STATUS` = 99
+			AND pw.PROCESS_TYPE = 1
+			AND ppi.USER_ID = #{agentUserId}
+			AND DATE(pw.TRANSACTION_TIME) = DATE(#{publishTime})
+			ORDER BY pw.TRANSACTION_TIME
+	</select>
+    
+    
+    <select id="getPublishinfosDaysByUserId" parameterType="Integer" resultType="Integer">
+    	<if test="userId != null">
+    		SELECT count(temp.PUBLISH_TIME) as num FROM
+			(
+				SELECT pi.PUBLISH_TIME,count(pi.PUBLISH_TIME) AS counts from pisp_publish_info pi 
+				WHERE pi.USER_ID = #{userId} 
+				AND date_format(pi.PUBLISH_TIME,'%Y-%m')=date_format(DATE_SUB(curdate(), INTERVAL 1 MONTH),'%Y-%m')
+				GROUP BY date_format(pi.PUBLISH_TIME,'%Y-%m-%d')
+				HAVING counts >=5
+			) as temp 
+    	</if>
+	</select>
+	
+	<select id="getDealWaybillNum" resultType="Integer">
+			SELECT count(temp.GET_SCORE_TIME) FROM
+			(
+				SELECT usr.USER_ID,usr.GET_SCORE_TIME from pisp_user_score_rec usr
+				WHERE  
+				date_format(usr.GET_SCORE_TIME,'%Y-%m')=date_format(DATE_SUB(curdate(), INTERVAL 1 MONTH),'%Y-%m')
+					<if test="scoreRuleIds != null and scoreRuleIds.length > 0 ">
+						 AND usr.SCORE_RULE_ID in
+						 <foreach collection="scoreRuleIds" item="item" open="(" separator="," close=")">
+						 	#{item}
+						 </foreach>
+					</if>
+			<if test="userId != null">and usr.user_id = #{userId}</if>
+			) temp
+		
+		
+	</select>
+	
+	<select id="getGeneralAgentSubsidyNum" resultType="float">
+		SELECT SUM(r.MONEY_COUNT) as moneyCounts FROM osmp_general_agent_subsidy_rec r
+		<where>
+			<if test="timeSlot != null and timeSlot != ''">AND r.TIME_SLOT = #{timeSlot} </if>
+			<if test="agentUserId != null">AND r.GENERAL_USER_ID = #{agentUserId} </if>
+		</where>
+	</select>
+</mapper>

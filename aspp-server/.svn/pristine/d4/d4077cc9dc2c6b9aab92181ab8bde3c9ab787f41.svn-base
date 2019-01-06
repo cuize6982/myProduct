@@ -1,0 +1,198 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta
+	content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
+	name="viewport">
+<title>地图导航结果</title>
+<script type="text/javascript"
+	src="<%=request.getContextPath()%>/js/jquery.min.js"></script>
+<link href="<%=request.getContextPath()%>/page/map/css/style.css"
+	rel="stylesheet" type="text/css">
+<script type="text/javascript"
+	src="http://api.map.baidu.com/api?v=2.0&ak=9ZqUjBdvxyLHxdl2vnv0XhSe"></script>
+</head>
+
+<body>
+	<div class="main">
+		<div class="map_box">
+			<div id="container" class="main_map"></div>
+		</div>
+	</div>
+	<input type="hidden" value="${statLocation}" id="statLocation">
+	<input type="hidden" value="${endLocation}" id="endLocation">
+	<input type="hidden" value="${startTime}" id="startTime">
+	<input type="hidden" value="${arriveTime}" id="arriveTime">
+	<input type="hidden" value="${waybillNo}" id="waybillNo">
+	<script type="text/javascript">
+	
+	var map = new BMap.Map("container");
+	map.enableScrollWheelZoom();
+	map.addControl(new BMap.NavigationControl());
+	map.addControl(new BMap.ScaleControl());
+	map.addControl(new BMap.OverviewMapControl({
+		isOpen : true
+	}));
+	
+	//监控点坐标数组
+	var points = new Array();
+
+	//起始位置
+	var statLocationStr = $("#statLocation").val();
+	var statArray = statLocationStr.split(',');
+	var statLocation = new BMap.Point( statArray[0], statArray[1]);
+	points.push(statLocation);
+	
+	//终点位置
+	var endLocationStr = $("#endLocation").val();
+	var endArray = endLocationStr.split(',');
+	var endLocation = new BMap.Point( endArray[0], endArray[1]);
+	
+	
+	//记载车辆监控记录
+	loadRouteMonitor($("#waybillNo").val());
+	
+
+    //已走过的路
+	var driving_done = new BMap.DrivingRoute(map,{
+			 renderOptions: {map: map, autoViewport: true},
+    		 onPolylinesSet: function(routes){   
+				var route = routes[0];     
+				var polyline = route.getPolyline();
+				polyline.setStrokeColor("white");
+				polyline.setStrokeWeight("6");
+			 },
+			 onMarkersSet:function(pois){  
+				 //移除目的地的覆盖物
+				var poi = pois[1];  
+				var marker = poi.marker;
+			    map.removeOverlay(marker);
+			    if(endLocation.lng==0&&endLocation.lat==0){
+			    	 //添加自己的覆盖物到起始地点
+					var poi = pois[1];  
+					var marker = poi.marker;
+					var icon = new BMap.Icon("<%=request.getContextPath()%>/page/map/images/car.png",marker.getIcon().size,{anchor:new BMap.Size(marker.getIcon().anchor.width+3,marker.getIcon().anchor.height-2)});
+					marker.setIcon(icon);
+					map.addOverlay(marker);
+			    }
+			 }
+		 });
+    
+    
+  
+      //未走的路
+	  var driving_todo = new BMap.DrivingRoute(map, {
+		 renderOptions: {map: map, autoViewport: true},
+		 onPolylinesSet: function(routes){   
+				var route = routes[0];     
+				var polyline = route.getPolyline();
+				polyline.setStrokeColor("red");
+				polyline.setStrokeWeight("6");
+		 },
+		 onMarkersSet:function(pois){ 
+			//添加自己的覆盖物到起始地点
+			var poi = pois[0];  
+			var marker = poi.marker;
+			var icon = new BMap.Icon("<%=request.getContextPath()%>/page/map/images/car.png",marker.getIcon().size,{anchor:new BMap.Size(marker.getIcon().anchor.width+3,marker.getIcon().anchor.height-2)});
+			marker.setIcon(icon);
+			map.addOverlay(marker);
+		 }
+	 });
+    
+    
+	driving_done.search(statLocation, endLocation);
+	
+	driving_done.setSearchCompleteCallback(function() {
+		var centerPoint = new BMap.Point(
+				(points[0].lng + points[points.length - 1].lng) / 2,
+				(points[0].lat + points[points.length - 1].lat) / 2);
+		map.panTo(centerPoint);
+		map.addOverlay(new BMap.Polyline(points, {
+			strokeColor : "green",
+			strokeWeight : 5,
+			strokeOpacity : 1
+		}));
+	});
+	
+	if($("#startTime").val()){
+		var label_start = new BMap.Label($("#startTime").val(),{"offset": new BMap.Size(40,-10)});
+	 	addMarker(statLocation,label_start);
+ 	}
+	
+	if($("#arriveTime").val()){
+		var label_end = new BMap.Label($("#arriveTime").val(),{"offset": new BMap.Size(40,-10)});
+	 	addMarker(endLocation,label_end);
+ 	}
+	
+	function loadRouteMonitor(waybillNo){
+		$.ajax({
+			type : "post",
+			url : "<%=request.getContextPath()%>/user/location/getUserRouteRecs.do",
+			data : {
+				"waybillNo" : waybillNo
+			},
+			dataType : "json",
+		    success: function(data) {
+		    	var resc = data.data;
+		    	
+		    	//如果采集到了监控位置，显示起止位置和监控位置的连线。
+		    	if(resc && resc.length > 0){
+		    		var lastLocation;
+		    		for(var i = 0; i < resc.length; i++){
+		    			var rec = resc[i];  
+		    			var newStr = rec.longitude+"|"+rec.latitude;
+		    			var p = newStr.split('|');
+		    			//采集的坐标点
+		    			var location = new BMap.Point( p[0], p[1]);
+		    			//定位时间
+		    			var locationTime = rec.locateTime;
+		    			points.push(location);
+		    			
+		    			if(i == (resc.length - 1) ){
+		    				lastLocation = location;
+		    			}
+		    		}
+		    		console.log(points);
+		    		driving_todo.search(lastLocation, endLocation);
+		    	}else{
+		    		//如果没有采集到监控位置，显示规划路线和起止时间
+		    		driving_todo.search(statLocation, endLocation);
+		    		
+		    		if(arriveTime){
+		    			var label_start = new BMap.Label($("#startTime").val(),{"offset": new BMap.Size(40,-10)});
+					 	addMarker(statLocation,label_start);
+				 	}
+		    		
+		    		if(arriveTime){
+		    			var label_end = new BMap.Label($("#arriveTime").val(),{"offset": new BMap.Size(40,-10)});
+					 	addMarker(endLocation,label_end);
+				 	}
+		    	}
+		    },
+		    error: function(data) {
+		    	console.log(data);
+		    }
+		});
+	
+	}
+	
+	// 编写自定义函数,创建标注
+	function addMarker(p,l) {
+	    var marker = new BMap.Marker(p); // 创建标注
+	    marker.setLabel(l); //添加label
+	    map.addOverlay(marker); // 将标注添加到地图中
+	    l.setStyle({//设置lable样式]
+	    	color:"black", 
+	    	fontSize : "16px", 
+	    	backgroundColor :"0.05",
+	    	border :"0", 
+	    	fontWeight :"bold" 
+	    });
+	}
+	
+</script>
+</body>
+</html>

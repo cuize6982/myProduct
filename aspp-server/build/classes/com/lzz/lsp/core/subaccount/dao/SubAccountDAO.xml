@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.subaccount.dao.SubAccountDAO">
+	<resultMap type="SplitRecord" id="splitRecordMap">
+		<result property="id" column="ID"/>
+		<result property="title" column="TITLE"/>
+		<result property="batchNo" column="BATCH_NO"/>
+		<result property="batchNum" column="BATCH_NUM"/>
+		<result property="batchFee" column="BATCH_FEE"/>
+		<result property="synchResult" column="SYNCH_RESULT"/>
+		<result property="asynchResult" column="ASYNCH_RESULT"/>
+		<result property="payDate" column="PAY_DATE"/>
+		<result property="updateTime" column="UPDATE_TIME"/>
+		<result property="operator" column="OPERATOR"/>
+		<result property="remark" column="REMARK"/>
+		<result property="batchType" column="BATCH_TYPE"/>
+		<result property="channelType" column="CHANNEL_TYPE"/>
+	</resultMap>
+	
+	<resultMap type="SplitInfo" id="splitInfoMap">
+		<result property="id" column="ID"/>
+		<result property="splitId" column="SPLIT_ID"/>
+		<result property="payAccount" column="PAY_ACCOUNT"/>
+		<result property="tradeNo" column="TRADE_NO"/>
+		<result property="realName" column="REAL_NAME"/>
+		<result property="payFee" column="PAY_FEE"/>
+		<result property="payResult" column="PAY_RESULT"/>
+		<result property="fromUserId" column="FROM_USER_ID"/>
+		<result property="toUserId" column="TO_USER_ID"/>
+		<result property="bizCode" column="BIZ_CODE"/>
+		<result property="createTime" column="CREATE_TIME"/>
+	</resultMap>
+	
+	<insert id="addSubAccountTradeRec" parameterType="SplitRecord">
+		INSERT INTO pisp_batch_trans_record (
+			TITLE,
+			BATCH_NO,
+			BATCH_NUM,
+			BATCH_FEE,
+			SYNCH_RESULT,
+			ASYNCH_RESULT,
+			PAY_DATE,
+			OPERATOR,
+			REMARK,
+			BATCH_TYPE,
+			CHANNEL_TYPE
+		)
+		VALUES
+		(
+			#{title},
+			#{batchNo},
+			#{batchNum},
+			#{batchFee},
+			#{synchResult},
+			#{asynchResult},
+			#{payDate},
+			#{operator},
+			#{remark},
+			#{batchType},
+			#{channelType}
+		)
+	</insert>
+	
+	<!-- 添加账户明细 -->
+	<insert id="addSubAccountTradeInfo" parameterType="SplitInfo">
+		INSERT INTO pisp_batch_trans_info (
+			SPLIT_ID,
+			PAY_ACCOUNT,
+			TRADE_NO,
+			REAL_NAME,
+			PAY_FEE,
+			PAY_RESULT,
+			FROM_USER_ID,
+			TO_USER_ID,
+			BIZ_CODE,
+			CREATE_TIME
+		)
+		VALUES
+		(
+			#{splitId},
+			#{payAccount},
+			#{tradeNo},
+			#{realName},
+			#{payFee},
+			#{payResult},
+			#{fromUserId},
+			#{toUserId},
+			#{bizCode},
+			#{createTime}
+		)
+	</insert>
+	
+	<select id="querySubAccountTradeRecList" parameterType="SplitRecordQuery" resultMap="splitRecordMap">
+		SELECT * FROM pisp_batch_trans_record pbtr
+		<where>
+			<if test="null !=batchNo and '' !=batchNo">  AND  pbtr.BATCH_NO = #{batchNo}</if>
+			<if test="null !=title and '' !=title">  AND  pbtr.TITLE   like '%${title}%'</if>
+			<if test="null !=batchType and '' !=batchType"> AND  pbtr.BATCH_TYPE = #{batchType}</if>
+			<if test="createTimeStart != null and createTimeEnd != null">
+			 	 AND pbtr.PAY_DATE between #{createTimeStart} and #{createTimeEnd}
+			</if>
+			order by pbtr.PAY_DATE desc
+		</where>
+	</select>
+
+	<select id="querySubAccountTradeInfoList" parameterType="SplitInfoQuery" resultMap="splitInfoMap">
+		SELECT * FROM pisp_batch_trans_info pbti
+		<where>
+			<if test="null !=id and '' !=id">  AND  pbti.SPLIT_ID = #{id}</if>
+			<if test="null !=payAccount and '' !=payAccount">  AND  pbti.PAY_ACCOUNT   like '%${payAccount}%'</if>
+			<if test="null !=realName and '' !=realName">  AND  pbti.REAL_NAME  like '%${realName}%'</if>
+		</where>
+	</select>
+	
+	<update id="updateWaybillSplit" parameterType="SplitRecord">
+		UPDATE pisp_batch_trans_record pbtr
+		<set>
+			<if test="null !=synchResult and '' !=synchResult">pbtr.SYNCH_RESULT = #{synchResult},</if>
+			<if test="null !=asynchResult and '' !=asynchResult">pbtr.ASYNCH_RESULT = #{asynchResult},</if>
+			<if test="null !=updateTime and '' !=updateTime">pbtr.UPDATE_TIME = #{updateTime},</if>
+		</set>
+		WHERE 
+		<if test="batchNo != null and batchNo != ''">
+			pbtr.BATCH_NO = #{batchNo}
+		</if>
+	</update>
+	
+	<update id="updateWaybillSplitInfo" parameterType="SplitInfo">
+		UPDATE pisp_batch_trans_info pbti
+		<set>
+			<if test="null !=payResult and '' !=payResult">pbti.PAY_RESULT = #{payResult},</if>
+			<if test="null !=splitId and '' !=splitId">pbti.SPLIT_ID = #{splitId},</if>
+			<if test="null !=payAccount and '' !=payAccount">pbti.PAY_ACCOUNT = #{payAccount},</if>
+			<if test="null !=realName and '' !=realName">pbti.REAL_NAME = #{realName},</if>
+			<if test="null !=payFee and '' !=payFee">pbti.PAY_FEE = #{payFee},</if>
+			<if test="null !=bizCode and '' !=bizCode">pbti.BIZ_CODE = #{bizCode},</if>
+		</set>
+		WHERE 
+			pbti.TRADE_NO = #{tradeNo}
+	</update>
+	
+	<select id="queryTipswindownInfo" parameterType="SplitRecordQuery" resultMap="splitRecordMap">
+		SELECT * FROM pisp_batch_trans_record pbtr where pbtr.ID =#{id}
+	</select>
+	
+	<select id="getBatchTransInfoByTradeNo" parameterType="String" resultMap="splitInfoMap">
+		SELECT * FROM pisp_batch_trans_info ti where ti.TRADE_NO =#{tradeNo}
+	</select>
+	
+	<select id="getMaxBatchNoByDate" parameterType="map" resultType="String">
+		SELECT MAX(pbtr.BATCH_NO) FROM pisp_batch_trans_record pbtr where 
+		date_format(pbtr.PAY_DATE,'%Y-%m-%d') = #{date} and pbtr.CHANNEL_TYPE = #{channelType}
+	</select>
+	
+	<select id="getBatchTransferRecord" parameterType="SplitRecord" resultMap="splitRecordMap">
+		SELECT * FROM pisp_batch_trans_record rec
+		<where>
+			<if test="null !=id and '' !=id">  AND  rec.ID = #{id}</if>
+		</where>
+	</select>
+	
+</mapper>

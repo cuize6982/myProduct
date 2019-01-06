@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.loginlog.dao.LoginLogBaseDAO">
+	<resultMap type="LoginLog" id="loginLogMap">
+		<id property="loginLogId" column="LOGIN_LOG_ID"/>
+		<result property="loginAccount" column="LOGIN_ACCOUNT"/>
+		<result property="loginUserId" column="LOGIN_USER_ID"/>
+		<result property="loginMethod" column="LOGIN_METHOD"/>
+		<result property="loginTime" column="LOGIN_TIME"/>
+		<result property="loginArea" column="LOGIN_AREA"/>
+	</resultMap>
+	
+	<insert id="saveLoginLogBase" parameterType="LoginLog">
+		INSERT INTO pisp_login_log (
+			LOGIN_LOG_ID,
+			LOGIN_ACCOUNT,
+			LOGIN_USER_ID,
+			LOGIN_METHOD,
+			LOGIN_TIME,
+			LOGIN_AREA
+		)
+		VALUES
+		(
+			#{loginLogId},
+			#{loginAccount},
+			#{loginUserId},
+			#{loginMethod},
+			#{loginTime},
+			#{loginArea}
+		)
+	</insert>
+	
+	<select id="queryLoginLogs" parameterType="LoginLogQuery" resultMap="loginLogMap">
+		SELECT
+			pll.LOGIN_LOG_ID,
+			pll.LOGIN_ACCOUNT,
+			pll.LOGIN_USER_ID,
+			pll.LOGIN_METHOD,
+			pll.LOGIN_TIME,
+			pll.LOGIN_AREA
+		FROM
+			pisp_login_log pll
+		WHERE
+			1 = 1
+		<if test="loginMethod != null and loginMethod != ''">
+			AND pll.LOGIN_METHOD = #{loginMethod}
+		</if>
+		
+		<if test="loginArea != null and loginArea != ''">
+			AND pll.LOGIN_AREA = #{loginArea}
+		</if>
+		
+		<if test="loginAccount != null and loginAccount != ''">
+			AND pll.LOGIN_ACCOUNT = #{loginAccount}
+		</if>
+		
+		<if test="startTime != null and startTime != ''">
+			AND pll.LOGIN_TIME &gt;= #{startTime}
+		</if>
+		
+		<if test="endTime != null and endTime != ''">
+			AND pll.LOGIN_TIME &lt;= #{endTime}
+		</if>
+	</select>
+	
+	<!-- 查询上一次的用户登录日志信息 -->
+	<select id="getLastLoginLog" parameterType="java.lang.Integer" resultMap="loginLogMap">
+		SELECT * FROM pisp_login_log AS l WHERE l.LOGIN_USER_ID=#{loginUserId} ORDER BY l.LOGIN_TIME DESC LIMIT 1,1;
+	</select>
+	
+	<!-- 查询本次的用户登录日志信息 -->
+	<select id="getCurrentLoginLog" parameterType="java.lang.Integer" resultMap="loginLogMap">
+		SELECT * FROM pisp_login_log AS l WHERE l.LOGIN_USER_ID=#{loginUserId} ORDER BY l.LOGIN_TIME DESC LIMIT 1;
+	</select>
+	<!-- 查询司机所在城市日志信息 -->
+	<select id="queryCurrentCityDrivers" parameterType="java.lang.Integer" resultMap="loginLogMap">
+		SELECT 
+			ppi.CID,
+			ppi.APP_SYSTEM 
+		FROM pisp_login_log pll
+		LEFT JOIN pisp_user pu ON pll.LOGIN_ACCOUNT = pu.ACCOUNT_NAME
+		LEFT JOIN pisp_push_info ppi ON ppi.USER_ID = pu.USER_ID
+		WHERE pu.IS_AUTH = 1 AND pu.USER_TYPE = 1 AND pll.LOGIN_AREA = #{fromCityCode}
+		GROUP BY pll.LOGIN_USER_ID
+		ORDER BY pll.LOGIN_TIME DESC;
+	</select>
+</mapper>

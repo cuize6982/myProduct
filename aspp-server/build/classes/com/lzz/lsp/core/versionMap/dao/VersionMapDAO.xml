@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.versionMap.dao.VersionMapDAO">
+	<resultMap type="VersionMap" id="versionMapper">
+		<id property="id" column="ID" />
+		<result property="terminalVersion" column="TERMINAL_VERSION" />
+		<result property="funName" column="FUN_NAME" />
+		<result property="funVersion" column="FUN_VERSION" />
+	</resultMap>
+
+	<select id="getVersionMap" resultMap="versionMapper" parameterType="java.util.Map">
+		select * from pisp_version_map vm where 1=1
+		<if test="null != terminalVersion">
+			and vm.TERMINAL_VERSION = #{terminalVersion}
+		</if>
+		<if test="null != funName">
+			and vm.FUN_NAME = #{funName}
+		</if>
+	</select>
+
+</mapper>

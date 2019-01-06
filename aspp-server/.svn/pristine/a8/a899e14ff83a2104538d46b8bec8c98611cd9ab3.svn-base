@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.score.dao.UserScoreRuleBaseDAO">
+	<resultMap type="UserScoreRule" id="UserScoreRuleMapper">
+		<id property="id" column="SCORE_RULE_ID"/>
+		<result property="applyUserType" column="APPLY_USER_TYPE"/>
+		<result property="scoreItemName" column="SCORE_ITEM_NAME"/>
+		<result property="scoreValue" column="SCORE_VALUE"/>
+		<result property="everydayMaxTimes" column="EVERYDAY_MAX_TIMES"/>
+		<result property="intereceptMethod" column="INTERCEPT_METHOD"/>
+		<result property="everymonthMaxTimes" column="EVERYMONTH_MAX_TIMES"/>
+		<result property="status" column="STATUS"/>
+	</resultMap>
+	
+	<select id="queryUserScoreRules" resultMap="UserScoreRuleMapper" parameterType="UserScoreRuleQuery">
+		SELECT * FROM osmp_user_score_rule sr
+		<where>
+			<if test="scoreItemName != null and scoreItemName!=''"> AND sr.SCORE_ITEM_NAME like '%${scoreItemName}%'</if>
+			<if test="applyUserType != null and applyUserType.length>0">
+				 and 
+				 <foreach collection="applyUserType" open="(" close=")" item="item" separator="or">
+				 	sr.APPLY_USER_TYPE like '%${item}%'
+				 </foreach>
+			</if>
+			<if test="interceptMethod != null and interceptMethod != ''">
+				AND sr.INTERCEPT_METHOD LIKE '%${interceptMethod}%'
+			</if>
+			<if test="status != null"> AND sr.`STATUS` = #{status}</if>
+		</where>
+	</select>
+	<select id="getUserScoreRule" resultMap="UserScoreRuleMapper" parameterType="java.lang.Integer">
+		SELECT * FROM osmp_user_score_rule sr where sr.SCORE_RULE_ID = #{scoreRuleId}
+	</select>
+	<insert id="saveUserScoreRule" parameterType="UserScoreRule">
+		INSERT INTO OSMP_USER_SCORE_RULE (SCORE_RULE_ID,APPLY_USER_TYPE,SCORE_ITEM_NAME,SCORE_VALUE,
+		EVERYDAY_MAX_TIMES,INTERCEPT_METHOD,STATUS,CREATE_USER,CREATE_TIME
+		)
+		VALUES(#{scoreRuleId,jdbcType=INTEGER},#{applyUserType,jdbcType=VARCHAR},
+		#{scoreItemName,jdbcType=VARCHAR},#{scoreValue,jdbcType=INTEGER},
+		#{everydayMaxTimes,jdbcType=INTEGER},#{intereceptMethod,jdbcType=VARCHAR},
+		#{status,jdbcType=INTEGER},#{createUser,jdbcType=VARCHAR},
+		#{createTime,jdbcType=TIMESTAMP}
+		);
+	</insert>
+	<update id="updateUserScoreRule" parameterType="UserScoreRule">
+		UPDATE OSMP_USER_SCORE_RULE sr
+		<set>
+			sr.SCORE_ITEM_NAME = #{scoreItemName},
+			sr.SCORE_VALUE = #{scoreValue},
+			sr.APPLY_USER_TYPE = #{applyUserType},
+			sr.EVERYDAY_MAX_TIMES = #{everydayMaxTimes},
+			sr.STATUS = #{status},
+			sr.INTERCEPT_METHOD = #{intereceptMethod},
+			sr.UPDATE_USER = #{updateUser},
+			sr.UPDATE_TIME = #{updateTime}
+		</set>
+		where SCORE_RULE_ID = #{scoreRuleId}
+	</update>
+</mapper>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.app.dao.AppUsedInfoBaseDAO">
+	
+	<!-- 返回结果是数据库实体时使用，其他情况下请添加vo对象 -->
+	<resultMap type="AppUsedInfo" id="AppUsedInfoMap">
+		<result property="collectId" column="COLLECT_ID"/>
+		<result property="useAccount" column="USE_ACCOUNT"/>
+		<result property="appCode" column="APP_CODE"/>
+		<result property="appVersion" column="APP_VERSION"/>
+		<result property="runOs" column="RUN_OS"/>
+	</resultMap>
+	
+	<!-- 通过账号获得应用使用信息 -->
+	<select id="getAppUsedInfoByUseAccount" parameterType="java.lang.String" resultMap="AppUsedInfoMap">
+		select  *  from pisp_app_used_info aui where aui.USE_ACCOUNT=#{useAccount}
+	</select>
+	
+	<!-- 新增AppUsedInfo -->
+	<insert id="saveAppUsedInfo" parameterType="AppUsedInfo">
+		insert into pisp_app_used_info(USE_ACCOUNT,APP_CODE,APP_VERSION,RUN_OS)
+		VALUES
+		(#{useAccount},#{appCode},#{appVersion},#{runOs})
+	</insert>
+	
+	<!-- 更新AppUsedInfo -->
+	<update id="updateAppUsedInfo" parameterType="AppUsedInfo">
+		update pisp_app_used_info aui
+		<set>
+			<if test="appCode !=null and appCode !=''">aui.APP_CODE = #{appCode},</if>
+			<if test="appVersion !=null and appVersion !=''">aui.APP_VERSION = #{appVersion},</if>
+			<if test="runOs !=null and runOs !=''">aui.RUN_OS = #{runOs}</if>
+		</set>
+		where aui.USE_ACCOUNT=#{useAccount}
+	</update>
+	
+</mapper>

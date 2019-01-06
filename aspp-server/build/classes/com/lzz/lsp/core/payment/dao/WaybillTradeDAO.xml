@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.payment.dao.WaybillTradeDAO">
+	<resultMap type="PayRecord" id="payRecordMap">
+		<result property="id" column="ID"/>
+		<result property="fromUserId" column="FROM_USER_ID"/>
+		<result property="toUserId" column="TO_USER_ID"/>
+		<result property="waybillNo" column="WAYBILL_NO"/>
+		<result property="payStage" column="PAY_STAGE"/>
+		<result property="outTradeNo" column="OUT_TRADE_NO"/>
+		<result property="tradeNo" column="TRADE_NO"/>
+		<result property="paymentType" column="PAYMENT_TYPE"/>
+		<result property="paymentFunc" column="PAYMENT_FUNC"/>
+		<result property="totalFee" column="TOTAL_FEE"/>
+		<result property="rate" column="RATE"/>
+		<result property="channelId" column="CHANNEL_ID"/>
+		<result property="payDevice" column="PAY_DEVICE"/>
+		<result property="synchResult" column="SYNCH_RESULT"/>
+		<result property="asynchResult" column="ASYNCH_RESULT"/>
+		<result property="splitResult" column="SPLIT_RESULT"/>
+		<result property="payTime" column="PAY_TIME"/>
+		<result property="updateTime" column="UPDATE_TIME"/>
+		<result property="remark" column="REMARK"/>
+		<result property="realName" column="REAL_NAME"/>
+		<result property="isTransfer" column="IS_TRANSFER"/>
+		<result property="payAccount" column="PAY_ACCOUNT"/>
+		<result property="channelType" column="CHANNEL_TYPE"/>
+		<result property="waybillFee" column="WAYBILL_FEE"/>
+	</resultMap>
+	
+	<resultMap type="BatchTransRecordVO" id="batchTransRecordVOMap">
+		<result property="id" column="ID"/>
+		<result property="title" column="TITLE"/>
+		<result property="batchNo" column="BATCH_NO"/>
+		<result property="batchNum" column="BATCH_NUM"/>
+		<result property="batchFee" column="BATCH_FEE"/>
+		<result property="synchResult" column="SYNCH_RESULT"/>
+		<result property="asynchResult" column="ASYNCH_RESULT"/>
+		<result property="payDate" column="PAY_DATE"/>
+		<result property="updateTime" column="UPDATE_TIME"/>
+		<result property="operator" column="OPERATOR"/>
+		<result property="remark" column="REMARK"/>
+		<result property="batchType" column="BATCH_TYPE"/>
+		<result property="channelType" column="CHANNEL_TYPE"/>
+	</resultMap>
+	
+	<resultMap type="SplitInfo" id="splitInfoMap">
+		<result property="id" column="ID"/>
+		<result property="splitId" column="SPLIT_ID"/>
+		<result property="payAccount" column="PAY_ACCOUNT"/>
+		<result property="tradeNo" column="TRADE_NO"/>
+		<result property="realName" column="REAL_NAME"/>
+		<result property="payFee" column="PAY_FEE"/>
+		<result property="payResult" column="PAY_RESULT"/>
+		<result property="fromUserId" column="FROM_USER_ID"/>
+		<result property="toUserId" column="TO_USER_ID"/>
+		<result property="bizCode" column="BIZ_CODE"/>
+		<result property="enterpriseName" column="ENTERPRISE_NAME"/>
+	</resultMap>
+	
+	<insert id="addWaybillTradeRec" parameterType="PayRecord">
+		INSERT INTO pisp_pay_record (
+			FROM_USER_ID,
+			TO_USER_ID,
+			WAYBILL_NO,
+			PAY_STAGE,
+			OUT_TRADE_NO,
+			PAYMENT_TYPE,
+			PAYMENT_FUNC,
+			TOTAL_FEE,
+			PAY_DEVICE,
+			PAY_TIME,
+			REMARK,
+			CHANNEL_ID,
+			PAY_ACCOUNT,
+			CHANNEL_TYPE,
+			<if test="isTransfer != null and isTransfer !=''">
+				IS_TRANSFER,
+			</if>
+			<if test="asynchResult != null and asynchResult !=''">
+				ASYNCH_RESULT,
+			</if>
+			SYNCH_RESULT
+		)
+		VALUES
+		(
+			#{fromUserId},
+			#{toUserId},
+			#{waybillNo},
+			#{payStage},
+			#{outTradeNo},
+			#{paymentType},
+			#{paymentFunc},
+			#{totalFee},
+			#{payDevice},
+			#{payTime},
+			#{remark},
+			#{channelId},
+			#{payAccount},
+			#{channelType},
+			<if test="isTransfer != null and isTransfer !=''">
+				#{isTransfer},
+			</if>
+			<if test="asynchResult != null and asynchResult !=''">
+				#{asynchResult},
+			</if>
+			#{synchResult}
+		)
+	</insert>
+	
+	<update id="updateWaybillTradeRec" parameterType="PayRecord">
+		UPDATE pisp_pay_record ppr 
+		<set>
+			<if test="null !=tradeNo and '' !=tradeNo">ppr.TRADE_NO = #{tradeNo},</if>
+			<if test="null !=outTradeNo and '' !=outTradeNo">ppr.OUT_TRADE_NO = #{outTradeNo},</if>
+			<if test="null !=synchResult and '' !=synchResult">ppr.SYNCH_RESULT = #{synchResult},</if>
+			<if test="null !=asynchResult and '' !=asynchResult">ppr.ASYNCH_RESULT = #{asynchResult},</if>
+			<if test="null !=isTransfer and '' !=isTransfer">ppr.IS_TRANSFER = #{isTransfer},</if>
+			<if test="null !=updateTime and '' !=updateTime">ppr.UPDATE_TIME = #{updateTime},</if>
+			<if test="null !=updateTime">ppr.UPDATE_TIME = #{updateTime},</if>
+		</set>
+		WHERE 
+		<if test="outTradeNo != null and outTradeNo != ''">
+			ppr.OUT_TRADE_NO = #{outTradeNo}
+		</if>
+	</update>
+	
+	<select id="getWaybillTradeRecByTradeNo" parameterType="java.lang.String" resultMap="payRecordMap">
+		SELECT * FROM pisp_pay_record ppr WHERE ppr.OUT_TRADE_NO = #{outTradeNo}
+	</select>
+	
+	<update id="updateWaybillTrade" parameterType="java.util.Map">
+			UPDATE pisp_pay_record ppr
+			<set>
+				<if test="synchResult != null"> ppr.SYNCH_RESULT=#{synchResult},</if>
+				<if test="asynchResult!= null"> ppr.ASYNCH_RESULT=#{asynchResult},</if>
+				
+			</set>
+			WHERE 
+		<if test="outTradeNo != null and outTradeNo != ''">
+			ppr.OUT_TRADE_NO = #{outTradeNo}
+		</if>
+		<if test="tradeNo != null and tradeNo != ''">
+			ppr.TRADE_NO = #{tradeNo}
+		</if>
+			
+	</update>
+	
+	<select id="queryBatchForTradeUionPay" parameterType="java.util.List" resultMap="payRecordMap">
+		SELECT * FROM pisp_pay_record ppr
+		LEFT JOIN pisp_pay_channel ppc ON ppc.USER_ID = ppr.TO_USER_ID
+		LEFT JOIN pisp_puser pp ON pp.USER_ID = ppc.USER_ID
+		WHERE ppr.OUT_TRADE_NO in 
+		<foreach item="item" index="index" collection="array"  open="(" separator="," close=")">
+               		#{item}
+        </foreach>
+       AND ppr.IS_TRANSFER = 0 AND  ppr.ASYNCH_RESULT ='TRADE_SUCCESS'  AND ppr.PAYMENT_TYPE = 1 
+       AND ppc.CHANNEL_TYPE = 2
+	</select>
+	
+	
+	
+	<select id="queryBatchForTradeAliPay" parameterType="java.util.List" resultMap="payRecordMap">
+		SELECT *,ppc.PAY_ACCOUNT FROM pisp_pay_record ppr
+		LEFT JOIN pisp_pay_channel ppc ON ppc.USER_ID = ppr.TO_USER_ID
+		LEFT JOIN pisp_puser pp ON pp.USER_ID = ppc.USER_ID
+		WHERE ppr.OUT_TRADE_NO in 
+		<foreach item="item" index="index" collection="array"  open="(" separator="," close=")">
+               		#{item}
+        </foreach>
+       AND ppr.IS_TRANSFER = 0 AND  ppr.ASYNCH_RESULT ='TRADE_SUCCESS'  AND ppr.PAYMENT_TYPE = 1 
+        AND ppc.CHANNEL_TYPE = 1
+	</select>
+	
+			
+	
+	
+	
+	<select id="getDealPayRecords" parameterType="PayRecordQuery" resultMap="payRecordMap">
+		SELECT * FROM pisp_pay_record ppr
+		WHERE 1 = 1
+		<if test="isTransfer != null and isTransfer != ''">
+			AND ppr.IS_TRANSFER = #{isTransfer}
+		</if>
+		<if test="startTime != null and startTime != ''">
+			<![CDATA[ and ppr.PAY_TIME >= #{startTime}]]>
+		</if>
+		<if test="EndTime != null and EndTime != ''">
+			<![CDATA[ and ppr.PAY_TIME < #{EndTime}]]>
+		</if>
+		<if test="payStage != null and payStage != ''  ">
+		    AND ppr.PAY_STAGE = #{payStage} 
+		</if>
+		 AND ppr.IS_TRANSFER > 0
+	</select>
+	
+	
+	<select id="queryUserInformation" parameterType="PayRecordQuery" resultMap="payRecordMap">
+		SELECT 
+		pu.REAL_NAME,
+		ppc.PAY_ACCOUNT
+		FROM pisp_puser pu
+		LEFT JOIN pisp_pay_channel ppc ON ppc.USER_ID = pu.USER_ID
+		WHERE pu.USER_ID in
+		<foreach item="item" index="index" collection="list"  open="(" separator="," close=")">
+               		#{item}
+        </foreach>
+	</select>
+	
+	<select id="queryTransferHistoryList" parameterType="SplitRecordQuery" resultMap="batchTransRecordVOMap">
+		SELECT
+			tr.ID,
+			tr.TITLE,
+			tr.BATCH_NO,
+			tr.BATCH_FEE,
+			tr.BATCH_NUM,
+			tr.PAY_DATE,
+			tr.BATCH_TYPE
+		FROM pisp_batch_trans_record tr
+		<where>
+			<if test="title != null and title != ''">tr.TITLE like '%${title}%'</if>
+			<if test="null != transferTimeStart and '' != transferTimeStart">
+				AND tr.PAY_DATE &gt;= #{transferTimeStart}
+			</if>
+			<if test="null != transferTimeEnd and '' != transferTimeEnd">
+				AND tr.PAY_DATE &lt;= #{transferTimeEnd}
+			</if>
+			<if test="batchType !=null">
+				AND tr.BATCH_TYPE = #{batchType}
+			</if>
+			<if test="channelType !=null">
+				AND tr.CHANNEL_TYPE = #{channelType}
+			</if>
+		</where>
+		
+		order by tr.PAY_DATE desc
+	</select> 
+	<select id="queryTransferHistoryViewList" parameterType="SplitRecordQuery" resultMap="splitInfoMap">
+		SELECT 
+			pbti.BIZ_CODE,
+			pbti.PAY_RESULT,
+			pe.ENTERPRISE_NAME,
+			pbti.REAL_NAME,
+			pbti.PAY_FEE
+		FROM pisp_batch_trans_info pbti
+		LEFT JOIN pisp_euser pe ON pbti.FROM_USER_ID = pe.USER_ID
+		LEFT JOIN pisp_user pu ON pbti.TO_USER_ID = pu.USER_ID
+		LEFT JOIN pisp_puser pp ON pu.USER_ID = pp.USER_ID
+		<where>
+			<if test="enterpriseName !=null and enterpriseName !=''">
+				pe.ENTERPRISE_NAME like '%${enterpriseName}%'
+			</if>
+			<if test="driver !=null and driver !=''">
+				AND (pu.NICKNAME like '%${driver}%' OR pp.REAL_NAME like '%${driver}%')
+			</if>
+			<if test="splitId !=null">
+				AND pbti.SPLIT_ID =#{splitId}
+			</if>
+		</where>
+	</select>
+	
+	<select id="getWaybillTradeRec" parameterType="java.util.Map" resultMap="payRecordMap">
+		SELECT 
+			ppr.FROM_USER_ID,
+			ppr.TO_USER_ID,
+			ppr.PAY_STAGE
+		FROM 
+		pisp_pay_record ppr 
+	 	WHERE 
+			ppr.ASYNCH_RESULT = 'TRADE_SUCCESS'
+		<if test="payStage != null"> AND ppr.PAY_STAGE = #{payStage}</if>  
+		<if test="paymentType != null"> AND ppr.PAYMENT_TYPE = #{paymentType}</if>
+		<if test="waybillNo != null"> AND ppr.WAYBILL_NO = #{waybillNo}</if>
+		LIMIT 1	 
+	</select>
+	
+	<select id="queryBatchTransInfo" parameterType="SplitInfo" resultMap="splitInfoMap">
+		SELECT 
+			*
+		FROM 
+		pisp_batch_trans_info info
+		<where>
+			<if test="id !=null">
+				AND info.ID =#{id}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 查询支付记录 -->
+	<select id="getPayRecordList" parameterType="PayRecordQuery" resultMap="payRecordMap">
+		SELECT 
+		ppr.ID,
+		ppr.FROM_USER_ID,
+		ppr.TO_USER_ID,
+		ppr.WAYBILL_NO,
+		ppr.OUT_TRADE_NO,
+		ppr.PAY_STAGE,
+		ppr.PAYMENT_TYPE,
+		ppr.TOTAL_FEE,
+		ppr.PAY_DEVICE,
+		ppr.PAY_TIME,
+		ppr.CHANNEL_ID,
+		ppr.CHANNEL_TYPE,
+		ppc.PAY_ACCOUNT,
+		ppr.IS_TRANSFER,
+		ppr.ASYNCH_RESULT
+		FROM pisp_pay_record ppr
+		LEFT JOIN pisp_pay_channel ppc ON ppc.ID = ppr.CHANNEL_ID
+		LEFT JOIN pisp_puser pp ON pp.USER_ID = ppc.USER_ID
+		WHERE 1 = 1
+		<if test="isTransfer != null and isTransfer != ''">
+			AND ppr.IS_TRANSFER = #{isTransfer}
+		</if>
+		<if test="startTime != null and startTime != ''">
+			<![CDATA[ and ppr.PAY_TIME >= #{startTime}]]>
+		</if>
+		<if test="EndTime != null and EndTime != ''">
+			<![CDATA[ and ppr.PAY_TIME < #{EndTime}]]>
+		</if>
+		<if test="payStage != null and payStage != ''  ">
+		    AND ppr.PAY_STAGE = #{payStage} 
+		</if>
+		<if test="waybillNo != null and waybillNo != ''  ">
+		    AND ppr.WAYBILL_NO  LIKE '%${waybillNo}%'
+		</if>
+		
+		<if test="channelType != null and channelType != ''  ">
+		   AND ppr.CHANNEL_TYPE = #{channelType}
+		</if>
+		
+		<if test="transferStage == 0">
+		     AND ppr.IS_TRANSFER = 0 
+		</if>
+		
+		<if test="transferStage == -2">
+		     AND ppr.IS_TRANSFER = -2 
+		</if>
+		
+		<if test="transferStage == 1">
+		     AND ppr.IS_TRANSFER > 0 
+		</if>
+		 AND  ppr.ASYNCH_RESULT ='TRADE_SUCCESS'  AND ppr.PAYMENT_TYPE = 1
+		 order by  ppr.PAY_TIME desc
+	</select>
+	
+	<select id="getWaybillbalance" parameterType="java.util.Map">
+		SELECT IFNULL(sum(r.TOTAL_FEE),0) 
+		FROM pisp_pay_record r 
+		WHERE r.FROM_USER_ID = #{userId} AND r.WAYBILL_NO = #{waybillNo} AND r.PAYMENT_FUNC = #{paymentFunc} 
+	</select>
+	
+	<update id="updateWaybillAdvancePrice" parameterType="PayRecord">
+		UPDATE 
+			pisp_waybill pw
+		<set>
+			<if test="changePrice !=null and payStage == 1">pw.ADVANCE_PRICE = #{changePrice}</if>
+			<if test="changePrice !=null and payStage == 2">pw.MID_PRICE = #{changePrice}</if>
+			<if test="changePrice !=null and payStage == 3">pw.FINAL_PRICE = #{changePrice}</if>
+		</set>
+		WHERE pw.WAYBILL_NO = #{waybillNo}
+	</update>
+	
+	<select id="getWaybillFee" parameterType="java.util.Map" resultMap="payRecordMap">
+		SELECT 
+			IFNULL(sum(ppr.TOTAL_FEE),0) AS WAYBILL_FEE
+		FROM pisp_pay_record ppr
+		WHERE 1=1
+		<if test="fromUserId != null and fromUserId != ''">
+			AND ppr.FROM_USER_ID = #{fromUserId}
+		</if>
+		<if test="waybillNo != null and waybillNo != ''">
+			AND ppr.WAYBILL_NO = #{waybillNo}
+		</if>
+		<if test="outTradeNo != null and outTradeNo != ''">
+			AND ppr.OUT_TRADE_NO = #{outTradeNo}
+		</if>
+		<if test="payStage != null">
+			AND ppr.PAY_STAGE = #{payStage}
+		</if>
+		<if test="paymentFunc != null">
+			AND ppr.PAYMENT_FUNC = #{paymentFunc}
+		</if>
+		<if test="asynchResult != null and asynchResult != ''">
+			AND ppr.ASYNCH_RESULT = #{asynchResult}
+		</if>
+	</select>
+</mapper>

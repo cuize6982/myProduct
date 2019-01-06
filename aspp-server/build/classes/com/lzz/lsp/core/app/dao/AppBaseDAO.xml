@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.app.dao.AppBaseDAO">
+	<resultMap type="AppVO" id="appVOMap">
+		<id property="appId" column="APP_ID"/>
+		<result property="appCode" column="APP_CODE"/>
+		<result property="appName" column="APP_NAME"/>
+		<result property="appVersion" column="APP_VERSION"/>
+		<result property="appSystem" column="APP_SYSTEM"/>
+		<result property="size" column="SIZE"/>
+		<result property="searchKeywords" column="SEARCH_KEYWORDS"/>
+		<result property="summary" column="SUMMARY"/>
+		<result property="publishDate" column="PUBLISH_DATE"/>
+		<result property="downloadUrl" column="DOWNLOAD_URL"/>
+		<result property="appStorePath" column="APP_STORE_PATH"/>
+		<result property="isValid" column="IS_VALID"/>
+		<result property="versionLog" column="VERSION_LOG"/>
+	</resultMap>
+	
+	 <select id="getAppNewVersion" parameterType="AppVO" resultType="java.lang.String">
+		SELECT
+			pa.APP_VERSION
+		FROM
+			pisp_app pa
+		<where>
+			<if test="appSystem !=null and appSystem !='' ">AND pa.APP_SYSTEM = #{appSystem}</if>
+			<if test="appCode !=null and appCode !=''">AND pa.APP_CODE = #{appCode}</if>
+			<if test="isValid !=null">AND pa.IS_VALID = #{isValid}</if>
+		</where>
+		ORDER BY
+			pa.PUBLISH_DATE DESC
+		LIMIT 0,1
+	</select>
+	
+		 <select id="getAppVersionLog" parameterType="AppVO" resultType="java.lang.String">
+		SELECT
+			pa.VERSION_LOG
+		FROM
+			pisp_app pa
+		<where>
+			<if test="appSystem !=null and appSystem !='' ">AND pa.APP_SYSTEM = #{appSystem}</if>
+			<if test="appCode !=null and appCode !=''">AND pa.APP_CODE = #{appCode}</if>
+			<if test="isValid !=null">AND pa.IS_VALID = #{isValid}</if>
+		</where>
+		ORDER BY
+			pa.PUBLISH_DATE DESC
+		LIMIT 0,1
+	</select>
+	
+	
+	
+	
+	
+	<select id="getAppInfo" parameterType="AppVO" resultMap="appVOMap">
+		SELECT
+			pa.APP_CODE,
+			pa.APP_ID,
+			pa.APP_NAME,
+			pa.APP_STORE_PATH,
+			pa.APP_SYSTEM,
+			pa.APP_VERSION,
+			pa.DOWNLOAD_URL,
+			pa.IS_VALID,
+			pa.PUBLISH_DATE,
+			pa.SEARCH_KEYWORDS,
+			pa.SIZE,
+			pa.SUMMARY,
+			pa.VERSION_LOG
+		FROM
+			pisp_app pa
+		<where>
+			<if test="appSystem !=null and appSystem !=''">AND pa.APP_SYSTEM = #{appSystem}</if>
+			<if test="appCode !=null and appCode !=''">AND pa.APP_CODE = #{appCode}</if>
+			<if test="isValid !=null">AND pa.IS_VALID = #{isValid}</if>
+			<if test="appVersion !=null and appVersion !=''">AND pa.APP_VERSION = #{appVersion}</if>
+		</where>
+	</select>
+	<!-- 获取App应用列表 -->
+	<select id="queryApps" parameterType="AppQuery" resultMap="appVOMap">
+		select *
+		FROM pisp_app pa
+		<where>
+			<if test="appName !=null and appName !=''">
+				and pa.APP_NAME like '%${appName}%'
+			</if>
+			<if test="appSystem !=null and appSystem !=''">
+				and pa.APP_SYSTEM = #{appSystem}
+			</if>
+			<if test="searchKeywords !=null and searchKeywords !=''">
+				and pa.SEARCH_KEYWORDS like '%${searchKeywords}%'
+			</if>
+			<if test="isValid !=null and isValid !=''">
+				and pa.IS_VALID in
+				<foreach collection="isValid" item="item" index="index" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		ORDER BY pa.APP_CODE DESC,pa.APP_VERSION DESC,PUBLISH_DATE DESC
+	</select>
+	<!-- 通过id获取App应用 -->
+	<select id="getApp" parameterType="java.lang.Integer" resultMap="appVOMap">
+		select * from pisp_app pa where pa.APP_ID = #{appId}
+	</select>
+	<!-- 新增App应用 -->
+	<insert id="saveApp" parameterType="App">
+		insert into pisp_app(APP_ID,APP_CODE,APP_NAME,APP_VERSION,APP_SYSTEM,SIZE
+		,SEARCH_KEYWORDS,SUMMARY,PUBLISH_DATE,APP_STORE_PATH,DOWNLOAD_URL,IS_VALID,VERSION_LOG)
+		VALUES
+		(#{appId},#{appCode},#{appName},#{appVersion},#{appSystem},#{size},#{searchKeywords}
+		,#{summary},#{publishDate},#{appStorePath},#{downloadUrl},#{isValid},#{versionLog})
+	</insert>
+	<!-- 更新App应用 -->
+	<update id="updateApp" parameterType="App">
+		update pisp_app pa
+		<set>
+			<if test="appCode !=null and appCode !=''">pa.APP_CODE = #{appCode},</if>
+			<if test="appName !=null and appName !=''">pa.APP_NAME = #{appName},</if>
+			<if test="appVersion !=null and appVersion !=''">pa.APP_VERSION = #{appVersion},</if>
+			<if test="appSystem !=null and appSystem !=''">pa.APP_SYSTEM = #{appSystem},</if>
+			pa.SIZE = #{size},
+			<if test="searchKeywords !=null and searchKeywords !=''">pa.SEARCH_KEYWORDS = #{searchKeywords},</if>
+			pa.SUMMARY = #{summary},
+			<if test="appStorePath !=null and appStorePath !=''">pa.APP_STORE_PATH = #{appStorePath},</if>
+			<if test="downloadUrl !=null and downloadUrl !=''">pa.DOWNLOAD_URL = #{downloadUrl},</if>
+			<if test="publishDate !=null">pa.PUBLISH_DATE = #{publishDate},</if>
+			<if test="isValid !=null">pa.IS_VALID = #{isValid},</if>
+			<if test="versionLog !=null">pa.VERSION_LOG = #{versionLog}</if>
+		</set>
+		where pa.APP_ID = #{appId}
+	</update>
+	<!-- 根据id删除App应用 -->
+	<delete id="deleteApp" parameterType="java.lang.Integer">
+		delete FROM pisp_app where APP_ID = #{appId}
+	</delete>
+</mapper>

@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.complain.dao.ComplainBaseDAO">
+	<resultMap type="Complain" id="complainMap">
+		<id property="complainId" column="COMPLAIN_ID"/>
+		<result property="complainPerson" column="COMPLAIN_PERSON"/>
+		<result property="infoId" column="INFO_ID"/>
+		<result property="infoType" column="INFO_TYPE"/>
+		<result property="complainItem" column="COMPLAIN_ITEM"/>
+		<result property="complainContent" column="COMPLAIN_CONTENT"/>
+		<result property="complainTime" column="COMPLAIN_TIME"/>
+		<result property="isDispose" column="IS_DISPOSE"/>
+		<result property="disposeResult" column="DISPOSE_RESULT"/>
+		<result property="disposeTime" column="DISPOSE_TIME"/>
+	</resultMap>
+	
+	
+	<resultMap type="ComplainVO" id="complainVOMap">
+		<result property="complainId" column="COMPLAIN_ID"/>
+		<result property="accountName" column="ACCOUNT_NAME"/>
+		<result property="nickName" column="NICKNAME"/>
+		<result property="realName" column="REAL_NAME"/>
+		<result property="enterpriseName" column="ENTERPRISE_NAME"/>
+		<result property="corporation" column="CORPORATION"/>
+		<result property="userType" column="USER_TYPE"/>
+		<result property="complainContent" column="COMPLAIN_CONTENT"/>
+		<result property="accountNameEd" column="ACCOUNT_NAME_ED"/>
+		<result property="nickNameEd" column="NICKNAME_ED"/>
+		<result property="realNameEd" column="REAL_NAME_ED"/>
+		<result property="enterpriseNameEd" column="ENTERPRISE_NAME_ED"/>
+		<result property="corporationEd" column="CORPORATION_ED"/>
+		<result property="userTypeEd" column="USER_TYPE_ED"/>
+		<result property="complainItem" column="COMPLAIN_ITEM"/>
+		<result property="infoType" column="INFO_TYPE"/>
+		<result property="isDispose" column="IS_DISPOSE"/>
+		<result property="disposeResult" column="DISPOSE_RESULT"/>
+		<result property="disposeTime" column="DISPOSE_TIME"/>
+		<result property="accountNameOd" column="ACCOUNT_NAME_OD"/>
+		<result property="nicknameOd" column="NICKNAME_OD"/>
+		<result property="realNameOd" column="REAL_NAME_OD"/>
+		<result property="enterpriseNameOd" column="ENTERPRISE_NAME_OD"/>
+		<result property="corporationOd" column="CORPORATION_OD"/>
+		<result property="userTypeOd" column="USER_TYPE_OD"/>
+		<result property="infoId" column="INFO_ID"/>
+		<result property="waybillNo" column="WAYBILL_NO"/>
+	</resultMap>
+	<insert id="saveComplain" parameterType="Complain">
+		INSERT into pisp_info_complain(
+			COMPLAIN_PERSON,
+			INFO_ID,
+			INFO_TYPE,
+			COMPLAIN_ITEM,
+			COMPLAIN_CONTENT,
+			COMPLAIN_TIME,
+			IS_DISPOSE,
+			BY_COMPLAIN_PERSON
+		)
+		VALUES(
+			#{complainPerson},
+			#{infoId},
+			#{infoType},
+			#{complainItem},
+			#{complainContent},
+			#{complainTime},
+			#{isDispose},
+			#{byComplainPerson}
+		)
+	</insert>
+	
+	<select id="getComplainInfo" parameterType="java.util.Map" resultMap="complainMap">
+		SELECT 
+			* 
+		FROM 
+		    pisp_info_complain pic
+		WHERE 
+			pic.COMPLAIN_PERSON = #{userId}
+		AND 
+			pic.INFO_ID = #{infoId}
+		AND 
+			pic.INFO_TYPE = #{infoType}
+	</select>
+	
+	<select id="getComplainCount" resultType="int">
+		SELECT COUNT(0) FROM pisp_info_complain c WHERE c.COMPLAIN_PERSON = #{userId} AND c.INFO_ID = #{infoId} AND c.INFO_TYPE = #{infoType}
+	</select>
+	
+	
+
+	<select id="queryComplainInfo" parameterType="ComplainQuery" resultMap="complainVOMap">
+		SELECT 
+			c.COMPLAIN_ID,
+			u.ACCOUNT_NAME,
+			u.NICKNAME,
+			p.REAL_NAME,
+			e.ENTERPRISE_NAME,
+			e.CORPORATION,
+			u.USER_TYPE,
+			c.COMPLAIN_CONTENT,
+			c.INFO_ID,
+			ud.ACCOUNT_NAME AS ACCOUNT_NAME_ED,
+			ud.NICKNAME AS NICKNAME_ED,
+			pd.REAL_NAME AS REAL_NAME_ED,
+			ed.ENTERPRISE_NAME AS ENTERPRISE_NAME_ED,
+			ed.CORPORATION AS CORPORATION_ED,
+			ud.USER_TYPE AS USER_TYPE_ED,
+			pu.ACCOUNT_NAME AS ACCOUNT_NAME_OD,
+			pu.NICKNAME AS NICKNAME_OD,
+			pp.REAL_NAME AS REAL_NAME_OD,
+			pe.ENTERPRISE_NAME AS ENTERPRISE_NAME_OD,
+			pe.CORPORATION AS CORPORATION_OD,
+			pu.USER_TYPE AS USER_TYPE_OD
+		FROM pisp_info_complain c 
+		LEFT JOIN pisp_user u ON c.COMPLAIN_PERSON = u.USER_ID
+		LEFT JOIN pisp_euser e ON e.USER_ID = u.USER_ID
+		LEFT JOIN pisp_puser p ON p.USER_ID = u.USER_ID
+		LEFT JOIN pisp_publish_info pi ON pi.INFO_ID = c.INFO_ID AND pi.INFO_TYPE = c.INFO_TYPE
+		LEFT JOIN pisp_user ud ON ud.USER_ID = pi.USER_ID
+		LEFT JOIN pisp_puser pd ON pd.USER_ID = ud.USER_ID
+		LEFT JOIN pisp_euser ed ON ed.USER_ID = ud.USER_ID
+		LEFT JOIN pisp_user pu ON pu.USER_ID = c.BY_COMPLAIN_PERSON
+		LEFT JOIN pisp_puser pp ON pp.USER_ID = pu.USER_ID
+		LEFT JOIN pisp_euser pe ON pe.USER_ID = pu.USER_ID
+		<where>
+			<if test="accountName != null and accountName != ''">AND u.ACCOUNT_NAME like CONCAT("%",#{accountName},"%")</if>
+			<if test="userType != null and userType.length>=0">
+				AND u.USER_TYPE in
+				<foreach collection="userType" item="item" index="index" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			<if test="isDispose !=null">
+				AND c.IS_DISPOSE = #{isDispose}
+			</if>
+			<if test="complainName != null and complainName !=''">
+			   AND (u.NICKNAME LIKE CONCAT("%",#{complainName},"%") OR p.REAL_NAME LIKE CONCAT("%",#{complainName},"%") 
+			   OR e.ENTERPRISE_NAME LIKE CONCAT("%",#{complainName},"%")  OR e.CORPORATION LIKE CONCAT("%",#{complainName},"%"))
+			  <!--  AND (pu.NICKNAME like '%${nickName}%' OR p.REAL_NAME like '%${nickName}%' OR e.CORPORATION like '%${nickName}%' OR e.ENTERPRISE_NAME like '%${nickName}%') -->
+			</if>
+		</where>
+		ORDER BY c.COMPLAIN_TIME DESC
+	</select>
+	
+	<update id="updateComplainInfo" parameterType="Complain">
+		update pisp_info_complain c 
+		<set>
+			<if test="isDispose != null"> c.IS_DISPOSE=#{isDispose},</if>
+			<if test="disposeResult != null and disposeResult != ''"> c.DISPOSE_RESULT=#{disposeResult},</if>
+			<if test="disposeTime != null"> c.DISPOSE_TIME=#{disposeTime}</if>
+		</set> 
+			WHERE c.COMPLAIN_ID = #{complainId}
+	</update>
+	
+	<select id="loadComplainInfo" parameterType="Integer" resultMap="complainVOMap">
+		SELECT 
+			c.COMPLAIN_ID,
+			c.INFO_ID,
+			c.INFO_TYPE,
+			c.IS_DISPOSE,
+			c.DISPOSE_RESULT,
+			c.DISPOSE_TIME,
+			u.ACCOUNT_NAME,
+			u.NICKNAME,
+			p.REAL_NAME,
+			e.ENTERPRISE_NAME,
+			e.CORPORATION,
+			u.USER_TYPE,
+			c.COMPLAIN_ITEM,
+			c.COMPLAIN_CONTENT,
+			ud.ACCOUNT_NAME AS ACCOUNT_NAME_ED,
+			ud.NICKNAME AS NICKNAME_ED,
+			pd.REAL_NAME AS REAL_NAME_ED,
+			ed.ENTERPRISE_NAME AS ENTERPRISE_NAME_ED,
+			ed.CORPORATION AS CORPORATION_ED,
+			ud.USER_TYPE AS USER_TYPE_ED,
+			uo.NICKNAME AS NICKNAME_OD,
+			po.REAL_NAME AS REAL_NAME_OD,
+			eo.ENTERPRISE_NAME AS ENTERPRISE_NAME_OD,
+			eo.CORPORATION AS CORPORATION_OD,
+			uo.USER_TYPE AS USER_TYPE_OD
+		FROM pisp_info_complain c 
+		LEFT JOIN pisp_user u ON c.COMPLAIN_PERSON = u.USER_ID
+		LEFT JOIN pisp_euser e ON e.USER_ID = u.USER_ID
+		LEFT JOIN pisp_puser p ON p.USER_ID = u.USER_ID
+		LEFT JOIN pisp_publish_info pi ON pi.INFO_ID = c.INFO_ID AND pi.INFO_TYPE = c.INFO_TYPE
+		LEFT JOIN pisp_user ud ON ud.USER_ID = pi.USER_ID
+		LEFT JOIN pisp_puser pd ON pd.USER_ID = ud.USER_ID
+		LEFT JOIN pisp_euser ed ON ed.USER_ID = ud.USER_ID
+		LEFT JOIN pisp_user uo ON uo.USER_ID = c.BY_COMPLAIN_PERSON
+		LEFT JOIN pisp_puser po ON po.USER_ID = uo.USER_ID
+		LEFT JOIN pisp_euser eo ON eo.USER_ID = uo.USER_ID
+		WHERE c.COMPLAIN_ID = #{complainId}
+	</select>
+	
+	<select id="judgeComplainIsNoForfp" resultType="int">
+		SELECT COUNT(0) FROM pisp_info_complain c WHERE c.WAYBILL_NO = #{waybillNo}AND c.INFO_TYPE = #{infoType}
+	</select>
+	
+	<insert id="addComplain" parameterType="Complain">
+		INSERT into pisp_info_complain(
+			COMPLAIN_PERSON,
+			INFO_TYPE,
+			COMPLAIN_CONTENT,
+			COMPLAIN_TIME,
+			IS_DISPOSE,
+			BY_COMPLAIN_PERSON,
+			WAYBILL_NO
+		)
+		VALUES(
+			#{complainPerson},
+			#{infoType},
+			#{complainContent},
+			#{complainTime},
+			#{isDispose},
+			#{byComplainPerson},
+			#{waybillNo}
+		)
+	</insert>
+	
+	<select id="judgeIsComplained" parameterType="java.util.Map" resultMap="complainVOMap">
+		select 
+			* 
+		FROM 
+		pisp_info_complain pic
+		WHERE pic.COMPLAIN_PERSON = #{userId} AND pic.WAYBILL_NO = #{waybillNo}
+	</select>
+</mapper>

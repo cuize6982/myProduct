@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.userlevel.dao.UserLevelBaseDAO">
+	<resultMap type="UserLevel" id="userLevelMap" >
+		<id property="levelId" column="LEVEL_ID"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="score" column="SCORE"/>
+		<result property="isReach" column="IS_REACH"/>
+		<result property="scoreTime" column="SCORE_TIME"/>
+		<result property="reachNum" column="REACH_NUM"/>
+		<result property="createTime" column="CREATE_TIME"/>
+		<result property="updateTime" column="UPDATE_TIME"/>
+	</resultMap>
+	
+	
+	<select id="queryAllUser"  resultMap="com.lzz.lsp.core.user.dao.UserBaseDAO.userMapper">
+		SELECT 
+			u.USER_ID,
+			u.ACCOUNT_NAME,
+			u.USER_TYPE
+	   FROM pisp_user u WHERE u.IS_AGENT = 1
+	</select>
+	
+	<select id="getLastReachUserLevel" parameterType="java.lang.Integer" resultMap="userLevelMap">
+		SELECT 
+			lr.LEVEL_ID,
+			lr.USER_ID,
+			lr.SCORE,
+			lr.IS_REACH,
+			lr.SCORE_TIME,
+			lr.REACH_NUM 
+		from pisp_user_level_rec lr 
+		<where>
+			<if test="userId != null"> AND lr.USER_ID = #{userId}</if>
+		</where>
+		ORDER BY lr.CREATE_TIME DESC LIMIT 1 
+	</select>
+	
+	<insert id="saveUserLevelInfo" parameterType="UserLevel">
+		insert into pisp_user_level_rec(
+			USER_ID,SCORE,IS_REACH,SCORE_TIME,REACH_NUM,CREATE_USER,CREATE_TIME
+				)
+		values(
+			#{userId},#{score},#{isReach},#{scoreTime},#{reachNum},#{createUser},#{createTime}
+		       )
+	</insert>
+	
+	
+	
+	<select id="getUserLevelByUserId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+		SELECT u.USER_GRAD FROM pisp_user u 
+		<where>
+			<if test="userId != null">  u.USER_ID = #{userId}</if>
+		</where>
+	</select>
+	
+</mapper>

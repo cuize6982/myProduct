@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.car.dao.UserCarBaseDAO">
+	<resultMap type="UserCar" id="userCarMap">
+		<id property="id" column="USER_CAR_ID"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="carId" column="CAR_ID"/>
+		<result property="accountName" column="ACCOUNT_NAME"/>
+	</resultMap>
+	<!-- 新增用户车辆关联 -->
+	<insert id="saveUserCar" parameterType="UserCar">
+		INSERT INTO PISP_USER_CAR(USER_ID,CAR_ID)
+		values(#{userId,jdbcType=INTEGER},#{carId,jdbcType=INTEGER})
+	</insert>
+	<!-- 删除用户车辆关联 -->
+	<delete id="deleteUserCarByCarId" parameterType="Integer">
+		DELETE FROM PISP_USER_CAR where CAR_ID =#{carId}
+	</delete>
+	<!-- 根据carId获取用户id -->
+	<select id="getUserIdByCarId" parameterType="Integer" resultMap="userCarMap">
+		select pc.USER_ID from PISP_USER_CAR pc where pc.CAR_ID = #{carId}
+	</select>
+	<select id="getUserByCarId" parameterType="Integer" resultMap="userCarMap">
+		SELECT 
+		  puc.USER_ID,
+		  puc.CAR_ID,
+		  pu.ACCOUNT_NAME 
+		FROM PISP_USER_CAR puc
+		LEFT JOIN pisp_user pu ON puc.USER_ID = pu.USER_ID
+		where CAR_ID =#{carId}
+	</select>
+</mapper>

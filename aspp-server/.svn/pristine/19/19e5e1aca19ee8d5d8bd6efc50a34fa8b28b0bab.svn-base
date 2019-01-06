@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.aspp.dao.GoodsSourceDAO">
+	<resultMap type="AsppGoodsSourceVO" id="goodsSourceVO">
+		<result property="fromPlace" column="FROM_PLACE"/>
+		<result property="fromPCode" column="FROM_P_CODE"/>
+		<result property="fromCCode" column="FROM_C_CODE"/>
+		<result property="fromTCode" column="FROM_T_CODE"/>
+		<result property="toPlace" column="TO_PLACE"/>
+		<result property="toPCode" column="TO_P_CODE"/>
+		<result property="toCCode" column="TO_C_CODE"/>
+		<result property="toTCode" column="TO_T_CODE"/>
+		<result property="infoContent" column="INFO_CONTENT"/>
+		<result property="publishTime" column="PUBLISH_TIME"/>
+		<result property="goodsType" column="GOODS_TYPE"/>
+		<result property="goodsTypeName" column="GOODS_TYPE_NAME"/>
+		<result property="weight" column="WEIGHT"/>
+		<result property="weightUnit" column="WEIGHT_UNIT"/>
+		<result property="weightUnitName" column="WEIGHT_UNIT_NAME"/>
+		<result property="price" column="PRICE"/>
+		<result property="priceUnit" column="PRICE_UNIT"/>
+		<result property="priceUnitName" column="PRICE_UNIT_NAME"/>
+		<result property="carTypeNeed" column="CAR_TYPE_NEED"/>
+		<result property="carTypeNeedName" column="CAR_TYPE_NEED_NAME"/>
+		<result property="carLengthNeedName" column="CAR_LENGTH_NEED_NAME"/>
+		<result property="carLengthNeed" column="CAR_LENGTH_NEED"/>
+		<result property="linkMan" column="LINKMAN"/>
+		<result property="linkPhone" column="LINK_PHONE"/>
+		<result property="linkMobile1" column="LINK_MOBILE1"/>
+		<result property="linkMobile2" column="LINK_MOBILE2"/>
+		<result property="enterpriseName" column="ENTERPRISE_NAME"/>
+		<result property="goodsSourceId" column="GOODS_SOURCE_ID"/>
+		<result property="publishInfoId" column="PUBLISH_ID"/>
+		<result property="isStruct" column="IS_STRUCT"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="volume" column="VOLUME"/>
+		<result property="volumeUnit" column="VOLUME_UNIT"/>
+		<result property="volumeUnitName" column="VOLUME_UNIT_NAME"/>
+		<result property="goodsClass" column="GOODS_CLASS"/>
+		<result property="goodsName" column="GOODS_NAME"/>
+		<result property="status" column="STATUS"/>
+		<result property="favoriteId" column="FAVORITE_ID"/>
+		<result property="isAuth" column="IS_AUTH"/>
+		<result property="infoId" column="INFO_ID"/>
+		<result property="infoType" column="INFO_TYPE"/>
+		<result property="placeKilometre" column="PLACE_KILOMETRE"/>
+		<result property="defineCarType" column="DEFINE_CAR_TYPE"/>
+		<result property="claimGoodsDays" column="CLAIM_GOODS_DAYS"/>
+		<result property="goodsSourceInfoType" column="GOODS_SOURCE_INFO_TYPE"/>
+		<result property="isVisible" column="IS_VISIBLE"/>
+	</resultMap>
+	
+	<select id="getPublishGoodsSource" parameterType="AsppGoodsSourceVO" resultMap="goodsSourceVO">
+		SELECT 
+			pgs.FROM_PLACE,
+			pgs.FROM_P_CODE,
+			pgs.FROM_C_CODE,
+			pgs.FROM_T_CODE,
+			pgs.TO_PLACE,
+			pgs.TO_P_CODE,
+			pgs.TO_C_CODE,
+			pgs.TO_T_CODE,
+			pgs.INFO_CONTENT,
+			pgs.GOODS_CLASS,
+			ppi.PUBLISH_TIME,
+			pgs.GOODS_TYPE,
+			pgs.GOODS_NAME,
+			gt.VAL_NAME AS GOODS_TYPE_NAME,
+			pgs.WEIGHT,
+			pgs.WEIGHT_UNIT,
+			wn.VAL_NAME AS WEIGHT_UNIT_NAME,
+			pgs.PRICE,
+			pgs.PRICE_UNIT,
+			pn.VAL_NAME AS PRICE_UNIT_NAME,
+			pgs.CAR_TYPE_NEED_NAME,
+			pgs.CAR_LENGTH_NEED_NAME,
+			pgs.LINKMAN,
+			pgs.LINK_MOBILE1,
+			pgs.LINK_MOBILE2,
+			pgs.LINK_PHONE,
+			pgs.GOODS_SOURCE_ID,
+			ppi.PUBLISH_ID,
+			ppi.IS_STRUCT,
+			ppi.USER_ID,
+			pgs.VOLUME,
+			pgs.VOLUME_UNIT,
+			vol.VAL_NAME AS VOLUME_UNIT_NAME,
+			ppi.`STATUS`,
+			pu.IS_AUTH,
+			pgs.CAR_TYPE_NEED,
+			pgs.CAR_LENGTH_NEED,
+			pgs.PLACE_KILOMETRE,
+			pgs.DEFINE_CAR_TYPE,
+			pgs.CLAIM_GOODS_DAYS,
+			pgs.GOODS_SOURCE_INFO_TYPE,
+			ppi.IS_VISIBLE
+		FROM pisp_publish_info ppi
+		LEFT JOIN pisp_goods_source pgs on pgs.GOODS_SOURCE_ID = ppi.INFO_ID
+		LEFT JOIN pisp_dict_val gt on pgs.GOODS_TYPE = gt.VAL_CODE AND gt.DICT_CODE = 'GOODS_TYPE'
+		LEFT JOIN pisp_dict_val wn on pgs.WEIGHT_UNIT = wn.VAL_CODE AND wn.DICT_CODE = 'GOODS_WEIGHT_UNIT'
+		LEFT JOIN pisp_dict_val pn ON pgs.PRICE_UNIT = pn.VAL_CODE AND pn.DICT_CODE = 'TRANSPORT_PRICE_UNIT'
+		LEFT JOIN pisp_dict_val vol ON pgs.VOLUME_UNIT = vol.VAL_CODE AND vol.DICT_CODE = 'GOODS_WEIGHT_UNIT'
+		LEFT JOIN pisp_user pu ON pu.USER_ID = ppi.USER_ID
+		WHERE ppi.INFO_TYPE = 1
+		AND ppi.IS_DELETE = 0
+		AND (ppi.`STATUS` = 3
+		OR ppi.`STATUS` = 4)
+		AND ppi.USER_ID = #{userId}
+		<if test="null != fromPCode">
+			AND pgs.FROM_P_CODE = #{fromPCode}
+		</if>
+		<if test="null != fromCCode">
+			AND pgs.FROM_C_CODE = #{fromCCode}
+		</if>
+		<if test="null != fromTCode">
+			AND pgs.FROM_T_CODE = #{fromTCode}
+		</if>
+		<if test="null != toPCode">
+			AND pgs.TO_P_CODE = #{toPCode}
+		</if>
+		<if test="null != toCCode">
+			AND pgs.TO_C_CODE = #{toCCode}
+		</if>
+		<if test="null != toTCode">
+			AND pgs.TO_T_CODE = #{toTCode}
+		</if>
+		ORDER BY ppi.PUBLISH_TIME DESC
+	</select>
+	
+	<select id="goodsSourceList" parameterType="AsppGoodsSourceVO" resultMap="goodsSourceVO">
+		SELECT 
+			pgs.FROM_PLACE,
+			pgs.FROM_P_CODE,
+			pgs.FROM_C_CODE,
+			pgs.FROM_T_CODE,
+			pgs.TO_PLACE,
+			pgs.TO_P_CODE,
+			pgs.TO_C_CODE,
+			pgs.TO_T_CODE,
+			pgs.INFO_CONTENT,
+			pgs.GOODS_CLASS,
+			ppi.PUBLISH_TIME,
+			pgs.GOODS_TYPE,
+			pgs.GOODS_NAME,
+			gt.VAL_NAME AS GOODS_TYPE_NAME,
+			pgs.WEIGHT,
+			pgs.WEIGHT_UNIT,
+			wn.VAL_NAME AS WEIGHT_UNIT_NAME,
+			pgs.PRICE,
+			pgs.PRICE_UNIT,
+			pn.VAL_NAME AS PRICE_UNIT_NAME,
+			pgs.CAR_TYPE_NEED,
+			pgs.CAR_LENGTH_NEED,
+			pgs.LINKMAN,
+			pgs.LINK_MOBILE1,
+			pgs.LINK_MOBILE2,
+			pgs.LINK_PHONE,
+			pgs.GOODS_SOURCE_ID,
+			ppi.PUBLISH_ID,
+			ppi.IS_STRUCT,
+			ppi.USER_ID,
+			pgs.VOLUME,
+			pgs.VOLUME_UNIT,
+			pgs.PLACE_KILOMETRE,
+			<if test="null != userId">
+				puf.FAVORITE_ID,
+			</if>
+			vol.VAL_NAME AS VOLUME_UNIT_NAME,
+			ppi.`STATUS`,
+			pu.IS_AUTH
+		 FROM pisp_publish_info ppi
+		LEFT JOIN pisp_goods_source pgs on pgs.GOODS_SOURCE_ID = ppi.INFO_ID
+		LEFT JOIN pisp_dict_val gt on pgs.GOODS_TYPE = gt.VAL_CODE AND gt.DICT_CODE = 'GOODS_TYPE'
+		LEFT JOIN pisp_dict_val wn on pgs.WEIGHT_UNIT = wn.VAL_CODE AND wn.DICT_CODE = 'GOODS_WEIGHT_UNIT'
+		LEFT JOIN pisp_dict_val pn ON pgs.PRICE_UNIT = pn.VAL_CODE AND pn.DICT_CODE = 'TRANSPORT_PRICE_UNIT'
+		LEFT JOIN pisp_dict_val vol ON pgs.VOLUME_UNIT = vol.VAL_CODE AND vol.DICT_CODE = 'GOODS_WEIGHT_UNIT'
+		<if test="null != userId">
+			LEFT JOIN pisp_user_favorite puf ON puf.INFO_ID = ppi.INFO_ID AND puf.USER_ID = #{userId} AND puf.INFO_TYPE = 1
+		</if>
+		LEFT JOIN pisp_user pu ON pu.USER_ID = ppi.USER_ID
+		WHERE ppi.INFO_TYPE = 1
+		AND ppi.IS_DELETE = 0
+		AND ppi.`STATUS` = 3
+		<if test="null != fromPCode">
+			AND pgs.FROM_P_CODE = #{fromPCode}
+		</if>
+		<if test="null != fromCCode">
+			AND pgs.FROM_C_CODE = #{fromCCode}
+		</if>
+		<if test="null != toPCode">
+			AND pgs.TO_P_CODE = #{toPCode}
+		</if>
+		<if test="null != toCCode">
+			AND pgs.TO_C_CODE = #{toCCode}
+		</if>
+		ORDER BY ppi.PUBLISH_TIME DESC
+	</select>
+	
+	<select id="getGoodsIsFavorite" parameterType="java.util.Map" resultMap="goodsSourceVO">
+		SELECT
+		<if test="null != userId">
+			puf.FAVORITE_ID,
+		</if>
+			ppi.PUBLISH_ID,
+			CASE WHEN pu.USER_TYPE != 1 AND pu.USER_TYPE != 2 
+				THEN (SELECT pe.ENTERPRISE_NAME FROM pisp_euser pe WHERE pe.USER_ID = pu.USER_ID)
+			END AS ENTERPRISE_NAME,
+			ppi.INFO_TYPE,
+			ppi.INFO_ID,
+			ppi.USER_ID
+		FROM
+			pisp_publish_info ppi
+		<if test="null != userId">
+			LEFT JOIN pisp_user_favorite puf ON puf.INFO_ID = ppi.INFO_ID AND puf.USER_ID = #{userId} AND puf.INFO_TYPE = 1
+		</if>
+		LEFT JOIN pisp_user pu ON pu.USER_ID = ppi.USER_ID
+		WHERE
+			ppi.PUBLISH_ID IN 
+			<foreach collection="publishInfoIds" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+	</select>
+</mapper>

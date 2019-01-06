@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:aop="http://www.springframework.org/schema/aop" 
+		xmlns:context="http://www.springframework.org/schema/context" 
+		xmlns:tx="http://www.springframework.org/schema/tx" 
+		xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd  
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.1.xsd  
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd  
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd ">
+        
+    <!-- 拒绝下单推送 -->
+	<bean id="refuseWaybillPushTaskProcessor" class="com.lzz.lsp.cmpt.task.support.RefuseWaybillPushTaskProcessor">
+		<!-- 注入service -->
+		<property name="waybillBaseService" ref="waybillBaseService"/>
+		<property name="pushInfoService" ref="pushInfoService"/>
+		<property name="interceptInfos">
+			<list>
+				<value>com.lzz.aspp.web.WaybillController:refuseTransaction</value>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- 确认下单推送 -->
+	<bean id="confirmWaybillPushTaskProcessor" class="com.lzz.lsp.cmpt.task.support.ConfirmWaybillPushTaskProcessor">
+		<!-- 注入service -->
+		<property name="waybillBaseService" ref="waybillBaseService"/>
+		<property name="pushInfoService" ref="pushInfoService"/>
+		<property name="interceptInfos">
+			<list>
+				<value>com.lzz.aspp.web.WaybillController:confirmWaybillTransaction</value>
+			</list>
+		</property>
+	</bean>
+	
+	
+	<!-- 成交订单推送：旧找旧，旧找新，下单一键成交，需要推送消息   --> 
+	<!-- 新找新，下单推送，成交运单不推送 -->
+	<bean id="dealWaybillPushTaskProcessor" class="com.lzz.lsp.cmpt.task.support.DealWaybillPushTaskProcessor">
+		<property name="waybillBaseService" ref="waybillBaseService"/>
+		<property name="pushInfoService" ref="pushInfoService"/>
+		<property name="interceptInfos">
+			<list>
+				<value>com.lzz.aspp.web.WaybillController:dealWaybill</value>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- 高低版本双客户端，低版本登录推送任务 -->
+	<bean id="highLowVersionPushTaskProcessor" class="com.lzz.lsp.cmpt.task.support.HighLowVersionPushTaskProcessor">
+		<!-- 注入service -->
+		<property name="waybillBaseService" ref="waybillBaseService"/>
+		<property name="pushInfoService" ref="pushInfoService"/>
+		<property name="loginSessionService" ref="loginSessionService"/>
+		<property name="interceptInfos">
+			<list>
+				<!-- 上传合同和保险 -->
+				<value>com.lzz.aspp.web.WaybillController:updateInsuranceMes</value>
+				<!-- 确认收货-->
+				<value>com.lzz.aspp.web.WaybillController:updateWaybillOrderStatus</value>
+				<!-- 支付-->
+				<value>com.lzz.lsp.cmpt.appalipay.web.WaybTradeController:addWaybillTradeLwc</value>
+			</list>
+		</property>
+	</bean>
+	
+	
+	<!-- 用户注册AOP -->
+	<bean id="registerTaskProcessor" class="com.lzz.lsp.cmpt.task.support.score.RegisterTaskProcessor">
+		<!-- 注入service方法 -->
+		<property name="userScoreRuleBaseService" ref="userScoreRuleBaseService"></property>
+		<property name="userScoreRecBaseService" ref="userScoreRecBaseService"></property>
+		<!-- 要处理的类和方法格式：全路径：方法名称 -->
+		<property name="interceptInfos">
+			<list>
+				<value>com.lzz.lsp.psi.web.PsiRegisterController:register</value>
+			</list>
+		</property>
+	</bean>
+	
+		
+	<!-- 发布货源送积分AOP -->
+	<bean id="publishTaskProcessor" class="com.lzz.lsp.cmpt.task.support.score.PublishGSTaskProcessor">
+		<!-- 注入service方法 -->
+		<property name="userScoreRuleBaseService" ref="userScoreRuleBaseService"></property>
+		<property name="userScoreRecBaseService" ref="userScoreRecBaseService"></property>
+		<property name="agentBaseService" ref="agentBaseService"></property>
+		
+		<!-- 要处理的类和方法格式：全路径：方法名称 -->
+		<property name="interceptInfos">
+			<list>
+				<value>com.lzz.aspp.web.GoodsSourceController:publishGoodsSource</value>
+			</list>
+		</property>
+	</bean>
+	
+	
+	<!-- 运单成交送积分AOP -->
+	<bean id="dealWaybillTaskProcessor" class="com.lzz.lsp.cmpt.task.support.score.DealWaybillTaskProcessor">
+		<!-- 注入service方法 -->
+		<property name="userScoreRuleBaseService" ref="userScoreRuleBaseService"></property>
+		<property name="userScoreRecBaseService" ref="userScoreRecBaseService"></property>
+		<property name="agentBaseService" ref="agentBaseService"></property>
+		<property name="waybillBaseService" ref="waybillBaseService"></property>
+		<property name="scoreCalculationService" ref="scoreCalculationService"></property>
+		<property name="userBaseService" ref="userBaseService"></property>
+		
+		<!-- 要处理的类和方法格式：全路径：方法名称 -->
+		<property name="interceptInfos">
+			<list>
+			    <!--高抢高成交：支付中期款-->
+				<value>com.lzz.aspp.web.WaybillController:waybillOfflinePayment</value>
+				<!--低抢低成交：一键成交，老接口-->
+				<value>com.lzz.aspp.web.WaybillController:dealWaybill</value>
+				<!--低抢高成交：确认下单，一键成交-->
+				<value>com.lzz.aspp.web.WaybillController:confirmWaybillTransaction</value>
+			</list>
+		</property>
+	</bean>
+	<!-- 支付尾款 AOP -->
+	<bean id="finalPayPushTaskProcessor" class="com.lzz.lsp.cmpt.task.support.FinalPayPushTaskProcessor">
+		<!-- 注入service -->
+		<property name="waybillBaseService" ref="waybillBaseService"/>
+		<property name="pushInfoService" ref="pushInfoService"/>
+		<property name="interceptInfos">
+			<list>
+				<value>com.lzz.aspp.web.WaybillController:waybillOfflinePayment</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="awardScoreTaskInterceptor" class="com.lzz.lsp.cmpt.task.interceptor.TaskInterceptor">
+		<property name="processors">
+			<list>
+				<ref bean="registerTaskProcessor"/>
+				<ref bean="dealWaybillPushTaskProcessor"/>
+				<ref bean="refuseWaybillPushTaskProcessor"/>
+				<ref bean="confirmWaybillPushTaskProcessor"/>
+				<ref bean="highLowVersionPushTaskProcessor"/>
+				<ref bean="publishTaskProcessor"/>
+				<ref bean="dealWaybillTaskProcessor"/>
+			</list>
+		</property>		
+	</bean>
+
+	<aop:config>
+		<aop:aspect id="taskAspect" ref="awardScoreTaskInterceptor">
+			<aop:pointcut id="taskPointcut" expression="(execution(* com.lzz.aspp.web.*Controller.*(..)))  || (execution(* com.lzz.lsp.psi.web.*Controller.*(..)))  || (execution(* com.lzz.lsp.cmpt.appalipay.web.*Controller.*(..)))"/>
+            <aop:after-throwing pointcut-ref="taskPointcut" method="doThrowing" throwing="ex"/>
+            <aop:after-returning pointcut-ref="taskPointcut" method="doReturning" returning="result"/>
+		</aop:aspect>
+	</aop:config>
+</beans>

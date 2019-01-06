@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.systemnotice.dao.SystemNoticeBaseDAO">
+	<resultMap type="SystemNotice" id="systemNoticeMap">
+		<id property="id" column="SYSTEM_NOTICE_ID"/>
+		<result property="title" column="TITAL"/>
+		<result property="url" column="URL"/>
+		<result property="isValid" column="IS_VALID"/>
+		<result property="sortNo" column="SORT_NO"/>
+		<result property="createUser" column="CREATE_USER"/>
+		<result property="createTime" column="CREATE_TIME"/>
+		<result property="updateUser" column="UPDATE_USER"/>
+		<result property="updateTime" column="UPDATE_TIME"/>
+	</resultMap>
+	
+	<select id="querySystemNotices" parameterType="int" resultMap="systemNoticeMap">
+		SELECT sn.* FROM pisp_system_notice sn
+		<if test="isValid != null">WHERE sn.IS_VALID = #{isValid}</if>
+	</select>
+	
+	<select id="getSystemNotice" parameterType="int" resultMap="systemNoticeMap">
+		SELECT * FROM pisp_system_notice WHERE SYSTEM_NOTICE_ID = #{id}
+	</select>
+	
+	<insert id="addSystemNotice" parameterType="SystemNotice">
+		INSERT INTO pisp_system_notice(TITAL,URL,IS_VALID,SORT_NO,CREATE_USER,CREATE_TIME)
+		VALUES(#{title},#{url},#{isValid},#{sortNo},#{createUser},#{createTime})
+	</insert>
+	
+	<update id="updateSystemNotice" parameterType="SystemNotice">
+		UPDATE pisp_system_notice
+		SET TITAL = #{title},URL = #{url},IS_VALID = #{isValid},SORT_NO = #{sortNo}
+		,UPDATE_USER = #{updateUser},UPDATE_TIME = #{updateTime}
+		WHERE SYSTEM_NOTICE_ID = #{id}
+	</update>
+	
+	<delete id="deleteSystemNotice" parameterType="int">
+		DELETE FROM pisp_system_notice WHERE SYSTEM_NOTICE_ID = #{id}
+	</delete>
+	
+</mapper>

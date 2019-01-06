@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.carsource.dao.CarSourceBaseDAO">
+	<resultMap type="CarSource" id="carSourceMap">
+		<id property="carSourceId" column="CAR_SOURCE_ID"/>
+		<result property="publisher" column="PUBLISHER"/>
+		<result property="fromPlace" column="FROM_PLACE"/>
+		<result property="toPlace" column="TO_PLACE"/>
+		<result property="fromPCode" column="FROM_P_CODE"/>
+		<result property="fromCCode" column="FROM_C_CODE"/>
+		<result property="fromTCode" column="FROM_T_CODE"/>
+		<result property="toPCode" column="TO_P_CODE"/>
+		<result property="toCCode" column="TO_C_CODE"/>
+		<result property="toTCode" column="TO_T_CODE"/>
+		<result property="carId" column="CAR_ID"/>
+		<result property="sourceType" column="SOURCE_TYPE"/>
+		<result property="returnBackDate" column="RETURN_BACK_DATE"/>
+		<result property="commonPhrase" column="COMMON_PHRASE"/>
+		<result property="linkman" column="LINKMAN"/>
+		<result property="linkPhone" column="LINK_PHONE"/>
+		<result property="linkMobile1" column="LINK_MOBILE1"/>
+		<result property="linkMobile2" column="LINK_MOBILE2"/>
+		<result property="linkQq" column="LINK_QQ"/>
+		<result property="infoContent" column="INFO_CONTENT"/>
+		<result property="mark" column="MARK"/>
+		<result property="createUser" column="CREATE_USER"/>
+		<result property="createTime" column="CREATE_TIME"/>
+		<result property="updateUser" column="UPDATE_USER"/>
+		<result property="updateTime" column="UPDATE_TIME"/>
+		
+	</resultMap>
+	
+	<resultMap type="CarSourceVO" id="carSourceVOMap">
+		<result property="favoriteId" column="FAVORITE_ID"/>
+		<result property="publishId" column="PUBLISH_ID"/>
+		<result property="publisher" column="PUBLISHER"/>
+		<result property="carSourceId" column="INFO_ID"/>
+		<result property="displayTime" column="DISPLAY_TIME"/>
+		<result property="publishTime" column="PUBLISH_TIME"/>
+		<result property="fromPlace" column="FROM_PLACE"/>
+		<result property="toPlace" column="TO_PLACE"/>
+		<result property="linkman" column="LINKMAN"/>
+		<result property="linkMobile1" column="LINK_MOBILE1"/>
+		<result property="linkMobile2" column="LINK_MOBILE2"/>
+		<result property="mark" column="MARK"/>
+		<result property="sourceType" column="SOURCE_TYPE"/>
+		<result property="fromPCode" column="FROM_P_CODE"/>
+		<result property="fromCCode" column="FROM_C_CODE"/>
+		<result property="fromTCode" column="FROM_T_CODE"/>
+		<result property="toPCode" column="TO_P_CODE"/>
+		<result property="toCCode" column="TO_C_CODE"/>
+		<result property="toTCode" column="TO_T_CODE"/>
+		<result property="returnBackDate" column="RETURN_BACK_DATE"/>
+		<result property="carId" column="CAR_ID"/>
+		<result property="carNo" column="CAR_NO"/>
+		<result property="carType" column="CAR_TYPE"/>
+		<result property="carTypeName" column="CAR_TYPE_NAME"/>
+		<result property="carLength" column="CAR_LENGTH"/>
+		<result property="loadWeight" column="LOAD_WEIGHT"/>
+		<result property="carPhoto" column="CAR_PHOTO"/>
+		<result property="driver" column="DRIVER"/>
+		<result property="driverPhone" column="DRIVER_PHONE"/>
+		<result property="idCardNo" column="IDCARD_NO"/>
+		<result property="locationName" column="LOCATION_NAME"/>
+		<result property="locateTime" column="LOCATE_TIME"/>
+		<result property="longitude" column="LONGITUDE"/>
+		<result property="latitude" column="LATITUDE"/>
+		<result property="driveAge" column="DRIVE_AGE"/>
+		<result property="applauseRate" column="APPLAUSE_RATE"/>
+		<result property="isAuth" column="IS_AUTH"/>
+		<result property="userType" column="USER_TYPE"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="infoType" column="INFO_TYPE"/>
+		<result property="fromCode" column="fromCode"/>
+		<result property="toCode" column="toCode"/>
+		<result property="infoContent" column="INFO_CONTENT"/>
+		<result property="publishFreq" column="PUBLISH_FREQ"/>
+		<result property="repateTimes" column="REPATE_TIMES"/>
+		<result property="adress" column="ADRESS"/>
+		<result property="linkPhone" column="LINK_PHONE"/>
+		<result property="isDelete" column="IS_DELETE"/>
+		<result property="status" column="STATUS"/><!-- 收藏车源所需,用来解决已收藏车源，然后该车源被关闭的问题 2015年10月22日16:23:07 yunns添加-->
+		<result property="enterprisePhoto" column="ENTERPRISE_PHOTO"/><!-- 车源详情显示发布者头像2015年10月29日14:59:19 yunns添加 -->
+		<result property="realName" column="REAL_NAME"/>
+		<result property="nickName" column="NICKNAME"/>
+		<result property="accountName" column="ACCOUNT_NAME"/>
+		<result property="headImage" column="HEAD_IMAGE"/>
+		<result property="carTypeFirstCode" column="CAR_TYPE_FIRST_CODE"/>
+		<result property="carTypeSecondCode" column="CAR_TYPE_SECOND_CODE"/>
+		<result property="carTypeThirdCode" column="CAR_TYPE_THIRD_CODE"/>
+		<result property="defineCarType" column="DEFINE_CAR_TYPE"/>
+		<result property="oldCarTypeName" column="OLD_CAR_TYPE_NAME"/>
+	</resultMap>
+	
+	
+	<select id="queryCarSources" parameterType="CarSourceQuery" resultMap="carSourceVOMap">
+		SELECT
+			pi.PUBLISH_ID,
+			pi.DISPLAY_TIME,
+			cs.FROM_PLACE,
+			cs.TO_PLACE,
+			cs.LINKMAN,
+			cs.MARK,
+			u.IS_AUTH,
+			u.USER_TYPE,
+			c.CAR_NO,
+			c.CAR_TYPE,
+			c.CAR_LENGTH,
+			c.LOAD_WEIGHT,
+			c.CAR_PHOTO,
+			c.LOCATION_NAME,
+			c.LOCATE_TIME,
+			c.LONGITUDE,
+			c.LATITUDE,
+			IFNULL(u.APPLAUSE_RATE,0) AS APPLAUSE_RATE,
+			(
+				SELECT
+					dv.VAL_NAME
+				FROM
+					pisp_dict_val dv
+				WHERE
+					dv.VAL_CODE = c.CAR_TYPE
+				AND dv.DICT_CODE = 'CAR_TYPE'
+			) AS CAR_TYPE_NAME,
+			(
+				SELECT
+					IFNULL(YEAR(NOW())-YEAR(pu.DRIVING_LICENCE_APPLY_DATE),0)
+				FROM
+					pisp_puser pu
+				WHERE
+					pu.USER_ID = pi.USER_ID
+			) AS DRIVE_AGE
+		FROM
+			pisp_publish_info pi
+		LEFT JOIN pisp_user u ON pi.USER_ID =  u.USER_ID
+		,pisp_car_source cs
+		LEFT JOIN pisp_car c ON cs.CAR_ID = c.CAR_ID
+		WHERE
+		pi.INFO_ID = cs.CAR_SOURCE_ID
+		AND pi.INFO_TYPE = 2
+		AND pi.`STATUS` = 3
+		<if test="sourceType != null and sourceType != ''"> AND cs.SOURCE_TYPE = #{sourceType}</if>
+		<if test="fromPCode != null and fromPCode != 0"> AND cs.FROM_P_CODE = #{fromPCode}</if>
+		<if test="fromCCode != null and fromCCode != 0"> AND cs.FROM_C_CODE = #{fromCCode}</if>
+		<if test="fromTCode != null and fromTCode != 0"> AND cs.FROM_T_CODE = #{fromTCode}</if>
+		<if test="toPCode != null and toPCode != 0"> AND cs.TO_P_CODE = #{toPCode}</if>
+		<if test="toCCode != null and toCCode != 0"> AND cs.TO_C_CODE = #{toCCode}</if>
+		<if test="toTCode != null and toTCode != 0"> AND cs.TO_T_CODE = #{toTCode}</if>
+		<if test="carType != null and carType != ''"> AND c.CAR_TYPE = #{carType}</if>
+		<if test="maxCarLength != null"> AND c.CAR_LENGTH &lt;= #{maxCarLength}</if>
+		<if test="minCarLength != null"> AND c.CAR_LENGTH &gt;= #{minCarLength}</if>
+		<if test="maxLoadWeight != null"> AND c.LOAD_WEIGHT &lt;= #{maxLoadWeight}</if>
+		<if test="minLoadWeight != null"> AND c.LOAD_WEIGHT &gt;= #{minLoadWeight}</if>
+		<if test="publishTimeValCode != null and publishTimeValCode !=''">
+			<if test='publishTimeValCode == "1" or publishTimeValCode == "2" or publishTimeValCode =="3" '>
+				AND  date_format(pi.DISPLAY_TIME,'%Y-%m-%d') = date_format(#{publishTime},'%Y-%m-%d')
+			</if>
+			<if test='publishTimeValCode == "4" or publishTimeValCode == "5" '>
+				AND  date_format(pi.DISPLAY_TIME,'%Y-%m-%d') &gt;= date_format(#{publishTime},'%Y-%m-%d')
+			</if>
+			<if test='publishTimeValCode == "6" '>
+				AND  date_format(pi.DISPLAY_TIME,'%Y-%m-%d') &lt;= date_format(#{publishTime},'%Y-%m-%d')
+			</if>
+		</if>
+	</select>
+	
+	<select id="getCarSource" parameterType="integer" resultMap="carSourceMap">
+		SELECT * FROM pisp_car_source WHERE CAR_SOURCE_ID = #{carSourceId}
+	</select>
+	
+	<insert id="saveCarSource" parameterType="CarSource">
+		INSERT INTO pisp_car_source(CAR_SOURCE_ID,PUBLISHER,FROM_PLACE,TO_PLACE,FROM_P_CODE
+		<if test="fromCCode != null and fromCCode != 0">,FROM_C_CODE</if>
+		<if test="fromTCode != null and fromTCode != 0">,FROM_T_CODE</if>
+		,TO_P_CODE
+		<if test="toCCode != null and toCCode != 0">,TO_C_CODE</if>
+		<if test="toTCode != null and toTCode != 0">,TO_T_CODE</if>
+		,CAR_ID,SOURCE_TYPE
+		<if test="returnBackDate != null">,RETURN_BACK_DATE</if>
+		<if test="commonPhrase != null and commonPhrase != ''">,COMMON_PHRASE</if>
+		,LINKMAN
+		<if test="linkPhone != null and linkPhone != ''">,LINK_PHONE</if>
+		,LINK_MOBILE1
+		<if test="linkMobile2 != null and linkMobile2 != ''">,LINK_MOBILE2</if>
+		<if test="linkQq != null and linkQq != ''">,LINK_QQ</if>
+		<if test="mark != null and mark != ''">,MARK</if>
+		,INFO_CONTENT
+		<if test="createUser != null">,CREATE_USER</if>
+		<if test="createTime != null">,CREATE_TIME</if>
+		<if test="updateUser != null">,UPDATE_USER</if>
+		<if test="updateTime != null">,UPDATE_TIME</if>
+		)
+		VALUES
+		(#{carSourceId,jdbcType=INTEGER},#{publisher,jdbcType=VARCHAR},#{fromPlace,jdbcType=VARCHAR},#{toPlace,jdbcType=VARCHAR},#{fromPCode,jdbcType=INTEGER}
+		<if test="fromCCode != null and fromCCode != 0">,#{fromCCode}</if>
+		<if test="fromTCode != null and fromTCode != 0">,#{fromTCode}</if>
+		,#{toPCode}
+		<if test="toCCode != null and toCCode != 0">,#{toCCode}</if>
+		<if test="toTCode != null and toTCode != 0">,#{toTCode}</if>
+		,#{carId,jdbcType=INTEGER},#{sourceType,jdbcType=VARCHAR}
+		<if test="returnBackDate != null">,#{returnBackDate,jdbcType=DATE}</if>
+		<if test="commonPhrase != null and commonPhrase != ''">,#{commonPhrase,jdbcType=VARCHAR}</if>
+		,#{linkman,jdbcType=VARCHAR}
+		<if test="linkPhone != null and linkPhone != ''">,#{linkPhone,jdbcType=VARCHAR}</if>
+		,#{linkMobile1,jdbcType=VARCHAR}
+		<if test="linkMobile2 != null and linkMobile2 != ''">,#{linkMobile2,jdbcType=VARCHAR}</if>
+		<if test="linkQq != null and linkQq != ''">,#{linkQq,jdbcType=VARCHAR}</if>
+		<if test="mark != null and mark != ''">,#{mark,jdbcType=VARCHAR}</if>
+		,#{infoContent,jdbcType=VARCHAR}
+		<if test="createUser != null">,#{createUser,jdbcType=INTEGER}</if>
+		<if test="createTime != null">,#{createTime,jdbcType=TIMESTAMP}</if>
+		<if test="updateUser != null">,#{updateUser,jdbcType=INTEGER}</if>
+		<if test="updateTime != null">,#{updateTime,jdbcType=TIMESTAMP}</if>
+		)
+	</insert>
+	
+	<update id="updateCarSource" parameterType="CarSource">
+		UPDATE pisp_car_source t 
+		<set>
+			t.FROM_PLACE = #{fromPlace},
+			t.TO_PLACE = #{toPlace},
+			t.FROM_P_CODE = #{fromPCode},
+			t.FROM_C_CODE = #{fromCCode},
+			t.FROM_T_CODE = #{fromTCode},
+			t.TO_P_CODE = #{toPCode},
+			t.TO_C_CODE = #{toCCode},
+			t.TO_T_CODE = #{toTCode},
+			<if test="carId != null">t.CAR_ID = #{carId},</if>
+			<if test="sourceType != null and sourceType != ''">t.SOURCE_TYPE = #{sourceType},</if>
+			t.RETURN_BACK_DATE = #{returnBackDate},
+			t.COMMON_PHRASE = #{commonPhrase},
+			<if test="publisher !=null and publisher != ''">t.PUBLISHER = #{publisher},</if>
+			<if test="person != null and person != ''">t.LINKMAN = #{person},</if>
+			<if test="linkman != null and linkman != ''">t.LINKMAN = #{linkman},</if>
+			<if test="linkMobile1 != null and linkMobile1 != ''">t.LINK_MOBILE1 = #{linkMobile1},</if>
+			t.LINK_PHONE = #{linkPhone},
+			t.LINK_MOBILE2 = #{linkMobile2},
+			t.LINK_QQ = #{linkQq},
+			t.MARK = #{mark},
+			<if test="infoContent != null and infoContent != ''">t.INFO_CONTENT = #{infoContent},</if>
+			<if test="updateUser != null">t.UPDATE_USER = #{updateUser},</if>
+			<if test="updateTime != null">t.UPDATE_TIME = #{updateTime},</if>
+		</set>
+		WHERE t.CAR_SOURCE_ID = #{carSourceId}
+	</update>
+	
+	<select id="queryUserCars" parameterType="java.util.Map" resultType="java.util.Map">
+		SELECT 
+				pc.CAR_ID,
+				pc.DRIVER,
+				pc.DRIVER_PHONE,
+				pc.CAR_NO,
+				pc.CAR_TYPE,
+				<!-- (SELECT dv.VAL_NAME FROM pisp_dict_val dv WHERE dv.VAL_CODE = pc.CAR_TYPE AND dv.DICT_CODE='CAR_TYPE') AS CAR_TYPE_NAME, -->
+				(
+					SELECT 
+						(CASE 
+								when pc.CAR_TYPE_FIRST_CODE is NOT  NULL and pc.CAR_TYPE_SECOND_CODE is NOT  NULL AND pc.CAR_TYPE_THIRD_CODE is NOT  NULL then CONCAT(ct1.CARTYPE_NAME,'-',ct2.CARTYPE_NAME,'-',ct3.CARTYPE_NAME)
+								when pc.CAR_TYPE_FIRST_CODE is NOT  NULL and pc.CAR_TYPE_SECOND_CODE is NOT  NULL  then CONCAT(ct1.CARTYPE_NAME,'-',ct2.CARTYPE_NAME)
+							    when pc.CAR_TYPE_FIRST_CODE is NOT  NULL  then ct1.CARTYPE_NAME
+						        when pc.CAR_TYPE is not null then pdv1.VAL_NAME
+							    when pc.CAR_TYPE_FIRST_CODE is NULL and pc.CAR_TYPE_SECOND_CODE is NULL AND pc.CAR_TYPE_THIRD_CODE is NULL  then  ''
+						   END) as CAR_TYPE_NAME
+			   		FROM pisp_car pc 
+			   		LEFT JOIN  pisp_car_type_base_data ct1 ON ct1.CARTYPE_CODE = pc.CAR_TYPE_FIRST_CODE and pc.CAR_TYPE_FIRST_CODE is not NULL
+			   		LEFT JOIN pisp_car_type_base_data ct2 ON ct2.CARTYPE_CODE = pc.CAR_TYPE_SECOND_CODE and pc.CAR_TYPE_SECOND_CODE is not NULL
+			   		LEFT JOIN pisp_car_type_base_data ct3 ON ct3.CARTYPE_CODE = pc.CAR_TYPE_THIRD_CODE and pc.CAR_TYPE_THIRD_CODE is not NULL
+			   		LEFT JOIN pisp_dict_val pdv1 ON pdv1.VAL_CODE = pc.CAR_TYPE and pc.CAR_TYPE is NOT  NULL and pdv1.DICT_CODE = 'CAR_TYPE' 
+			   		WHERE 
+					pc.CAR_ID = uc.CAR_ID and pc.IS_DELETE = 0
+				) as CAR_TYPE_NAME,
+				pc.CAR_LENGTH,
+				pc.LOAD_WEIGHT,
+				pc.CAR_PHOTO,
+				pc.DRIVER,
+				pc.DRIVER_PHONE,
+				pc.MARK,
+				pc.FIRST_NO,
+				pc.SECOND_NO,
+				pc.THIRD_NO,
+				pc.IDCARD_NO,
+				pc.CAR_TYPE_FIRST_CODE,
+				pc.CAR_TYPE_SECOND_CODE,
+				pc.CAR_TYPE_THIRD_CODE
+			FROM PISP_CAR pc,pisp_user_car uc
+			where 
+				pc.CAR_ID = uc.CAR_ID and pc.IS_DELETE = 0
+				and uc.USER_ID =#{userId}
+				<if test="usePage != null and usePage == 1">
+					limit 0,4
+				</if>
+	</select>
+	
+	<select id="getCarSourcesCount" parameterType="java.util.Map" resultType="java.lang.Integer">
+		SELECT
+			COUNT(ppi.PUBLISH_ID)
+		FROM
+			pisp_publish_info ppi
+		LEFT JOIN pisp_car_source pcs ON pcs.CAR_SOURCE_ID = ppi.INFO_ID
+		LEFT JOIN pisp_car pc ON pcs.CAR_ID = pc.CAR_ID
+		WHERE
+			ppi.USER_ID = #{userId}
+		AND ppi.INFO_TYPE = 2
+		AND pcs.SOURCE_TYPE = #{carSourceType}
+		AND ppi.IS_DELETE = 0
+	</select>
+	
+	
+	<select id="queryMyPublishedCarSourceInfo" parameterType="PublishInfoQuery" resultMap="com.lzz.lsp.core.publish.dao.PublishInfoBaseDAO.publishInfoVOMap">
+		SELECT
+			pi.INFO_ID,
+			pi.INFO_TYPE,
+			u.IS_AUTH,
+			cs.INFO_CONTENT,
+			pi.PUBLISH_FREQ,
+			pi.REPATE_TIMES,
+			pi.DISPLAY_TIME,
+			pi.STATUS,
+			cs.FROM_PLACE,
+			cs.TO_PLACE,
+			cs.SOURCE_TYPE,
+			cs.LINKMAN,
+			cs.LINK_MOBILE1,
+			c.CAR_NO,
+			c.CAR_ID,
+			c.LONGITUDE,
+			c.LATITUDE,
+			c.LOCATION_NAME,
+			dv.VAL_NAME AS CAR_TYPE_NAME,
+			pi.PUBLISH_ID,
+			pi.PUBLISH_TIME
+		FROM
+			pisp_publish_info pi
+		INNER JOIN pisp_car_source cs ON cs.CAR_SOURCE_ID = pi.INFO_ID
+		INNER JOIN pisp_user u ON u.USER_ID = pi.USER_ID
+		LEFT JOIN pisp_car c ON cs.CAR_ID = c.CAR_ID
+		LEFT JOIN pisp_dict_val dv ON c.CAR_TYPE = dv.VAL_CODE AND dv.DICT_CODE = 'CAR_TYPE'
+		WHERE pi.IS_DELETE=0 
+			 <if test="status != null">
+			 	AND pi.STATUS=#{status}
+			 </if>
+			 
+		<if test="infoType != null"> AND pi.INFO_TYPE = #{infoType}</if>
+		<if test="userId != null"> AND pi.USER_ID = #{userId}</if>
+		<if test="status != null"> AND pi.`STATUS` = #{status}</if>
+		<if test="osmpStatus != null">
+		 	AND pi.`STATUS` in
+		 	<foreach collection="osmpStatus" item="osmpSta" open="(" separator="," close=")">
+				#{osmpSta}
+			</foreach>
+		 </if>
+		<if test="fromPCode != null and fromPCode != 0"> AND cs.FROM_P_CODE = #{fromPCode}</if>
+		<if test="fromCCode != null and fromCCode != 0"> AND cs.FROM_C_CODE = #{fromCCode}</if>
+		<if test="fromTCode != null and fromTCode != 0"> AND cs.FROM_T_CODE = #{fromTCode}</if>
+		<if test="toPCode != null and toPCode != 0"> AND cs.TO_P_CODE = #{toPCode}</if>
+		<if test="toCCode != null and toCCode != 0"> AND cs.TO_C_CODE = #{toCCode}</if>
+		<if test="toTCode != null and toTCode != 0"> AND cs.TO_T_CODE = #{toTCode}</if>
+		<if test="publishTimeValCode != null and publishTimeValCode !=''">
+			<if test='publishTimeValCode == "1" or publishTimeValCode == "2" or publishTimeValCode =="3" '>
+				AND  date_format(pi.PUBLISH_TIME,'%Y-%m-%d') = date_format(#{publishTime},'%Y-%m-%d')
+			</if>
+			<if test='publishTimeValCode == "4" or publishTimeValCode == "5" '>
+				AND  date_format(pi.PUBLISH_TIME,'%Y-%m-%d') &gt;= date_format(#{publishTime},'%Y-%m-%d')
+			</if>
+			<if test='publishTimeValCode == "6" '>
+				AND  date_format(pi.PUBLISH_TIME,'%Y-%m-%d') &lt;= date_format(#{publishTime},'%Y-%m-%d')
+			</if>
+		</if>
+		<!-- 2015-6-17 14:48 zhaoyx add for osmp queryCarSources method -->
+		<if test="osmpSourceType != null and osmpSourceType !='' ">
+			AND cs.SOURCE_TYPE in
+			<foreach collection="osmpSourceType" item="osmpST" open="(" separator="," close=")">
+				#{osmpST}
+			</foreach>
+		</if>
+		<if test="carNo != null and carNo !='' ">AND c.CAR_NO = #{carNo}</if>
+		<if test="carType != null and carType !='' ">AND c.CAR_TYPE = #{carType}</if>
+		<if test="publisher != null and publisher !='' ">AND cs.PUBLISHER = #{publisher}</if>
+		 <if test="publishTimeStart != null">
+		 	 and DATE(pi.PUBLISH_TIME) &gt;= DATE(#{publishTimeStart})
+		 </if>
+		 <if test="publishTimeEnd != null">
+		 	 and DATE(pi.PUBLISH_TIME) &lt;= DATE(#{publishTimeEnd})
+		 </if>
+		 <!-- end -->
+		  <if test="backstageWrite != null">
+			and  pi.BACKSTAGE_WRITE = #{backstageWrite}
+		 </if>
+	</select>
+	
+	
+	
+	
+	<select id="getCarSourceInfo" parameterType="java.util.Map" resultMap="carSourceVOMap">
+		SELECT
+			pub.INFO_ID,
+			pub.INFO_TYPE,
+			u.IS_AUTH,
+			u.USER_ID,
+			u.USER_TYPE,
+			CASE WHEN ISNULL(cs.FROM_T_CODE) THEN 
+					CASE WHEN ISNULL(cs.FROM_C_CODE) THEN cs.FROM_P_CODE ELSE cs.FROM_C_CODE END
+			ELSE cs.FROM_T_CODE END as fromCode,
+			CASE WHEN ISNULL(cs.TO_T_CODE) THEN 
+					CASE WHEN ISNULL(cs.TO_C_CODE) THEN cs.TO_P_CODE ELSE cs.TO_C_CODE END
+			ELSE cs.TO_T_CODE END as toCode,
+		 	cs.SOURCE_TYPE,
+			cs.CAR_ID,
+			c.CAR_NO,
+			cs.INFO_CONTENT,
+			pub.PUBLISH_FREQ,
+			pub.REPATE_TIMES,
+			pub.DISPLAY_TIME,
+			cs.PUBLISHER,
+			CONCAT_WS('',pu.ADDRESS,eu.ADDRESS) as ADRESS,
+			cs.FROM_PLACE,
+			cs.TO_PLACE,
+			cs.LINKMAN,
+			cs.LINK_PHONE,
+			cs.LINK_MOBILE1,
+			cs.LINK_MOBILE2
+		FROM
+			pisp_publish_info pub
+		INNER JOIN pisp_car_source cs ON cs.CAR_SOURCE_ID = pub.INFO_ID and pub.info_type=2
+		INNER JOIN pisp_user u ON u.USER_ID = pub.USER_ID
+		LEFT JOIN pisp_puser pu ON pu.USER_ID = u.USER_ID
+		LEFT JOIN pisp_euser eu ON eu.USER_ID = u.USER_ID
+		LEFT JOIN pisp_car c ON c.CAR_ID = cs.CAR_ID 
+		<where>
+			<if test="userId != null">
+				AND pub.USER_ID=#{userId}
+			</if>
+			 <if test="infoId != null">
+		 		AND cs.CAR_SOURCE_ID=#{infoId}
+		 	</if>
+		</where>
+	</select>
+</mapper>

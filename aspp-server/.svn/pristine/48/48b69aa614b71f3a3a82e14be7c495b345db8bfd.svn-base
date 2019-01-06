@@ -1,0 +1,326 @@
+package com.lzz.aspp.web;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
+import org.json.JSONObject;
+import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.util.WebUtils;
+
+import com.lzz.aspp.util.CommonUtil;
+import com.lzz.lsp.base.constants.DataConstants;
+import com.lzz.lsp.base.constants.ReturnDatas;
+import com.lzz.lsp.base.domain.Car;
+import com.lzz.lsp.base.domain.CarNo;
+import com.lzz.lsp.base.domain.CarType;
+import com.lzz.lsp.base.domain.Location;
+import com.lzz.lsp.base.vo.CarVO;
+import com.lzz.lsp.cmpt.carno.service.CarNoService;
+import com.lzz.lsp.cmpt.dict.service.DictService;
+import com.lzz.lsp.core.attachment.service.AttachmentBaseService;
+import com.lzz.lsp.core.car.service.CarBaseService;
+import com.lzz.lsp.core.location.service.LocationBaseService;
+import com.lzz.lsp.util.CommonUtils;
+import com.lzz.lton.core.web.controller.BaseController;
+import com.lzz.lton.util.HttpUtils;
+import com.lzz.lton.util.JsonUtils;
+
+/**
+ * <p>车队controller</p>
+ * @author Liuyl 2015年8月5日
+ * @version 1.0
+ * <p>注意事项： </p>
+ */
+@Controller
+@RequestMapping("/carteam")
+public class CarTeamController extends BaseController {
+
+	@Resource(name = "carBaseService")
+	private CarBaseService carBaseService;
+	
+	@Resource(name = "dictService")
+	private DictService dictService;
+	
+	@Resource(name = "attachmentBaseService")
+	private AttachmentBaseService attachmentBaseService;
+	
+	@Resource(name = "carNoService")
+	private CarNoService carNoService;
+	
+	@Resource(name = "locationBaseService")
+	private LocationBaseService locationBaseService;
+
+	/**
+	 * 
+	 * <p>获取车队列表</p>
+	 * <p>执行流程：</p>
+	 * <p>注意事项：</p>
+	 * @author Liuyl 2015年8月5日
+	 * @param accessToken
+	 * @param userId
+	 * @return
+	 */
+	@RequestMapping(value = "/getCarTeam.do", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> getCarTeam(String accessToken, Integer userId){
+		Map<String, Object> model = new HashMap<String, Object>();
+		try {
+			// 验证访问凭证
+			CommonUtils.checkAccessToken(accessToken, model);
+			// 校验参数
+			CommonUtils.checkParams("userId", userId, model);
+			List<CarVO> carList = carBaseService.queryCarsByUserId(userId);
+			for(CarVO carVo:carList){
+				Integer carTypeFirstCode=carVo.getCarTypeFirstCode();
+				Integer carTypeSecondCode=carVo.getCarTypeSecondCode();
+				Integer carTypeThirdCode=carVo.getCarTypeThirdCode();
+				String carTypeStr=null;
+				if(StringUtils.isEmpty(carTypeFirstCode)){
+					
+				}else{
+					if(StringUtils.isEmpty(carTypeSecondCode)){
+					String	TypeName1 = dictService.queryCarTypeNameByCarTypeCode(carTypeFirstCode);
+					carVo.setCarTypeCode(carTypeFirstCode.toString());
+					carTypeStr =TypeName1;
+					}else{
+						if(StringUtils.isEmpty(carTypeThirdCode)){
+							String	TypeName1 = dictService.queryCarTypeNameByCarTypeCode(carTypeFirstCode);
+							String  TypeName2 = dictService.queryCarTypeNameByCarTypeCode(carTypeSecondCode);
+							carVo.setCarTypeCode(carTypeSecondCode.toString());
+							carTypeStr =TypeName1+"-" +TypeName2;
+						}else{
+							String	TypeName1 = dictService.queryCarTypeNameByCarTypeCode(carTypeFirstCode);
+							String  TypeName2 = dictService.queryCarTypeNameByCarTypeCode(carTypeSecondCode);
+							String TypeName3 =dictService.queryCarTypeNameByCarTypeCode(carTypeThirdCode);
+							carVo.setCarTypeCode(carTypeThirdCode.toString());
+							carTypeStr =TypeName1+"-" +TypeName2+"-"+TypeName3;
+						}
+					}
+				}
+				
+				carVo.setCarTypeName(carTypeStr);
+				
+			}
+			
+			
+			
+			// 组织数据
+			List<Map<String, Object>> returnList = this.retunCarData(carList);
+			model.put("code", ReturnDatas.SUCCESS_CODE);
+			model.put("carCount", null == carList ? 0 : carList.size());
+			model.put("cars", returnList);
+			
+		} catch (Exception e) {
+			if(model.isEmpty()){
+				model.put("code", ReturnDatas.SYSTEM_EXCEPTION);
+				model.put("msg", ReturnDatas.SYSTEM_EXCEPTION_MSG);
+			}
+			e.printStackTrace();
+		}
+		return model;
+	}
+	
+	/**
+	 * <p>组织我的车辆数据</p>
+	 * @author Liuyl 2015年8月5日
+	 * @param carList
+	 * @return
+	 * @throws Exception 
+	 */
+	private List<Map<String, Object>> retunCarData(List<CarVO> carList) throws Exception {
+		List<Map<String, Object>> returnList = new ArrayList<Map<String,Object>>();
+		for (CarVO carVO : carList) {
+			Map<String,Object> map = new HashMap<String, Object>();
+			// 车辆id
+			map.put("id", carVO.getId());
+			// 随车司机
+			map.put("driver", carVO.getDriver());
+			// 车牌号
+			map.put("carNo", carVO.getCarNo());
+			// 车长
+			map.put("carLength", carVO.getCarLength());
+			// 载重
+			map.put("loadWeight", carVO.getLoadWeight());
+			// 车辆图片
+			map.put("carPhoto", carVO.getCarPhoto());
+			// 显示图片id
+			map.put("showCarPhotIds", CommonUtil.changeStringToList(carVO.getCarPhoto()));
+			// 显示行驶证图片
+			map.put("drivingLicensePhoto", CommonUtil.changeStringToList(carVO.getDrivingLicensePhoto()));
+			// 随车电话 
+			map.put("driverPhone", carVO.getDriverPhone());
+			// 车型
+			map.put("carTypeName", carVO.getCarTypeName());
+			// 车型code
+			map.put("carTypeCode", "car_" + carVO.getCarTypeCode());
+			// 车牌号第一段code
+			map.put("firstNoCode", carVO.getFirstNoCode());
+			map.put("idCardNo", carVO.getIdCardNo());
+			map.put("locationName", carVO.getLocationName());
+			map.put("locateTime", carVO.getLocateTime());
+			map.put("defineCarType", carVO.getDefineCarType());
+			returnList.add(map);
+		}
+		return returnList;
+	}
+	
+	/**
+	 * 
+	 * <p>添加车辆</p>
+	 * <p>执行流程：</p>
+	 * <p>注意事项：</p>
+	 * @author Liuyl 2015年8月5日
+	 * @param request
+	 * @param carPhoto
+	 * @return
+	 */
+	@RequestMapping(value = "/addCar.do", method = RequestMethod.POST)
+	@ResponseBody
+	public Map<String, Object> addCar(HttpServletRequest request){
+		Map<String, Object> model = new HashMap<String, Object>();
+		Car car = new Car();
+		try {
+			// 获取参数
+			Map<String, Object> paramsMap = WebUtils.getParametersStartingWith(request, null);
+			// 验证访问凭证
+			CommonUtils.checkAccessToken(paramsMap.get("accessToken"), model);
+			String loginUserName = CommonUtils.checkParams("loginUserName", paramsMap.get("loginUserName"), model);
+			CommonUtils.checkParams("carNo", paramsMap.get("carNo"), model);
+			// 参数赋值
+			if(paramsMap.get("carTypeFirstCode")!=null && !"".equals(paramsMap.get("carTypeFirstCode"))){
+				String carNotNullStr = "userId,carTypeFirstCode,firstNo,carLength,"
+						+ "firstNoHZ,carNo,loadWeight,driver,driverPhone";
+				car = (Car) CommonUtils.checkBean(JsonUtils.mapToJson(paramsMap), Car.class, carNotNullStr, model);
+			}else if(paramsMap.get("defineCarType")!=null && !"".equals(paramsMap.get("defineCarType"))){
+				String carNotNullStr = "userId,defineCarType,firstNo,carLength,"
+						+ "firstNoHZ,carNo,loadWeight,driver,driverPhone";
+				car = (Car) CommonUtils.checkBean(JsonUtils.mapToJson(paramsMap), Car.class, carNotNullStr, model);
+			}else{
+				String carNotNullStr = "userId,defineCarType,firstNo,carLength,"
+						+ "firstNoHZ,carNo,loadWeight,driver,driverPhone";
+				car = (Car) CommonUtils.checkBean(JsonUtils.mapToJson(paramsMap), Car.class, carNotNullStr, model);
+			}
+			
+			// 校验车辆是否已存在
+			if(null == car.getId() || 0 == car.getId()){
+				if(carBaseService.getCarByUserIdAndCarNO(car.getUserId(), car.getCarNo()) != 0){
+					model.put("code", ReturnDatas.CAR_EXIST);
+					model.put("msg", ReturnDatas.CAR_EXIST_MSG);
+					return model;
+				}
+			}
+			if(null == car.getId()){
+				car.setCreateTime(new Date());
+				car.setCreateUser(loginUserName);
+			} else {
+				car.setUpdateTime(new Date());
+				car.setUpdateUser(loginUserName);
+			}
+			if(null != paramsMap.get("idCardNo")){
+				car.setIdCardNo(paramsMap.get("idCardNo").toString());
+			}
+			car.setIsDelete(DataConstants.NO);
+			// 保存车牌号第二段id和第三段
+			this.saveSecondAndThirdCarNO(car, model);
+			// 保存位置信息
+			Location location = locationBaseService.getLocation(car.getUserId());
+			if(null != location){
+				car.setLongitude(location.getLongitude());
+				car.setLatitude(location.getLatitude());
+				car.setLocationName(location.getLocationName());
+			}
+			carBaseService.saveCar(car);
+			model.put("code", ReturnDatas.SUCCESS_CODE);
+			model.put("carCount", carBaseService.getCarCountByUserId(car.getUserId()));
+			this.setSuccessFlag(model);
+		} catch (Exception e) {
+			if(model.isEmpty()) {
+				model.put("code", ReturnDatas.SYSTEM_EXCEPTION);
+				model.put("msg", ReturnDatas.SYSTEM_EXCEPTION_MSG);
+			}
+			e.printStackTrace();
+		}
+		return model;
+	}
+	
+	/**
+	 * <p>删除车辆</p>
+	 * <p>执行流程：</p>
+	 * <p>注意事项：</p>
+	 * @author Liuyl 2015年10月14日
+	 * @param carId
+	 * @param userId
+	 * @return
+	 */
+	@RequestMapping(value = "/deleteCar.do", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> deleteCar(String accessToken, Integer carId, String loginUserName){
+		Map<String, Object> model = new HashMap<String, Object>();
+		try {
+			CommonUtils.checkAccessToken(accessToken, model);
+			CommonUtils.checkParams("carId", carId, model);
+			CommonUtils.checkParams("loginUserName", loginUserName, model);
+			Car car = new Car();
+			car.setId(carId);
+			car.setUpdateUser(loginUserName);
+			car.setUpdateTime(new Date());
+			car.setIsDelete(DataConstants.YES);
+			carBaseService.deleteCarInfo(car);
+			model.put("code", ReturnDatas.SUCCESS_CODE);
+			this.setSuccessFlag(model);
+		} catch (Exception e) {
+			e.printStackTrace();
+			if(model.isEmpty()) {
+				model.put("code", ReturnDatas.SYSTEM_EXCEPTION);
+				model.put("msg", ReturnDatas.SYSTEM_EXCEPTION_MSG);
+			}
+		}
+		return model;
+	}
+	/**
+	 * <p>保存车牌号第二段id和第三段数字</p>
+	 * <p>执行流程：</p>
+	 * <p>注意事项：</p>
+	 * @author Liuyl 2015年8月5日
+	 * @param car
+	 * @throws Exception
+	 */
+	private void saveSecondAndThirdCarNO(Car car, Map<String, Object> model) throws Exception {
+		String carNo = car.getCarNo().substring(1, 2);
+		CarNo no = new CarNo();
+		no.setParentCode(car.getFirstNo());
+		no.setDataName(carNo);
+		List<CarNo> carNos = carNoService.queryCarNo(no);
+		if(null == carNos || carNos.size() == 0){
+			model.put("code", ReturnDatas.CARNO_NOT_EXIST);
+			model.put("msg", car.getCarNo() + ReturnDatas.CARNO_NOT_EXIST_MSG);
+			throw new Exception(car.getCarNo() + ReturnDatas.CARNO_NOT_EXIST_MSG);
+		}
+		car.setSecondNo(carNos.get(0).getDataCode());
+		car.setThirdNo(car.getCarNo().substring(2, car.getCarNo().length()));
+	}
+	
+	
+	
+	public static void main(String[] args) {
+
+		//String a = "http://localhost:8080/aspp-server/goodssource/goodsSourceList.do?accessToken=5a8e5467f3a1434b7c265268bf76c338&pageNo=1";
+		try {
+			String str = HttpUtils.sendHttpRequest("http://localhost:8080/aspp-server/carteam/getCarTeam.do?accessToken=5a8e5467f3a1434b7c265268bf76c338&userId=1072", HttpUtils.RequestMethod.GET, null);
+			System.out.println(str);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+}

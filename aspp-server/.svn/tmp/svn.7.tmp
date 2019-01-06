@@ -1,0 +1,573 @@
+package com.lzz.aspp.web;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
+import org.json.JSONObject;
+import org.junit.Test;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.util.WebUtils;
+
+import com.lzz.aspp.util.CommonUtil;
+import com.lzz.lsp.base.constants.DataConstants;
+import com.lzz.lsp.base.constants.ReturnDatas;
+import com.lzz.lsp.base.domain.Location;
+import com.lzz.lsp.base.domain.Puser;
+import com.lzz.lsp.base.qo.WaybillQuery;
+import com.lzz.lsp.base.vo.CarVO;
+import com.lzz.lsp.base.vo.WaybillVO;
+import com.lzz.lsp.cmpt.dict.service.DictService;
+import com.lzz.lsp.core.attachment.service.AttachmentBaseService;
+import com.lzz.lsp.core.car.service.CarBaseService;
+import com.lzz.lsp.core.location.service.LocationBaseService;
+import com.lzz.lsp.core.publish.service.PublishInfoBaseService;
+import com.lzz.lsp.core.user.service.UserBaseService;
+import com.lzz.lsp.core.waybill.service.WaybillBaseService;
+import com.lzz.lsp.psi.util.PsiAttachmentUtil;
+import com.lzz.lsp.util.CommonUtils;
+import com.lzz.lton.core.web.controller.BaseController;
+import com.lzz.lton.util.HttpUtils;
+import com.lzz.lton.util.JsonUtils;
+import com.lzz.lton.util.StringUtils;
+
+/**
+ * <p>运单controller</p>
+ * @author Liuyl 2015年8月12日
+ * @version 1.0
+ * <p>注意事项： </p>
+ */
+@Controller
+@RequestMapping("/waybill")
+public class WaybillController extends BaseController{
+	
+	@Resource(name = "dictService")
+	private DictService dictService;
+
+	@Resource(name = "waybillBaseService")
+	private WaybillBaseService waybillBaseService;
+	
+	@Resource(name = "carBaseService")
+	private CarBaseService carBaseService;
+
+	@Resource(name = "userBaseService")
+	private UserBaseService userBaseService;
+	
+	@Resource(name = "locationBaseService")
+	private LocationBaseService locationBaseService;
+	
+	@Resource(name = "attachmentBaseService")
+	private AttachmentBaseService attachmentBaseService;
+	
+	@Resource(name = "publishInfoBaseService")
+	private PublishInfoBaseService publishInfoBaseService;
+	
+	/**
+	 * <p>获得已成交运单列表(老数据)<p>
+	 * @param accessToken
+	 * @param userId
+	 * @param pageNo
+	 * @return
+	 * @author tangs 2015年8月13日
+	 */
+	@RequestMapping(value = "/getCompletedWaybillList.do", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> getCompletedWaybillList(String accessToken,Integer userId, Integer pageNo){
+		Map<String, Object> model = new HashMap<String, Object>();
+		try {
+			CommonUtils.checkAccessToken(accessToken, model);
+			CommonUtils.checkParams("userId", userId, model);
+			CommonUtils.checkParams("pageNo", pageNo, model);
+			WaybillQuery queryObject = new WaybillQuery();
+			queryObject.setShipper(userId);
+			queryObject.setStatus(99);
+			queryObject.setFlag(1);
+			queryObject.setProcessType(1);
+			queryObject.setPageNo(pageNo);
+			List<WaybillVO> waybillVOList = waybillBaseService.queryAppCompletedWaybill(queryObject);
+			for(WaybillVO waybillVO:waybillVOList){
+				//距离计算
+				String distanceValue = "";
+				Double elng = 0.0;
+				Double elat = 0.0;
+				if(!StringUtils.isBlank(waybillVO.getToPlace())){
+					String eRequestUrl = "http://api.map.baidu.com/geocoder/v2/?address="+waybillVO.getToPlace()+"&output=json&ak=9ZqUjBdvxyLHxdl2vnv0XhSe";
+					JSONObject  eJson = JsonUtils.strToJson(HttpUtils.sendHttpRequest(eRequestUrl, HttpUtils.RequestMethod.GET, null));
+					elng = eJson.getJSONObject("result").getJSONObject("location").getDouble("lng");
+					elat = eJson.getJSONObject("result").getJSONObject("location").getDouble("lat");
+					if(waybillVO.getLongitude()!=null&&waybillVO.getLatitude()!=null){
+						 distanceValue = "距到达城市"+Double.valueOf(CommonUtil.getDistance(Double.valueOf(waybillVO.getLongitude()), Double.valueOf(waybillVO.getLatitude()), elng, elat)).longValue()+"公里";
+					}else{
+						distanceValue = "距离不详";
+					}
+				}else{
+					distanceValue = "距离不详";
+				}
+				waybillVO.setDistance(distanceValue);
+				
+				//定位访问url
+				String fJequestUrl = "http://api.map.baidu.com/geocoder/v2/?address="+waybillVO.getFromPlace()+"&output=json&ak=9ZqUjBdvxyLHxdl2vnv0XhSe";
+				JSONObject  fJson = JsonUtils.strToJson(HttpUtils.sendHttpRequest(fJequestUrl, HttpUtils.RequestMethod.GET, null));
+				Double flng = fJson.getJSONObject("result").getJSONObject("location").getDouble("lng");
+				Double flat = fJson.getJSONObject("result").getJSONObject("location").getDouble("lat");
+				if(waybillVO.getLongitude()!=null&&waybillVO.getLatitude()!=null){
+					String locationUrl = "/base/service/toMapStaticNavigation.do?statLocation="+flng+","+flat+"&currentLocation="+waybillVO.getLongitude()+","+waybillVO.getLatitude()+"&endLocation="+elng+","+elat;
+					waybillVO.setLocationUrl(locationUrl);
+				}else{
+					waybillVO.setLocationName("未开启定位");
+				}
+			}
+			model.put("completedWaybills", queryObject.getQueryList());
+			model.put("totalPageNum", queryObject.getTotalPageNum());
+			model.put("code", ReturnDatas.SUCCESS_CODE);
+		} catch (Exception e) {
+			if(model.isEmpty()){
+				model.put("code", ReturnDatas.SYSTEM_EXCEPTION);
+				model.put("msg", ReturnDatas.SYSTEM_EXCEPTION_MSG); 
+			}
+			e.printStackTrace();
+		}
+		return model;
+	}
+	
+	/**
+	 * <p>获得已成交运单列表(新版本)<p>
+	 * @param accessToken
+	 * @param userId
+	 * @param pageNo
+	 * @return
+	 * @author tangs 2015年8月13日
+	 */
+	@RequestMapping(value = "/getCompletedWaybillListNewVersion.do", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> getCompletedWaybillListNewVersion(String accessToken,Integer userId, Integer pageNo){
+		Map<String, Object> model = new HashMap<String, Object>();
+		try {
+			CommonUtils.checkAccessToken(accessToken, model);
+			CommonUtils.checkParams("userId", userId, model);
+			CommonUtils.checkParams("pageNo", pageNo, model);
+			WaybillQuery queryObject = new WaybillQuery();
+			queryObject.setShipper(userId);
+			queryObject.setStatus(99);
+			//queryObject.setFlag(1);
+			queryObject.setProcessType(1);
+			queryObject.setPageNo(pageNo);
+			List<WaybillVO> waybillVOList = waybillBaseService.queryAsppCompletedWaybill(queryObject);
+			for(WaybillVO waybillVO:waybillVOList){
+				//距离计算
+				String distanceValue = "";
+				Double elng = 0.0;
+				Double elat = 0.0;
+				if(!StringUtils.isBlank(waybillVO.getToPlace())){
+					String eRequestUrl = "http://api.map.baidu.com/geocoder/v2/?address="+waybillVO.getToPlace()+"&output=json&ak=9ZqUjBdvxyLHxdl2vnv0XhSe";
+					JSONObject  eJson = JsonUtils.strToJson(HttpUtils.sendHttpRequest(eRequestUrl, HttpUtils.RequestMethod.GET, null));
+					elng = eJson.getJSONObject("result").getJSONObject("location").getDouble("lng");
+					elat = eJson.getJSONObject("result").getJSONObject("location").getDouble("lat");
+					if(waybillVO.getLongitude()!=null&&waybillVO.getLatitude()!=null){
+						 distanceValue = "距到达城市"+Double.valueOf(CommonUtil.getDistance(Double.valueOf(waybillVO.getLongitude()), Double.valueOf(waybillVO.getLatitude()), elng, elat)).longValue()+"公里";
+					}else{
+						distanceValue = "距离不详";
+					}
+				}else{
+					distanceValue = "距离不详";
+				}
+				waybillVO.setDistance(distanceValue);
+				
+				//定位访问url
+				String fJequestUrl = "http://api.map.baidu.com/geocoder/v2/?address="+waybillVO.getFromPlace()+"&output=json&ak=9ZqUjBdvxyLHxdl2vnv0XhSe";
+				JSONObject  fJson = JsonUtils.strToJson(HttpUtils.sendHttpRequest(fJequestUrl, HttpUtils.RequestMethod.GET, null));
+				Double flng = fJson.getJSONObject("result").getJSONObject("location").getDouble("lng");
+				Double flat = fJson.getJSONObject("result").getJSONObject("location").getDouble("lat");
+				if(waybillVO.getLongitude()!=null&&waybillVO.getLatitude()!=null){
+					String locationUrl = "/base/service/toMapStaticNavigation.do?statLocation="+flng+","+flat+"&currentLocation="+waybillVO.getLongitude()+","+waybillVO.getLatitude()+"&endLocation="+elng+","+elat;
+					waybillVO.setLocationUrl(locationUrl);
+				}else{
+					waybillVO.setLocationName("未开启定位");
+				}
+			}
+			model.put("completedWaybills", queryObject.getQueryList());
+			model.put("totalPageNum", queryObject.getTotalPageNum());
+			model.put("code", ReturnDatas.SUCCESS_CODE);
+		} catch (Exception e) {
+			if(model.isEmpty()){
+				model.put("code", ReturnDatas.SYSTEM_EXCEPTION);
+				model.put("msg", ReturnDatas.SYSTEM_EXCEPTION_MSG); 
+			}
+			e.printStackTrace();
+		}
+		return model;
+	}
+	
+	/**
+	 * <p>查看已成交运单详情</p>
+	 * @author zhaoyx 2016年6月2日
+	 * @param accessToken
+	 * @param waybillNo
+	 * @return
+	 */
+	@RequestMapping(value = "/checkWaybillInfo.do", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> checkWaybillInfo(String accessToken,String waybillNo){
+		Map<String, Object> model = new HashMap<String, Object>();
+		try {
+			CommonUtils.checkAccessToken(accessToken, model);
+			WaybillQuery queryObject = new WaybillQuery();
+			queryObject.setWaybillNo(waybillNo);
+			List<WaybillVO> waybillVOList = waybillBaseService.getAsppCompletedWaybillInfo(queryObject);
+			for(WaybillVO waybillVO:waybillVOList){
+				//距离计算
+				String distanceValue = "";
+				Double elng = 0.0;
+				Double elat = 0.0;
+				if(!StringUtils.isBlank(waybillVO.getToPlace())){
+					String eRequestUrl = "http://api.map.baidu.com/geocoder/v2/?address="+waybillVO.getToPlace()+"&output=json&ak=9ZqUjBdvxyLHxdl2vnv0XhSe";
+					JSONObject  eJson = JsonUtils.strToJson(HttpUtils.sendHttpRequest(eRequestUrl, HttpUtils.RequestMethod.GET, null));
+					elng = eJson.getJSONObject("result").getJSONObject("location").getDouble("lng");
+					elat = eJson.getJSONObject("result").getJSONObject("location").getDouble("lat");
+					if(waybillVO.getLongitude()!=null&&waybillVO.getLatitude()!=null){
+						 distanceValue = "距到达城市"+Double.valueOf(CommonUtil.getDistance(Double.valueOf(waybillVO.getLongitude()), Double.valueOf(waybillVO.getLatitude()), elng, elat)).longValue()+"公里";
+					}else{
+						distanceValue = "距离不详";
+					}
+				}else{
+					distanceValue = "距离不详";
+				}
+				waybillVO.setDistance(distanceValue);
+				
+				//定位访问url
+				String fJequestUrl = "http://api.map.baidu.com/geocoder/v2/?address="+waybillVO.getFromPlace()+"&output=json&ak=9ZqUjBdvxyLHxdl2vnv0XhSe";
+				JSONObject  fJson = JsonUtils.strToJson(HttpUtils.sendHttpRequest(fJequestUrl, HttpUtils.RequestMethod.GET, null));
+				Double flng = fJson.getJSONObject("result").getJSONObject("location").getDouble("lng");
+				Double flat = fJson.getJSONObject("result").getJSONObject("location").getDouble("lat");
+				if(waybillVO.getLongitude()!=null&&waybillVO.getLatitude()!=null){
+					String locationUrl = "/base/service/toMapStaticNavigation.do?statLocation="+flng+","+flat+"&currentLocation="+waybillVO.getLongitude()+","+waybillVO.getLatitude()+"&endLocation="+elng+","+elat;
+					waybillVO.setLocationUrl(locationUrl);
+				}else{
+					waybillVO.setLocationName("未开启定位");
+				}
+			}
+			model.put("completedWaybills", queryObject.getQueryList());
+			model.put("totalPageNum", queryObject.getTotalPageNum());
+			model.put("code", ReturnDatas.SUCCESS_CODE);
+		} catch (Exception e) {
+			if(model.isEmpty()){
+				model.put("code", ReturnDatas.SYSTEM_EXCEPTION);
+				model.put("msg", ReturnDatas.SYSTEM_EXCEPTION_MSG); 
+			}
+			e.printStackTrace();
+		}
+		return model;
+	}
+	
+	
+	/**
+	 * <p>获取未完成运单列表</p>
+	 * <p>执行流程：</p>
+	 * <p>注意事项：</p>
+	 * @author Liuyl 2015年8月13日
+	 * @param accessToken
+	 * @param userId
+	 * @param pageNo
+	 * @return
+	 */
+	@RequestMapping(value = "/getNoDealWaybillList.do", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> getNoDealWaybillList(String accessToken,Integer userId, Integer pageNo){
+		Map<String, Object> model = new HashMap<String, Object>();
+		try {
+			CommonUtils.checkAccessToken(accessToken, model);
+			CommonUtils.checkParams("userId", userId, model);
+			CommonUtils.checkParams("pageNo", pageNo, model);
+			WaybillQuery queryObject = new WaybillQuery();
+			queryObject.setUserId(userId);
+			queryObject.setInfoType(DataConstants.INFO_TYPE_GOODS_SOURCE);
+			queryObject.setFlag(1);
+			queryObject.setPageNo(pageNo);
+			model.put("code", ReturnDatas.SUCCESS_CODE);
+			model.put("noDealWaybills", waybillBaseService.queryGrabUnconfirmedWaybillInfo(queryObject));
+			model.put("totalPageNum", queryObject.getTotalPageNum());
+		} catch (Exception e) {
+			if(model.isEmpty()){
+				model.put("code", ReturnDatas.SYSTEM_EXCEPTION);
+				model.put("msg", ReturnDatas.SYSTEM_EXCEPTION_MSG); 
+			}
+			e.printStackTrace();
+		}
+		return model;
+	}
+	
+	/**
+	 * <p>获取未完成运单详情</p>
+	 * <p>执行流程：</p>
+	 * <p>注意事项：</p>
+	 * @author Liuyl 2015年8月13日
+	 * @param accessToken
+	 * @param userId
+	 * @param pageNo
+	 * @return
+	 */
+	@RequestMapping(value = "/getNoDealWaybillDetailsList.do", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> getNoDealWaybillDetailsList(String accessToken, Integer infoId,Integer pageNo){
+		Map<String, Object> model = new HashMap<String, Object>();
+		try {
+			CommonUtils.checkAccessToken(accessToken, model);
+			CommonUtils.checkParams("infoId", infoId, model);
+			CommonUtils.checkParams("pageNo", pageNo, model);
+			WaybillQuery queryObject = new WaybillQuery();
+			queryObject.setInfoId(infoId);
+			queryObject.setPageNo(pageNo);
+			queryObject.setInfoType(DataConstants.INFO_TYPE_GOODS_SOURCE);
+			queryObject.setFlag(0);
+			queryObject.setDriverFlag(1);
+			List<WaybillVO> waybillDetails = waybillBaseService.queryAppDriverGrabWaybill(queryObject);
+			for (WaybillVO waybillVO : waybillDetails) {
+				Integer userId = waybillVO.getHaulier();
+				List<CarVO> cars = waybillVO.getCarVOs();
+				String[] carTypeName = new String[cars.size()];
+				for (int i = 0; i < cars.size(); i++) {
+					carTypeName[i] = cars.get(i).getCarTypeName();
+				}
+				waybillVO.setCarTypeName(carTypeName);
+				Puser puser = userBaseService.getPuser(userId);
+				waybillVO.setIdCarNo("未实名认证");
+				if(null != puser && !StringUtils.isBlank(puser.getIdCardNo())){
+					waybillVO.setIdCarNo(CommonUtil.replaceIdCarNO(puser.getIdCardNo()));
+				}
+				Location location = locationBaseService.getLocation(userId);
+				if(null != location){
+					waybillVO.setLocationName(location.getLocationName());
+					waybillVO.setLocateTime(new Date());
+					waybillVO.setLongitude(location.getLongitude());
+					waybillVO.setLatitude(location.getLatitude());
+					waybillVO.setLocationUrl("/base/service/toMapPoi.do?location=" 
+							+ location.getLongitude() + "," + location.getLatitude()
+							+ "&poi=" + location.getLocationName());
+				} else {
+					waybillVO.setLocationName("未开启定位");
+					waybillVO.setLocateTime(null);
+				}
+			}
+			Integer publishStatus = publishInfoBaseService.getPublishStatus(infoId,DataConstants.INFO_TYPE_GOODS_SOURCE);
+			if(publishStatus!=null && publishStatus==4){
+				model.put("isClosed", ReturnDatas.CAN_NOT_BE_CLOSED);
+			}else{
+				model.put("isClosed", ReturnDatas.CAN_CLOSE);
+			}
+			model.put("code", ReturnDatas.SUCCESS_CODE);
+			model.put("noDealWaybillDetails", waybillDetails);
+			model.put("totalPageNum", queryObject.getTotalPageNum());
+		} catch (Exception e) {
+			if(model.isEmpty()){
+				model.put("code", ReturnDatas.SYSTEM_EXCEPTION);
+				model.put("msg", ReturnDatas.SYSTEM_EXCEPTION_MSG); 
+			}
+			e.printStackTrace();
+		}
+		return model;
+	}
+	
+	/**
+	 * <p>获取司机名下的车辆</p>
+	 * <p>执行流程：</p>
+	 * <p>注意事项：</p>
+	 * @author Liuyl 2015年8月13日
+	 * @param accessToken
+	 * @param userId
+	 * @return
+	 */
+	@RequestMapping(value = "/getDriverCars.do", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> getDriverCars(String accessToken,Integer userId){
+		Map<String, Object> model = new HashMap<String, Object>();
+		try {
+			CommonUtils.checkAccessToken(accessToken, model);
+			CommonUtils.checkParams("userId", userId, model);
+			List<CarVO> queryCarsByUserId = carBaseService.queryCarsByUserId(userId);
+			for (CarVO car : queryCarsByUserId) {
+				if(null != car.getValName() && !"".equals(car.getValName()) ){
+					car.setCarTypeName(car.getValName());
+				}else{
+					Integer carTypeFirstCode=car.getCarTypeFirstCode();
+					Integer carTypeSecondCode=car.getCarTypeSecondCode();
+					Integer carTypeThirdCode=car.getCarTypeThirdCode();
+					String carTypeStr=null;
+					if(carTypeFirstCode==null || "".equals(carTypeFirstCode)){
+						
+					}else{
+						if(carTypeSecondCode == null || "".equals(carTypeSecondCode)){
+						String	TypeName1 = dictService.queryCarTypeNameByCarTypeCode(carTypeFirstCode);
+						car.setCarTypeCode(carTypeFirstCode.toString());
+						carTypeStr =TypeName1;
+						}else{
+							if(carTypeThirdCode == null || "".equals(carTypeThirdCode)){
+								String	TypeName1 = dictService.queryCarTypeNameByCarTypeCode(carTypeFirstCode);
+								String  TypeName2 = dictService.queryCarTypeNameByCarTypeCode(carTypeSecondCode);
+								car.setCarTypeCode(carTypeSecondCode.toString());
+								carTypeStr =TypeName1+"-" +TypeName2;
+							}else{
+								String	TypeName1 = dictService.queryCarTypeNameByCarTypeCode(carTypeFirstCode);
+								String  TypeName2 = dictService.queryCarTypeNameByCarTypeCode(carTypeSecondCode);
+								String TypeName3 =dictService.queryCarTypeNameByCarTypeCode(carTypeThirdCode);
+								car.setCarTypeCode(carTypeThirdCode.toString());
+								carTypeStr =TypeName1+"-" +TypeName2+"-"+TypeName3;
+							}
+						}
+					}
+					
+					car.setCarTypeName(carTypeStr);
+//					map.put("carTypeName", carTypeStr);
+				}
+			}
+			
+			model.put("code", ReturnDatas.SUCCESS_CODE);
+			model.put("cars", queryCarsByUserId);
+		} catch (Exception e) {
+			if(model.isEmpty()){
+				model.put("code", ReturnDatas.SYSTEM_EXCEPTION);
+				model.put("msg", ReturnDatas.SYSTEM_EXCEPTION_MSG); 
+			}
+			e.printStackTrace();
+		}
+		return model;
+	}
+	/**
+	 * <p>确认成交运单</p>
+	 * <p>执行流程：</p>
+	 * <p>注意事项：</p>
+	 * @author Liuyl 2015年8月13日
+	 * @param accessToken
+	 * @param userId
+	 * @return
+	 */
+	@RequestMapping(value = "/dealWaybill.do", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> dealWaybill(HttpServletRequest request, String accessToken,String loginUserName, 
+			String waybillNo, String carIds, Integer userId){
+		Map<String, Object> model = new HashMap<String, Object>();
+		try {
+			CommonUtils.checkAccessToken(accessToken, model);
+			CommonUtils.checkParams("loginUserName", loginUserName, model);
+			CommonUtils.checkParams("waybillNo", waybillNo, model);
+			CommonUtils.checkParams("carIds", carIds, model);
+			waybillBaseService.confirmDriverWaybill(waybillNo, loginUserName, carIds.split(","));
+			// 送积分
+			model.put("code", ReturnDatas.SUCCESS_CODE);
+			model.put("scoreType", DataConstants.INTERCEPT_TYPE_WAYBILL);
+			model.put("userId", userId);
+			model.put("userType", DataConstants.LOGISTICS_COMPANY);
+			// 推送也需要
+			model.put("waybillNo", waybillNo);
+			this.setSuccessFlag(model);
+		} catch (Exception e) {
+			if(model.isEmpty()){
+				model.put("code", ReturnDatas.SYSTEM_EXCEPTION);
+				model.put("msg", ReturnDatas.SYSTEM_EXCEPTION_MSG); 
+			}
+			e.printStackTrace();
+		}
+		return model;
+	}
+	/**
+	 * <p>上传运单图片</p>
+	 * <p>执行流程：</p>
+	 * <p>注意事项：</p>
+	 * @author Liuyl 2015年9月18日
+	 * @param accessToken
+	 * @param loginUserName
+	 * @param waybillNo
+	 * @param carIds
+	 * @param userId
+	 * @return
+	 */
+	@RequestMapping(value = "/uploadWaybillImg.do", method = RequestMethod.POST)
+	@ResponseBody
+	public Map<String, Object> uploadWaybillImg(HttpServletRequest request){
+		Map<String, Object> model = new HashMap<String, Object>();
+		try {
+			// 获取参数
+			Map<String, Object> paramsMap = WebUtils.getParametersStartingWith(request, null);
+			// 验证访问凭证
+			CommonUtils.checkAccessToken(paramsMap.get("accessToken"), model);
+			CommonUtils.checkParams("loginUserName", paramsMap.get("loginUserName"), model);
+			CommonUtils.checkParams("waybillNo", paramsMap.get("waybillNo"), model);
+			// 准备修改数据
+			String protocolPhotos = PsiAttachmentUtil.uploadImg(request, paramsMap.get("loginUserName").toString(), false, false, "WAYBILL_PROTOCOL_PHOTO");
+			Map<String, Object> params = new HashMap<String, Object>();
+			params.put("protocolPhoto", protocolPhotos);
+			params.put("waybillNo", paramsMap.get("waybillNo").toString());
+			params.put("updateUser", paramsMap.get("loginUserName").toString());
+			params.put("updateTime", new Date());
+			waybillBaseService.updateWaybillInfo(params);
+			// 返回数据
+			model.put("waybillNo", paramsMap.get("waybillNo").toString());
+			model.put("protocolPhoto", protocolPhotos);
+			model.put("code", ReturnDatas.SUCCESS_CODE);
+		} catch (Exception e) {
+			if(model.isEmpty()){
+				model.put("code", ReturnDatas.SYSTEM_EXCEPTION);
+				model.put("msg", ReturnDatas.SYSTEM_EXCEPTION_MSG); 
+			}
+			e.printStackTrace();
+		}
+		return model;
+	}
+	/**
+	 * <p>删除运单图片</p>
+	 * <p>执行流程：</p>
+	 * <p>注意事项：</p>
+	 * @author Liuyl 2015年9月21日
+	 * @param accessToken
+	 * @param waybillNo
+	 * @param imgIds
+	 * @param loginUserName
+	 * @return
+	 */
+	@RequestMapping(value = "/deleteWaybillImg.do", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> deleteWaybillImg(String accessToken, String waybillNo, String imgIds,
+			String loginUserName){
+		Map<String, Object> model = new HashMap<String, Object>();
+		try {
+			// 获取参数
+			// 验证访问凭证
+			CommonUtils.checkAccessToken(accessToken, model);
+			CommonUtils.checkParams("waybillNo", waybillNo, model);
+			CommonUtils.checkParams("imgId", imgIds, model);
+			// 准备修改数据
+			Map<String, Object> params = new HashMap<String, Object>();
+			params.put("protocolPhoto", imgIds);
+			params.put("waybillNo", waybillNo);
+			params.put("updateUser", loginUserName);
+			params.put("updateTime", new Date());
+			waybillBaseService.updateWaybillInfo(params);
+			// 返回数据
+			model.put("waybillNo", waybillNo);
+			model.put("protocolPhoto", imgIds);
+		} catch (Exception e) {
+			if(model.isEmpty()){
+				model.put("code", ReturnDatas.SYSTEM_EXCEPTION);
+				model.put("msg", ReturnDatas.SYSTEM_EXCEPTION_MSG); 
+			}
+			e.printStackTrace();
+		}
+		return model;
+	}
+	
+	public static void main(String[] args){
+		try {
+			String str = HttpUtils.sendHttpRequest("http://localhost:9090/aspp-server/waybill/checkWaybillInfo.do?accessToken=5a8e5467f3a1434b7c265268bf76c338&waybillNo=G16030111320879055", HttpUtils.RequestMethod.GET, null);
+			System.out.println(str);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+}

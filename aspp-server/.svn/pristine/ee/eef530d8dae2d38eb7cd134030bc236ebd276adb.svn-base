@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.location.dao.LocationBaseDAO">
+	<resultMap type="LocationVO" id="locationVOMap">
+		<id property="localtionId" column="LOCATION_ID"/>
+		<result property="driver" column="DRIVER"/>
+		<result property="longitude" column="LONGITUDE"/>
+		<result property="latitude" column="LATITUDE"/>
+		<result property="locationName" column="LOCATION_NAME"/>
+		<result property="locateTime" column="LOCATE_TIME"/>
+		<result property="mobile" column="MOBILE"/>
+	</resultMap>
+	
+	 <select id="queryLocations" parameterType="LocationVO" resultMap="locationVOMap">
+		SELECT
+			pdl.DRIVER,
+			pdl.LATITUDE,
+			pdl.LOCATE_TIME,
+			pdl.LOCATION_ID,
+			pdl.LOCATION_NAME,
+			pdl.LONGITUDE
+		FROM
+			pisp_driver_location pdl
+		WHERE 1 = 1
+		<if test="stratTime != null and stratTime != ''">
+			AND pdl.LOCATE_TIME &gt;= #{stratTime}
+		</if>
+		
+		<if test="endTime != null and endTime != ''">
+			AND pdl.LOCATE_TIME &lt;= #{endTime}
+		</if>
+		
+		<if test="driver != null and driver != ''">
+			AND pdl.DRIVER = #{driver}
+		</if>
+		
+		<if test="locationName != null and locationName != ''">
+			AND pdl.LOCATION_NAME LIKE CONCAT('%', #{locationName}, '%')
+		</if>
+	</select>
+	
+	<insert id="saveLocation" parameterType="LocationVO">
+		INSERT INTO pisp_driver_location (
+			LOCATION_ID,
+			DRIVER,
+			LONGITUDE,
+			LATITUDE,
+			LOCATION_NAME,
+			LOCATE_TIME,
+			MOBILE
+		)
+		VALUES
+		(
+			#{localtionId},
+			#{driver},
+			#{longitude},
+			#{latitude},
+			#{locationName},
+			#{locateTime},
+			#{mobile}
+		)
+	</insert>
+	
+	 <update id="updateLocation" parameterType="LocationVO">
+		UPDATE pisp_driver_location pdl
+		SET pdl.LATITUDE = #{latitude}, 
+			pdl.LOCATE_TIME = #{locateTime}, 
+			pdl.LOCATION_NAME = #{locationName}, 
+			pdl.LONGITUDE = #{longitude}
+			<if test="null != driver">
+				,pdl.DRIVER = #{driver}
+			</if>
+		WHERE
+			pdl.MOBILE = #{mobile}
+	</update>
+	
+	<select id="getLocation" parameterType="java.lang.Integer" resultMap="locationVOMap">
+		SELECT
+			pdl.DRIVER,
+			pdl.LATITUDE,
+			pdl.LOCATE_TIME,
+			pdl.LOCATION_ID,
+			pdl.LOCATION_NAME,
+			pdl.LONGITUDE
+		FROM
+			pisp_driver_location pdl
+		WHERE
+			pdl.DRIVER = #{userId}
+		ORDER BY pdl.LOCATE_TIME DESC
+		LIMIT 1
+	</select>
+	
+	<select id="getLocationByMobile" parameterType="java.lang.String" resultMap="locationVOMap">
+		SELECT
+			pdl.DRIVER,
+			pdl.LATITUDE,
+			pdl.LOCATE_TIME,
+			pdl.LOCATION_ID,
+			pdl.LOCATION_NAME,
+			pdl.LONGITUDE
+		FROM
+			pisp_driver_location pdl
+		WHERE
+			pdl.MOBILE = #{mobile}
+		ORDER BY pdl.LOCATE_TIME DESC
+		LIMIT 1
+	</select>
+</mapper>

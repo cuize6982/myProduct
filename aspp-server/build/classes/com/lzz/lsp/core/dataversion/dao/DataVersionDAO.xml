@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.dataversion.dao.DataVersionDAO">
+	<resultMap type="DataVersion" id="dataVersionMap">
+		<result property="dataCode" column="DATA_CODE"/>
+		<result property="version" column="VERSION"/>
+	</resultMap>
+	
+	<select id="getDataVersion" parameterType="java.lang.String" resultMap="dataVersionMap">
+		SELECT
+			pdv.DATA_CODE,
+			pdv.VERSION
+		FROM
+			pisp_data_version pdv
+		WHERE 1=1 
+		<if test="null != dataCode and '' != dataCode">
+			AND pdv.DATA_CODE = #{dataCode}
+		</if>
+	</select>
+	
+	<select id="queryDataVersions" parameterType="DataVersion" resultMap="dataVersionMap">
+		SELECT
+			pdv.DATA_CODE,
+			pdv.VERSION
+		FROM
+			pisp_data_version pdv
+		<where>
+			<if test="null != dataCode and '' != dataCode">AND pdv.DATA_CODE like CONCAT("%",#{dataCode},"%")</if>
+			<if test="null != version and '' != version">AND pdv.VERSION like CONCAT("%",#{version},"%")</if>
+		</where>
+	</select>
+	
+	<insert id="saveDataVersion" parameterType="DataVersion">
+		INSERT INTO pisp_data_version (DATA_CODE, VERSION)
+		VALUES
+			(#{dataCode}, #{version});
+	</insert>
+	
+	<update id="updateDataVersion" parameterType="DataVersion">
+		UPDATE pisp_data_version pdv
+		SET pdv.VERSION = #{version}
+		WHERE
+			pdv.DATA_CODE = #{dataCode};
+	</update>
+	<delete id="delDataVersion" parameterType="java.lang.String">
+		DELETE FROM pisp_data_version WHERE DATA_CODE = #{dataCode}
+	</delete>
+</mapper>

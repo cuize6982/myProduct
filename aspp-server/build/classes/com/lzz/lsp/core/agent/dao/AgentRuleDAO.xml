@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.agent.dao.AgentRuleDAO">
+	<resultMap type="AgentRule" id="agentRuleMap">
+		<result property="ruleId" column="RULE_ID"/>
+		<result property="agentRuleId" column="AGENT_RULE_ID"/>
+		<result property="agentRuleName" column="AGENT_RULE_NAME"/>
+		<result property="agentRuleCap" column="AGENT_RULE_CAP"/>
+	</resultMap>
+
+
+	<insert id="addAgentRule" parameterType="AgentRule">
+		INSERT INTO osmp_agent_rule (
+			AGENT_RULE_ID,
+			AGENT_RULE_NAME,
+			AGENT_RULE_CAP
+		)
+		VALUES
+			(#{agentRuleId}, #{agentRuleName}, #{agentRuleCap})
+	</insert>
+	
+	<select id="getAgentRuleByAgentRuleId" parameterType="java.lang.Integer" resultMap="agentRuleMap">
+		SELECT
+			RULE_ID,
+			AGENT_RULE_ID,
+			AGENT_RULE_NAME,
+			AGENT_RULE_CAP
+		FROM
+			osmp_agent_rule oar
+		WHERE
+			oar.AGENT_RULE_ID = #{agentRuleId}
+	</select>
+	
+	<update id="updateAgentRule" parameterType="AgentRule">
+		UPDATE 
+			osmp_agent_rule oar
+		SET 
+			oar.AGENT_RULE_CAP = #{agentRuleCap},
+			oar.AGENT_RULE_NAME = #{agentRuleName}
+		WHERE
+			oar.AGENT_RULE_ID = #{agentRuleId}
+	</update>
+	
+</mapper>

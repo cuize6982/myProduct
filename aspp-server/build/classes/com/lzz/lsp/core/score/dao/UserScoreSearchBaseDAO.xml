@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.score.dao.UserScoreSearchBaseDAO">
+	<resultMap type="UserScoreSearchVo" id="UserScoreSearchVoMapper">
+		<result property="userId" column="USER_ID"/>
+		<result property="isAuth" column="IS_AUTH"/>
+		<result property="accountName" column="ACCOUNT_NAME"/>
+		<result property="userType" column="USER_TYPE"/>
+		<result property="nickName" column="NICKNAME"/>
+		<result property="linkMan" column="LINKMAN"/>
+		<result property="linkPhone" column="LINK_PHONE"/>
+		<result property="totalScore" column="TOTAL_SCORE"/>
+		<result property="score" column="SCORE"/>
+		<result property="useScore" column="USE_SCORE"/>
+		<result property="exchangeCash" column="EXCHANGE_CASH"/>
+		<result property="unExchangeCash" column="UN_EXCHANGE_CASH"/>
+		<result property="exchangeSumScore" column="EXCHANGE_SUM_SCORE"/>
+		<result property="exchangeCount" column="EXCHANGE_COUNT"/>
+		<result property="enterpriseName" column="ENTERPRISE_NAME"/>
+		<result property="timeSlot" column="TIME_SLOT"/>
+		<result property="moneyCount" column="MONEY_COUNT"/>
+		<result property="isPay" column="IS_PAY"/>
+	</resultMap>
+	
+	<select id="queryUserScore" resultMap="UserScoreSearchVoMapper" parameterType="UserScoreSearchQuery">
+		SELECT
+			a.USER_ID,
+			a.IS_AUTH,
+			a.ACCOUNT_NAME,
+			a.USER_TYPE,
+			<!-- a.NICKNAME, -->
+			a.LINK_PHONE,
+			CASE 
+				WHEN p.REAL_NAME IS NULL THEN a.NICKNAME ELSE p.REAL_NAME
+			END AS NICKNAME,
+			a.LINKMAN,
+			a.ENTERPRISE_NAME,
+			(IFNULL(a.SCORE,0)+IFNULL(a.USE_SCORE,0)) AS TOTAL_SCORE,
+			(if(isnull(a.SCORE),0,a.SCORE)) as SCORE,
+			(if(isnull(a.USE_SCORE),0,a.USE_SCORE)) as USE_SCORE,
+			(if(isnull(b.EXCHANGE_COUNT),0,b.EXCHANGE_COUNT)) as EXCHANGE_COUNT
+		FROM
+			(
+				SELECT
+					pu.USER_ID,
+					pu.IS_AUTH,
+					pu.ACCOUNT_NAME,
+					pu.NICKNAME,
+					pu.SCORE,
+					pu.USE_SCORE,
+					pu.UPDATE_TIME,
+					pu.USER_TYPE,
+					pu.IS_AGENT,
+					pe.LINKMAN,
+					pe.ENTERPRISE_NAME,
+					(
+						CASE pu.USER_TYPE
+						WHEN '1' THEN
+							pp.MOBILE_PHONE
+						WHEN '2' THEN
+							pp.MOBILE_PHONE
+						WHEN '3' THEN
+							pe.LINK_MOBILE1
+						WHEN '4' THEN
+							pe.LINK_MOBILE1
+						WHEN '5' THEN
+							pe.LINK_MOBILE1
+						END
+					) AS LINK_PHONE
+				FROM
+					pisp_user pu
+				LEFT JOIN pisp_puser pp ON pu.USER_ID = pp.USER_ID
+				LEFT JOIN pisp_euser pe ON pu.USER_ID = pe.USER_ID
+			) a
+		LEFT JOIN (
+			SELECT
+				oser.USER_ID,
+				<!-- sum(ouse.EXCHANGE_SCORE) AS EXCHANGE_SUM_SCORE, -->
+				count(oser.SCORE_EXCHANGE_REC_ID) AS EXCHANGE_COUNT
+			FROM
+				osmp_score_exchange_rec oser
+			GROUP BY
+				oser.user_id
+		) b ON a.USER_ID = b.USER_ID
+		LEFT JOIN pisp_euser e ON e.USER_ID = a.USER_ID
+		LEFT JOIN pisp_puser p ON p.USER_ID = a.USER_ID
+		WHERE 1=1 
+			AND a.IS_AGENT ='1'
+			<if test="accountName != null and accountName !=''"> AND a.ACCOUNT_NAME LIKE CONCAT('%',#{accountName},'%')</if>
+			<if test="isAuth != null and isAuth.length>0">
+				 AND 
+				 <foreach collection="isAuth" open="(" close=")" item="item" separator="or">
+				 	a.IS_AUTH = '${item}'
+				 </foreach>
+			</if>
+			<if test="userType != null and userType.length>0">
+				 AND 
+				 <foreach collection="userType" open="(" close=")" item="item" separator="or">
+				 	a.USER_TYPE = '${item}'
+				 </foreach>
+			</if>
+			<if test="linkMan !=null and linkMan !=''">
+				AND a.LINKMAN like CONCAT('%',#{linkMan},'%')
+			</if>
+			<if test="enterpriseName !=null and enterpriseName !=''">
+				AND a.ENTERPRISE_NAME like CONCAT('%',#{enterpriseName},'%')
+			</if>
+			<if test="linkPhone !=null and linkPhone !=''">
+				AND a.LINK_PHONE like CONCAT('%',#{linkPhone},'%')
+			</if>
+		ORDER BY a.UPDATE_TIME DESC
+	</select>
+	
+	<select id="queryUserScoreNew" resultMap="UserScoreSearchVoMapper" parameterType="UserScoreSearchQuery">
+		SELECT 
+			u.ACCOUNT_NAME,
+			u.USER_TYPE,
+			e.ENTERPRISE_NAME,
+			e.LINKMAN,
+			p.REAL_NAME AS NICKNAME,
+			<!-- e.LINK_MOBILE1 AS LINK_PHONE1,
+			
+			p.MOBILE_PHONE AS LINK_PHONE, -->
+			(
+				CASE u.USER_TYPE
+				WHEN '1' THEN
+					p.MOBILE_PHONE
+				WHEN '2' THEN
+					p.MOBILE_PHONE
+				WHEN '3' THEN
+					e.LINK_MOBILE1
+				WHEN '4' THEN
+					e.LINK_MOBILE1
+				WHEN '5' THEN
+					e.LINK_MOBILE1
+				END
+			) AS LINK_PHONE,
+			gas.TIME_SLOT,
+			gas.MONEY_COUNT,
+			gas.IS_PAY
+		FROM osmp_general_agent_subsidy gas
+		LEFT JOIN pisp_user u ON u.ACCOUNT_NAME = gas.GENERAL_AGENT_ACCOUNT_NAME
+		LEFT JOIN pisp_puser p ON u.USER_ID = p.USER_ID
+		LEFT JOIN pisp_euser e ON u.USER_ID = e.USER_ID
+		<!-- FROM pisp_user u 
+		LEFT JOIN pisp_puser p ON u.USER_ID = p.USER_ID
+		LEFT JOIN pisp_euser e ON u.USER_ID = e.USER_ID
+		LEFT JOIN osmp_general_agent_subsidy gas ON u.ACCOUNT_NAME = gas.GENERAL_AGENT_ACCOUNT_NAME -->
+	</select>
+	
+</mapper>

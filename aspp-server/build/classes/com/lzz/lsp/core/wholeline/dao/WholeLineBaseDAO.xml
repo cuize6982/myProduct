@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.wholeline.dao.WholeLineBaseDAO">
+	<resultMap type="WholeLine" id="wholeLineMap" >
+		<id property="wholeLineId" column="WHOLE_LINE_ID"/>
+		<result property="fromPlace" column="FROM_PLACE"/>
+		<result property="toPlace" column="TO_PLACE"/>
+		<result property="fromPCode" column="FROM_P_CODE"/>
+		<result property="fromCCode" column="FROM_C_CODE"/>
+		<result property="fromTCode" column="FROM_T_CODE"/>
+		<result property="toPCode" column="TO_P_CODE"/>
+		<result property="toCCode" column="TO_C_CODE"/>
+		<result property="toTCode" column="TO_T_CODE"/>
+		<result property="duration" column="DURATION"/>
+		<result property="departCarOne" column="DEPART_CAR_ONE"/>
+		<result property="departCarTwo" column="DEPART_CAR_TWO"/>
+		<result property="hasCarTypes" column="HAS_CAR_TYPES"/>
+		<result property="heavyPrice" column="HEAVY_PRICE"/>
+		<result property="bulkyPrice" column="BULKY_PRICE"/>
+		<result property="heavyPriceUnit" column="HEAVY_PRICE_UNIT"/>
+		<result property="bulkyPriceUnit" column="BULKY_PRICE_UNIT"/>
+		<result property="payWays" column="PAY_WAYS"/>
+		<result property="additionServices" column="ADDITION_SERVICES"/>
+		<result property="commonPhrase" column="COMMON_PHRASE"/>
+		<result property="linkMan" column="LINK_MAN"/>
+		<result property="commonPhrase" column="COMMON_PHRASE"/>
+		<result property="linkPhone" column="LINK_PHONE"/>
+		<result property="linkMobile" column="LINK_MOBILE"/>
+		<result property="resume" column="RESUME"/>
+		<result property="createUser" column="CREATE_USER"/>
+		<result property="createTime" column="CREATE_TIME"/>
+		<result property="updateUser" column="UPDATE_USER"/>
+		<result property="updateTime" column="UPDATE_TIME"/>
+		<result property="publisher" column="PUBLISHER"/>
+		
+		<result property="isOpposite" column="IS_OPPOSITE"/>
+		<result property="minTicket" column="MIN_TICKET"/>
+		<result property="defineCarType" column="DEFINE_CAR_TYPE"/>
+		<result property="carTypeFirstCode" column="CAR_TYPE_FIRST_CODE"/>
+		<result property="carTypeSecondCode" column="CAR_TYPE_SECOND_CODE"/>
+		<result property="carTypeThirdCode" column="CAR_TYPE_THIRD_CODE"/>
+	</resultMap>
+	
+	 <resultMap type="WholeLineVO" id="wholeLineVOMap" >
+		<result property="favoriteId" column="FAVORITE_ID"/>
+		<result property="wholeLineId" column="WHOLE_LINE_ID"/>
+		<result property="publishId" column="PUBLISH_ID"/>
+		<result property="backstageWrite" column="BACKSTAGE_WRITE"/>
+		<result property="fromPlace" column="FROM_PLACE"/>
+		<result property="toPlace" column="TO_PLACE"/>
+		
+		<result property="departCarOne" column="DEPART_CAR_ONE"/>
+		<result property="departCarTwo" column="DEPART_CAR_TWO"/>
+		<result property="duration" column="DURATION"/>
+		<result property="hasCarTypes" column="HAS_CAR_TYPES"/>
+		<result property="additionServices" column="ADDITION_SERVICES"/>
+		<result property="heavyPrice" column="HEAVY_PRICE"/>
+		<result property="bulkyPrice" column="BULKY_PRICE"/>
+		<result property="heavyPriceUnit" column="HEAVY_PRICE_UNIT"/>
+		<result property="bulkyPriceUnit" column="BULKY_PRICE_UNIT"/>
+		<result property="resume" column="RESUME"/>
+		<result property="payWays" column="PAY_WAYS"/>
+		<result property="enterpriseName" column="ENTERPRISE_NAME"/>
+		<result property="linkMan" column="LINKMAN"/>
+		<result property="linkPhone" column="LINK_PHONE"/>
+		<result property="linkMobile" column="LINK_MOBILE"/>
+		<result property="EQQ" column="EQQ"/>
+		<result property="PQQ" column="PQQ"/>
+		<result property="address" column="ADDRESS"/>
+		<result property="fromPCode" column="FROM_P_CODE"/>
+		<result property="fromCCode" column="FROM_C_CODE"/>
+		<result property="fromTCode" column="FROM_T_CODE"/>
+		<result property="toPCode" column="TO_P_CODE"/>
+		<result property="toCCode" column="TO_C_CODE"/>
+		<result property="toTCode" column="TO_T_CODE"/>
+		
+		<result property="nickName" column="NICKNAME"/>
+		<result property="realName" column="REAL_NAME"/>
+		<result property="mobilePhone" column="MOBILE_PHONE"/>
+		<result property="userType" column="USER_TYPE"/>
+		<result property="publishTime" column="PUBLISH_TIME"/>
+		<result property="isAuth" column="IS_AUTH"/>
+		<result property="publisher" column="PUBLISHER"/>
+		
+		<result property="isOpposite" column="IS_OPPOSITE"/>
+		<result property="minTicket" column="MIN_TICKET"/>
+		<result property="headImage" column="HEAD_IMAGE"/>
+		<result property="status" column="STATUS"/><!-- PISP整车专线收藏使用，避免用户收藏后，该信息被删除，查询信息详情出错 yunns于2015年10月23日09:36:09添加该映射 -->
+		<result property="isDelete" column="IS_DELETE"/>
+	</resultMap>
+	
+	<insert id="publishWholeLine" parameterType="WholeLine">
+		insert into pisp_whole_line(
+				WHOLE_LINE_ID,FROM_PLACE,TO_PLACE,FROM_P_CODE,FROM_C_CODE,FROM_T_CODE,TO_P_CODE,TO_C_CODE,TO_T_CODE,
+				DURATION,DEPART_CAR_ONE,DEPART_CAR_TWO,HAS_CAR_TYPES,HEAVY_PRICE,HEAVY_PRICE_UNIT,
+				BULKY_PRICE,BULKY_PRICE_UNIT,PAY_WAYS,ADDITION_SERVICES,COMMON_PHRASE,LINKMAN,
+				LINK_PHONE,LINK_MOBILE,RESUME,CREATE_USER,CREATE_TIME,UPDATE_USER,UPDATE_TIME,PUBLISHER,IS_OPPOSITE,MIN_TICKET,CAR_TYPE_FIRST_CODE,CAR_TYPE_SECOND_CODE,CAR_TYPE_THIRD_CODE,DEFINE_CAR_TYPE
+				)
+		values(#{wholeLineId,jdbcType=INTEGER},#{fromPlace,jdbcType=VARCHAR},#{toPlace,jdbcType=VARCHAR},
+				#{fromPCode,jdbcType=INTEGER},#{fromCCode,jdbcType=INTEGER},#{fromTCode,jdbcType=INTEGER},#{toPCode,jdbcType=INTEGER},#{toCCode,jdbcType=INTEGER},#{toTCode,jdbcType=INTEGER},
+				#{duration,jdbcType=INTEGER},#{departCarOne,jdbcType=INTEGER},#{departCarTwo,jdbcType=INTEGER},#{hasCarTypes,jdbcType=VARCHAR},#{heavyPrice,jdbcType=FLOAT},#{heavyPriceUnit,jdbcType=VARCHAR},
+				#{bulkyPrice,jdbcType=FLOAT},#{bulkyPriceUnit,jdbcType=VARCHAR},#{payWays,jdbcType=VARCHAR},#{additionServices,jdbcType=VARCHAR},#{commonPhrase,jdbcType=VARCHAR},#{linkMan,jdbcType=VARCHAR},
+				#{linkPhone,jdbcType=VARCHAR},#{linkMobile,jdbcType=VARCHAR},#{resume,jdbcType=VARCHAR},
+				#{createUser,jdbcType=INTEGER},#{createTime,jdbcType=TIMESTAMP},#{updateUser,jdbcType=INTEGER},#{updateTime,jdbcType=TIMESTAMP},#{publisher,jdbcType=VARCHAR},
+				#{isOpposite,jdbcType=INTEGER},#{minTicket,jdbcType=FLOAT},#{carTypeFirstCode,jdbcType=INTEGER},#{carTypeSecondCode,jdbcType=INTEGER},#{carTypeThirdCode,jdbcType=INTEGER},#{defineCarType,jdbcType=VARCHAR}
+		      )
+	</insert>
+	
+	<update id="updateWholeLine" parameterType="WholeLine">
+		update pisp_whole_line wl 
+		<set>
+			<if test="fromPlace != null and toPlace !='' ">
+				wl.FROM_PLACE=#{fromPlace},
+			</if>
+			<if test="toPlace != null and toPlace !='' ">
+				wl.TO_PLACE=#{toPlace},
+			</if>
+			<if test="fromPCode != null">
+				wl.FROM_P_CODE=#{fromPCode},
+			</if>
+				wl.FROM_C_CODE=#{fromCCode},
+				wl.FROM_T_CODE=#{fromTCode},
+			<if test="toPCode != null">
+				wl.TO_P_CODE=#{toPCode},
+			</if>
+				wl.TO_C_CODE=#{toCCode},
+				wl.TO_T_CODE=#{toTCode},
+				wl.DURATION=#{duration},
+				wl.DEPART_CAR_ONE=#{departCarOne},
+				wl.DEPART_CAR_TWO=#{departCarTwo},
+				wl.PUBLISHER=#{publisher},
+				wl.HAS_CAR_TYPES=#{hasCarTypes},
+				wl.HEAVY_PRICE=#{heavyPrice},
+				wl.HEAVY_PRICE_UNIT=#{heavyPriceUnit},
+				wl.BULKY_PRICE=#{bulkyPrice},
+				wl.BULKY_PRICE_UNIT=#{bulkyPriceUnit},
+				wl.PAY_WAYS=#{payWays},
+				wl.ADDITION_SERVICES=#{additionServices},
+				wl.COMMON_PHRASE=#{commonPhrase},
+				wl.LINKMAN=#{linkMan},
+				wl.LINK_PHONE=#{linkPhone},
+				wl.CAR_TYPE_FIRST_CODE = #{carTypeFirstCode},
+				wl.CAR_TYPE_SECOND_CODE = #{carTypeSecondCode},
+				wl.CAR_TYPE_THIRD_CODE = #{carTypeThirdCode},
+				wl.DEFINE_CAR_TYPE = #{defineCarType},
+			<if test="linkMobile != null and linkMobile !='' ">
+				wl.LINK_MOBILE=#{linkMobile},
+			</if>
+				wl.RESUME=#{resume},
+				wl.IS_OPPOSITE=#{isOpposite},
+				wl.MIN_TICKET=#{minTicket},
+			<if test="updateUser != null and updateUser !='' ">
+				wl.UPDATE_USER=#{updateUser,jdbcType=INTEGER},
+			</if>
+			<if test="updateTime != null and updateTime!='' ">
+				wl.UPDATE_TIME=#{updateTime,jdbcType=TIMESTAMP}
+			</if>
+		</set> 
+		where WHOLE_LINE_ID = #{wholeLineId}
+	</update>
+	
+	
+	<select id="queryMyWholeLines" parameterType="PublishInfoQuery" resultMap="com.lzz.lsp.core.publish.dao.PublishInfoBaseDAO.publishInfoVOMap">
+			SELECT info.PUBLISH_ID,wl.FROM_PLACE,wl.TO_PLACE,wl.HEAVY_PRICE,dictheavy.val_name as HEAVY_PRICE_UNIT,wl.BULKY_PRICE,
+			dictbulky.val_name as BULKY_PRICE_UNIT,wl.DURATION,info.PUBLISH_TIME,info.STATUS,wl.DEPART_CAR_ONE,wl.DEPART_CAR_TWO,wl.HAS_CAR_TYPES
+			from pisp_publish_info info
+			LEFT JOIN pisp_whole_line wl on info.INFO_ID = wl.whole_line_id
+			LEFT JOIN pisp_dict_val dictheavy on dictheavy.dict_code = 'GOODS_WEIGHT_UNIT' and dictheavy.val_code = wl.heavy_price_unit
+			LEFT JOIN pisp_dict_val dictbulky on dictbulky.dict_code = 'GOODS_WEIGHT_UNIT' and dictbulky.val_code = wl.bulky_price_unit
+			where INFO_TYPE = 3 and info.IS_DELETE = 0
+		<if test="status != null">
+			and  info.STATUS = #{status}
+		</if>
+		<if test="osmpStatus != null">
+		 	AND info.STATUS in
+		 	<foreach collection="osmpStatus" item="osmpSta" open="(" separator="," close=")">
+				#{osmpSta}
+			</foreach>
+		 </if>
+		<if test="publishTimeValCode != null and publishTimeValCode !=''">
+			<if test='publishTimeValCode == "1" or publishTimeValCode == "2" or publishTimeValCode =="3" '>
+				and  date_format(info.PUBLISH_TIME,'%Y-%m-%d') = date_format(#{publishTime},'%Y-%m-%d')
+			</if>
+			<if test='publishTimeValCode == "4" or publishTimeValCode == "5" '>
+				and  date_format(info.PUBLISH_TIME,'%Y-%m-%d') &gt;= date_format(#{publishTime},'%Y-%m-%d')
+			</if>
+			<if test='publishTimeValCode == "6" '>
+				and  date_format(info.PUBLISH_TIME,'%Y-%m-%d') &lt;= date_format(#{publishTime},'%Y-%m-%d')
+			</if>
+		</if>
+		<if test="fromPCode != null and fromPCode !=0 ">
+			and  wl.FROM_P_CODE = #{fromPCode}
+		</if>
+		<if test="fromCCode != null and fromCCode !=0">
+			and  wl.FROM_C_CODE = #{fromCCode}
+		</if>
+		<if test="fromTCode != null and fromTCode !=0">
+			and  wl.FROM_T_CODE = #{fromTCode}
+		</if>
+		<if test="toPCode != null and toPCode !=0">
+			 and wl.TO_P_CODE = #{toPCode}
+		</if>
+		<if test="toCCode != null and toCCode !=0">
+			 and wl.TO_C_CODE = #{toCCode}
+		</if>
+		<if test="toTCode != null and toTCode !=0">
+			 and wl.TO_T_CODE = #{toTCode}
+		</if>
+		<if test="userId != null">
+		 	and info.USER_ID = #{userId}
+		 </if>
+		 
+		 <!-- 2015-6-18 16:27:37 yunns add for osmp queryWholeLine method -->
+		 <if test="publisher != '' and publisher != null ">
+		 	and wl.PUBLISHER = #{publisher}
+		 </if>
+		 <if test="publishTimeStart != null and publishTimeEnd != null">
+		 	and info.PUBLISH_TIME between #{publishTimeStart} and #{publishTimeEnd}
+		 </if>
+		 <if test="publishTimeStart != null and publishTimeEnd == null">
+		 	 and info.PUBLISH_TIME &gt; #{publishTimeStart}
+		 </if>
+		 <if test="publishTimeStart == null and publishTimeEnd != null">
+		 	 and info.PUBLISH_TIME &lt; #{publishTimeEnd} 
+		 </if>
+		 <!-- end -->
+		 <if test="backstageWrite != null">
+			and  info.BACKSTAGE_WRITE = #{backstageWrite}
+		 </if>
+		 
+	</select>
+	
+	<select id="getWholeLine" parameterType="java.lang.Integer" resultMap="wholeLineMap">
+		SELECT * from pisp_whole_line wl
+		<where>
+			<if test="wholeLineId != null">
+				 wl.WHOLE_LINE_ID = #{wholeLineId}
+			</if>
+		</where>
+	</select>
+	
+	 <select id="queryWholeLines" parameterType="WholeLineQuery" resultMap="wholeLineVOMap">
+			SELECT wl.WHOLE_LINE_ID,wl.FROM_PLACE,wl.TO_PLACE,wl.DEPART_CAR_ONE,wl.DEPART_CAR_TWO,durationdict.VAL_NAME as DURATION,
+				 wl.HAS_CAR_TYPES,wl.ADDITION_SERVICES,wl.HEAVY_PRICE,heavydict.VAL_NAME as HEAVY_PRICE_UNIT,wl.BULKY_PRICE,
+				 bulkydict.VAL_NAME as BULKY_PRICE_UNIT,wl.PAY_WAYS,
+				 wl.RESUME,info.PUBLISH_ID,info.BACKSTAGE_WRITE,wl.IS_OPPOSITE,wl.MIN_TICKET,
+				u.USER_TYPE,
+				u.NICKNAME,
+				pu.REAL_NAME,
+				pu.MOBILE_PHONE,
+				eu.ENTERPRISE_NAME,
+				eu.ADDRESS,
+				eu.QQ AS EQQ,
+				pu.QQ AS PQQ,
+				u.IS_AUTH,
+				u.HEAD_IMAGE
+				from pisp_publish_info info
+				INNER JOIN pisp_whole_line wl on info.info_id = wl.WHOLE_LINE_ID
+				LEFT JOIN pisp_dict_val heavydict on heavydict.dict_code = 'GOODS_WEIGHT_UNIT' and heavydict.val_code = wl.HEAVY_PRICE_UNIT
+				LEFT JOIN pisp_dict_val bulkydict on bulkydict.dict_code = 'GOODS_WEIGHT_UNIT' and bulkydict.val_code = wl.BULKY_PRICE_UNIT
+				LEFT JOIN pisp_dict_val durationdict on durationdict.dict_code = 'TRANSPORT_TIME_RANGE' and durationdict.val_code = wl.DURATION
+				
+				LEFT JOIN pisp_user u on u.USER_ID = info.USER_ID
+				LEFT JOIN pisp_euser eu on eu.USER_ID = u.USER_ID
+				LEFT JOIN pisp_puser pu on pu.USER_ID = u.USER_ID 
+			WHERE  info.INFO_TYPE = 3
+			AND info.STATUS = 3
+			<if test="fromPCode != null and fromPCode !=0 ">
+				and  wl.FROM_P_CODE = #{fromPCode}
+			</if>
+			<if test="fromCCode != null and fromCCode !=0">
+				and  wl.FROM_C_CODE = #{fromCCode}
+			</if>
+			<if test="fromTCode != null and fromTCode !=0">
+				and  wl.FROM_T_CODE = #{fromTCode}
+			</if>
+			<if test="toPCode != null and toPCode !=0">
+				 and wl.TO_P_CODE = #{toPCode}
+			</if>
+			<if test="toCCode != null and toCCode !=0">
+				 and wl.TO_C_CODE = #{toCCode}
+			</if>
+			<if test="toTCode != null and toTCode !=0">
+				 and wl.TO_T_CODE = #{toTCode}
+			</if>
+			
+			<if test="duration != null and duration.length>0">
+				 and wl.DURATION in
+				 <foreach collection="duration" open="(" close=")" item="item" separator=",">
+				 	#{item}
+				 </foreach>
+			</if>
+			<if test="hasCarTypes != null and hasCarTypes.length>0">
+				and 
+				<foreach collection="hasCarTypes" item="item" open="(" close=")" separator="or">
+					wl.HAS_CAR_TYPES like '%,${item},%'
+				</foreach>
+			</if>
+			<if test="additionServices != null and additionServices.length>0">
+				and  
+				<foreach collection="additionServices" item="item" open="(" close=")" separator="or">
+					wl.ADDITION_SERVICES like '%,${item},%'
+				</foreach>
+			</if>
+			<if test="carTypeFirstCode != null">
+				AND wl.CAR_TYPE_FIRST_CODE = #{carTypeFirstCode}
+			</if>
+			<if test="carTypeSecondCode != null">
+				AND wl.CAR_TYPE_SECOND_CODE = #{carTypeSecondCode}
+			</if>
+			<if test="carTypeThirdCode != null">
+				AND wl.CAR_TYPE_THIRD_CODE = #{carTypeThirdCode}
+			</if>
+	</select>
+</mapper>

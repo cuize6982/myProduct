@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.feedback.dao.FeedBackBaseDAO">
+	<resultMap type="FeedBack" id="feedBackMap">
+		<id property="id" column="FEED_BACK_ID"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="userMobile" column="USER_MOBILE"/>
+		<result property="opinion" column="OPINION"/>
+		<result property="status" column="STATUS"/>
+		<result property="source" column="SOURCE"/>
+		<result property="createUser" column="CREATE_USER"/>
+		<result property="createTime" column="CREATE_TIME"/>
+		<result property="updateUser" column="UPDATE_USER"/>
+		<result property="updateTime" column="UPDATE_TIME"/>
+	</resultMap>
+	<resultMap type="FeedBackVO" id="feedBackVOMap">
+		<id property="id" column="FEED_BACK_ID"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="userMobile" column="USER_MOBILE"/>
+		<result property="opinion" column="OPINION"/>
+		<result property="status" column="STATUS"/>
+		<result property="source" column="SOURCE"/>
+		<result property="createUser" column="CREATE_USER"/>
+		<result property="createTime" column="CREATE_TIME"/>
+		<result property="updateUser" column="UPDATE_USER"/>
+		<result property="updateTime" column="UPDATE_TIME"/>
+		
+		<result property="enterpriseName" column="ENTERPRISE_NAME"/>
+		<result property="corporation" column="CORPORATION"/>
+		<result property="linkman" column="LINKMAN"/>
+		<result property="realName" column="REAL_NAME"/>
+		<result property="userType" column="USER_TYPE"/>
+	</resultMap>
+	
+	<select id="queryFeedBack" resultMap="feedBackMap" parameterType="FeedBackQuery">
+		SELECT
+			pfb.FEED_BACK_ID,
+			pfb.OPINION,
+			pfb.SOURCE,
+			pfb.`STATUS`,
+			pfb.USER_ID,
+			pfb.USER_MOBILE,
+			pfb.CREATE_TIME
+		FROM
+			pisp_user_feed_back pfb where 1 = 1
+		<if test="null != userId"> AND pfb.USER_ID = #{userId}</if>
+		<if test="null != userMobile and '' != userMobile"> AND pfb.USER_MOBILE LIKE CONCAT('%', #{userMobile}, '%')</if>
+		<if test="null != status and '' != status"> AND pfb.STATUS = #{status} </if>
+		<if test="null != source and '' != source"> AND pfb.SOURCE = #{source} </if>
+		<if test="null != startTime and '' != startTime">
+			AND pfb.CREATE_TIME &gt;= #{startTime}
+		</if>
+		<if test="null != endTime and '' != endTime">
+			AND pfb.CREATE_TIME &lt;= #{endTime}
+		</if>
+		ORDER BY pfb.CREATE_TIME desc
+	</select>
+	
+	<insert id="saveFeedBack" parameterType="FeedBack">
+		INSERT INTO pisp_user_feed_back (
+			CREATE_TIME,
+			CREATE_USER,
+			OPINION,
+			SOURCE,
+			`STATUS`,
+			UPDATE_TIME,
+			UPDATE_USER,
+			USER_ID,
+			USER_MOBILE
+		)
+		VALUES
+			(
+				#{createTime},
+				#{createUser},
+				#{opinion},
+				#{source},
+				#{status},
+				#{updateTime},
+				#{updateUser},
+				#{userId},
+				#{userMobile}
+			)
+	</insert>
+	
+	<delete id="deleteFeedBackByFeedBackIds" parameterType="java.util.List">
+		DELETE FROM pisp_user_feed_back WHERE FEED_BACK_ID in
+		<foreach collection="list" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<delete id="deleteFeedBackByUserId" parameterType="java.lang.Integer">
+		DELETE FROM pisp_user_feed_back WHERE USER_ID = #{userId}
+	</delete>
+	
+	<update id="updateFeedBackByFeedBackId" parameterType="java.util.Map">
+		UPDATE pisp_user_feed_back pfb
+		SET pfb.`STATUS` = #{status},
+		pfb.UPDATE_TIME = #{updateTime},
+		pfb.UPDATE_USER = #{updateUser}
+		WHERE
+			pfb.FEED_BACK_ID in 
+		<foreach collection="feedBackIds" item="feedBackId" open="(" separator="," close=")">
+			#{feedBackId}
+		</foreach>
+	</update>
+	
+	<update id="updateFeedBackByUserId" parameterType="java.util.Map">
+		UPDATE pisp_user_feed_back pfb
+		SET pfb.`STATUS` = #{status},
+		pfb.UPDATE_TIME = #{updateTime},
+		pfb.UPDATE_USER = #{updateUser}
+		WHERE
+			pfb.USER_ID = #{userId}
+	</update> 
+	
+	<select id="queryFeedBackForSOMP" resultMap="feedBackVOMap" parameterType="FeedBackQuery">
+		SELECT
+			pfb.FEED_BACK_ID,
+			pfb.OPINION,
+			pfb.SOURCE,
+			pfb.STATUS,
+			pfb.USER_ID,
+			pfb.USER_MOBILE,
+			pfb.CREATE_TIME,
+			CASE WHEN pu.REAL_NAME IS NULL THEN u.NICKNAME
+			ELSE
+				pu.REAL_NAME
+			END AS REAL_NAME,
+			eu.ENTERPRISE_NAME,
+			eu.CORPORATION,
+			eu.LINKMAN,
+			u.USER_TYPE
+		FROM
+			pisp_user_feed_back pfb 
+		LEFT JOIN pisp_user u ON pfb.USER_ID = u.USER_ID
+		LEFT JOIN pisp_euser eu ON u.USER_ID = eu.USER_ID
+		LEFT JOIN pisp_puser pu ON u.USER_ID = pu.USER_ID
+		where 1 = 1
+		<if test="null != userId"> AND pfb.USER_ID = #{userId}</if>
+		<if test="null != userMobile and '' != userMobile"> AND pfb.USER_MOBILE LIKE CONCAT('%', #{userMobile}, '%')</if>
+		<if test="null != status and '' != status"> AND pfb.STATUS = #{status} </if>
+		<if test="null != source and '' != source"> AND pfb.SOURCE = #{source} </if>
+		<if test="null != startTime and '' != startTime">
+			AND pfb.CREATE_TIME &gt;= #{startTime}
+		</if>
+		<if test="null != endTime and '' != endTime">
+			AND pfb.CREATE_TIME &lt;= #{endTime}
+		</if>
+		<if test="null != userRealName and userRealName != ''">
+			AND u.NICKNAME LIKE CONCAT('%', #{userRealName}, '%') 
+				OR eu.ENTERPRISE_NAME LIKE CONCAT('%', #{userRealName}, '%') 
+				OR pu.REAL_NAME LIKE CONCAT('%', #{userRealName}, '%') 
+				OR eu.CORPORATION LIKE CONCAT('%', #{userRealName}, '%')
+		</if>
+		ORDER BY pfb.CREATE_TIME desc
+	</select>
+	
+</mapper>

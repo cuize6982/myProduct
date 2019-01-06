@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.score.dao.UserScoreRecBaseDAO">
+	
+	<resultMap type="UserScoreRecVO" id="userScoreRecVOMap">
+		<result property="scoreRecId" column="SCORE_REC_ID"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="scoreRuleId" column="SCORE_RULE_ID"/>
+		<result property="scoreItemName" column="SCORE_ITEM_NAME"/>
+		<result property="scoreValue" column="SCORE_VALUE"/>
+		<result property="getScoreTime" column="GET_SCORE_TIME"/>
+		<result property="scoreStatus" column="SCORE_STATUS"/>
+		<result property="fromUserId" column="FROM_USER_ID"/>
+	</resultMap>
+	
+	<select id="queryUserScoreRecs" parameterType="UserScoreRecQuery" resultMap="userScoreRecVOMap">
+		SELECT
+			res.*
+		FROM
+			(
+				SELECT
+					usr.SCORE_ITEM_NAME,
+					CONCAT('+', usr.SCORE_VALUE) AS SCORE_VALUE,
+					usr.GET_SCORE_TIME
+				FROM
+					pisp_user_score_rec usr
+				<where>
+					<if test="userId != null"> AND usr.USER_ID = #{userId}</if>
+				</where>
+				UNION ALL
+				SELECT
+					us.GIFT_NAME AS SCORE_ITEM_NAME,
+					CONCAT('-', us.EXCHANGE_SCORE) AS SCORE_VALUE,
+					us.CREATE_TIME AS GET_SCORE_TIME
+				FROM
+					osmp_user_score_exchange_rec us
+				<where>
+					<if test="userId != null"> AND us.USER_ID = #{userId}</if>
+				</where>
+			) res
+		ORDER BY
+			res.GET_SCORE_TIME DESC
+	</select>
+	
+	<select id="saveUserScoreRec" parameterType="UserScoreRec">
+		INSERT INTO pisp_user_score_rec (
+			USER_ID,
+			SCORE_RULE_ID,
+			SCORE_ITEM_NAME,
+			SCORE_VALUE,
+			GET_SCORE_TIME,
+			FROM_USER_ID
+		)
+		VALUES
+			(
+			#{userId},
+			#{scoreRuleId},
+			#{scoreItemName},
+			#{scoreValue},
+			#{getScoreTime},
+			#{fromUserId}
+			)
+	</select>
+	
+	<select id="getUserScoreRecNum" parameterType="map" resultType="int">
+		SELECT COUNT(0) FROM pisp_user_score_rec usr
+		<where>
+			<if test="userId != null"> AND usr.USER_ID = #{userId}</if>
+			<if test="scoreRuleId != null"> AND usr.SCORE_RULE_ID = #{scoreRuleId}</if>
+			
+			<if test="currentDate != null and currentDate != '' and flag == 0 "> AND date_format(usr.GET_SCORE_TIME,'%Y-%m-%d') = #{currentDate}</if>
+			<if test="currentDate != null and currentDate != '' and flag == 1">AND date_format(usr.GET_SCORE_TIME,'%Y-%m')=date_format(#{currentDate},'%Y-%m') </if>
+		</where>
+	</select>
+	
+	<select id="queryMyScoreInfo" parameterType="UserScoreRecQuery" resultMap="userScoreRecVOMap">
+		SELECT rec.*
+		FROM pisp_user_score_rec rec
+		LEFT JOIN osmp_user_score_rule rule ON rec.SCORE_RULE_ID = rule.SCORE_RULE_ID
+		<where>
+			rec.USER_ID = #{userId} 
+			AND rule.STATUS = 1
+			<if test="scoreRuleId != null">
+				AND rec.SCORE_RULE_ID = #{scoreRuleId}
+			</if>
+			<if test="startDate != null">
+				 and DATE(rec.GET_SCORE_TIME) &gt;= DATE(#{startDate})
+			</if>
+			<if test="endDate != null">
+				 and DATE(rec.GET_SCORE_TIME) &lt;= DATE(#{endDate})
+			</if>
+			<if test="null != cashMonth and '' != cashMonth">
+			   	 AND date_format(rec.GET_SCORE_TIME,'%Y-%m') = #{cashMonth}
+			 </if>
+		</where>
+		ORDER BY rec.GET_SCORE_TIME DESC
+	</select>
+	<select id="queryScoreItemScore" parameterType="java.util.Map" resultType="java.lang.Integer">
+		SELECT
+			IFNULL(sum(sr.SCORE_VALUE),0) AS sumScore
+		FROM 
+			pisp_user_score_rec sr
+		<where>
+			<if test="userId !=null">
+				AND sr.USER_ID = #{userId}
+			</if>
+			<if test="scoreRuleId != null">
+				AND sr.SCORE_RULE_ID = #{scoreRuleId}
+			</if>
+			<if test="startDate != null">
+				 AND DATE(sr.GET_SCORE_TIME) &gt;= DATE(#{startDate})
+			</if>
+			<if test="endDate != null">
+				 AND DATE(sr.GET_SCORE_TIME) &lt;= DATE(#{endDate})
+			</if>
+		</where>
+	</select>
+	<select id="queryScoreTimeScore" parameterType="java.util.Map" resultType="java.lang.Integer">
+		SELECT
+			IFNULL(sum(sr.SCORE_VALUE),0) AS sumScore
+		FROM 
+			pisp_user_score_rec sr
+		<where>
+			<if test="userId !=null">
+				AND sr.USER_ID = #{userId}
+			</if>
+			<if test="scoreRuleId != null">
+				AND sr.SCORE_RULE_ID = #{scoreRuleId}
+			</if>
+			<if test="startDate != null">
+				 AND DATE(sr.GET_SCORE_TIME) &gt;= DATE(#{startDate})
+			</if>
+			<if test="endDate != null">
+				 AND DATE(sr.GET_SCORE_TIME) &lt;= DATE(#{endDate})
+			</if>
+		</where>
+	</select>
+	
+	<update id="updateUserScoreRecState">
+		UPDATE
+			 pisp_user_score_rec pusr 
+		SET 
+			pusr.SCORE_STATUS = 1
+		WHERE
+		  	pusr.SCORE_REC_ID in
+		  	<foreach item="item" index="index" collection="array" open="(" separator="," close=")">  
+		  		#{item}  
+		 	</foreach>  
+	</update>
+	
+	<select id="getUserLastMonthScoreSum" parameterType="java.util.Map" resultType="java.lang.Integer">
+		SELECT
+			SUM(pusr.SCORE_VALUE) AS scoreSum
+		FROM
+			pisp_user_score_rec pusr
+		WHERE
+			pusr.GET_SCORE_TIME >= #{startDate}
+		AND pusr.GET_SCORE_TIME &lt;= #{endDate}
+		AND pusr.USER_ID = #{userId}
+	</select>
+	
+	<select id="queryTotalScoreByMonth" parameterType="java.util.Map" resultType="java.lang.Integer">
+		SELECT
+			SUM(pusr.SCORE_VALUE) AS scoreSum
+		FROM
+			pisp_user_score_rec pusr
+		WHERE
+			date_format(pusr.GET_SCORE_TIME,'%Y-%m') = #{dateMonth}
+			AND pusr.USER_ID = #{userId}
+	</select>
+	
+	<select id="countByFromUserId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+		SELECT
+			count(*)
+		FROM
+			pisp_user_score_rec rec
+		WHERE
+			rec.FROM_USER_ID = #{fromUserId}
+	</select>
+</mapper>

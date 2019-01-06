@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzz.lsp.core.carmonitor.dao.CarMonitorDAO">
+	<resultMap type="CarMonitor" id="carMonitorMap">
+		<id property="monitorRecId" column="MONITOR_REC_ID"/>
+		<result property="monitorPerson" column="MONITOR_PERSON"/>
+		<result property="monitorCarId" column="MONITOR_CAR_ID"/>
+		<result property="createTime" column="CTEATE_TIME"/>
+	</resultMap>
+	<resultMap type="com.lzz.lsp.base.vo.CarMonitorVO" id="monitorCarMap">
+		<result property="carId" column="CAR_ID"/>
+		<result property="carNo" column="CAR_NO"/>
+		<result property="driver" column="DRIVER"/>
+		<result property="driverPhone" column="DRIVER_PHONE"/>
+		<result property="carType" column="CAR_TYPE"/>
+		<result property="carTypeName" column="CAR_TYPE_NAME"/>
+		<result property="carLengthName" column="CAR_LENGTH_NAME"/>
+		<result property="loadWeight" column="LOAD_WEIGHT"/>
+		<result property="carPhoto" column="CAR_PHOTO"/>
+		<result property="qq" column="QQ"/>
+		<result property="locationName" column="LOCATION_NAME"/>
+		<result property="locateTime" column="LOCATE_TIME"/>
+		<result property="longitude" column="LONGITUDE"/>
+		<result property="latitude" column="LATITUDE"/>
+		<result property="monitorRecId" column="MONITOR_REC_ID"/>
+	</resultMap>
+	<insert id="saveCarMontior" parameterType="java.util.Map">
+		INSERT INTO pisp_user_car_monitor (MONITOR_REC_ID,MONITOR_PERSON,MONITOR_CAR_ID,CTEATE_TIME)
+		VALUES 
+		<foreach collection="monitorCarId" item="item" index="index" separator=",">
+			(#{monitorRecId},#{monitorPerson},#{item},#{createTime})
+		</foreach>
+		
+	</insert>
+	
+	<select id="queryCarMontior" parameterType="CarMonitorQuery" resultMap="monitorCarMap">
+		SELECT
+			pc.CAR_ID,
+			pc.CAR_NO,
+			pc.FIRST_NO,
+			pc.SECOND_NO,
+			pc.THIRD_NO,
+			pc.CAR_TYPE,
+			pc.LOAD_WEIGHT,
+			pc.CAR_PHOTO,
+			pc.DRIVING_LICENSE_PHOTO,
+			pc.DRIVER,
+			pc.DRIVER_PHONE,
+			pc.IDCARD_NO,
+			pc.QQ,
+			pc.MARK,
+			pc.IS_DELETE,
+			dl.LOCATION_NAME,
+			dl.LOCATE_TIME,
+			dl.LONGITUDE,
+			dl.LATITUDE,
+			len.VAL_NAME AS CAR_LENGTH_NAME,
+			type.VAL_NAME AS CAR_TYPE_NAME,
+			pucm.MONITOR_REC_ID
+		FROM
+			pisp_user_car_monitor pucm
+		LEFT JOIN pisp_car pc ON pc.CAR_ID = pucm.MONITOR_CAR_ID
+		LEFT JOIN pisp_dict_val len ON len.VAL_CODE = pc.CAR_LENGTH
+		AND len.DICT_CODE = 'CAR_LENGTH'
+		LEFT JOIN pisp_dict_val type ON type.VAL_CODE = pc.CAR_TYPE
+		AND type.DICT_CODE = 'CAR_TYPE'
+		LEFT JOIN pisp_driver_location dl ON dl.MOBILE = pc.DRIVER_PHONE
+			WHERE pucm.MONITOR_PERSON = #{userId}
+			<if test="firstNo != null">AND pc.FIRST_NO = #{firstNo}</if>
+			<if test="secondNo != null">AND pc.SECOND_NO = #{secondNo}</if>
+			<if test="thirdNo != null and thirdNo != ''">AND pc.THIRD_NO LIKE '%${thirdNo}%'</if>
+			<if test="driver != null and driver != ''">AND pc.DRIVER LIKE '%${driver}%'</if>
+			<if test="driverPhone != null and driverPhone != ''">AND pc.DRIVER_PHONE LIKE '%${driverPhone}%'</if>
+		ORDER BY
+			pucm.CTEATE_TIME DESC
+	</select>
+	<delete id="deleteMonitorCar">
+		delete from pisp_user_car_monitor where MONITOR_REC_ID in
+		<foreach collection="monitorRecIds" item="item" index="index" separator="," open="(" close=")">
+			 #{item}
+		</foreach>
+	</delete>
+	
+	<select id="queryPlatformUnadd" parameterType="CarQuery" resultMap="com.lzz.lsp.core.car.dao.CarBaseDAO.carVOMap">
+		SELECT rec.*,IF(rec.DISTANCE_NUM IS NULL,"距离不详",CONCAT('距您',rec.DISTANCE_NUM,'公里')) AS DISTANCE
+				FROM
+					(SELECT 
+						pc.CAR_ID,
+						pc.DRIVER,
+						pc.DRIVER_PHONE,
+						pc.CAR_NO,
+						pc.CAR_TYPE,
+						(SELECT dv.VAL_NAME FROM pisp_dict_val dv WHERE dv.VAL_CODE = pc.CAR_TYPE AND dv.DICT_CODE='CAR_TYPE') AS CAR_TYPE_NAME,
+						(SELECT dv.VAL_NAME FROM pisp_dict_val dv WHERE dv.VAL_CODE = pc.CAR_LENGTH AND dv.DICT_CODE='CAR_LENGTH') AS CAR_LENGTH_NAME,
+						pc.LOAD_WEIGHT,
+						dl.LOCATION_NAME,
+						dl.LOCATE_TIME,
+						dl.LONGITUDE,
+						dl.LATITUDE,
+						pc.CAR_PHOTO,
+						pc.QQ,
+						pc.MARK,
+						pu.IS_AUTH,
+						pdrc.DRIVER_RUN_CITY_NAME
+					<if test="(slng!=null and slng!='') and (slat!=null and slat!='')">
+						,distance(#{slng},#{slat},dl.LONGITUDE,dl.LATITUDE) AS DISTANCE_NUM
+					</if>
+					<if test="(slng==null or slng=='') and (slat==null or slat=='')">
+						, NULL AS DISTANCE_NUM
+					</if>
+					FROM PISP_CAR pc
+					LEFT JOIN pisp_user_car uc ON pc.CAR_ID = uc.CAR_ID
+					LEFT JOIN pisp_user pu ON pu.USER_ID = uc.USER_ID
+					LEFT JOIN (select pdrc.USER_ID,GROUP_CONCAT((select  pd.DIST_NAME from pisp_district pd where pd.DIST_CODE = (CASE WHEN pdrc.AREA_CODE is NULL THEN ( CASE WHEN pdrc.CITY_CODE is NULL THEN pdrc.TO_PROVINCE_CODE ELSE pdrc.CITY_CODE END) ELSE pdrc.AREA_CODE END))) AS DRIVER_RUN_CITY_NAME from pisp_driver_run_city pdrc group by pdrc.USER_ID) pdrc ON pdrc.USER_ID = pu.USER_ID
+					LEFT JOIN pisp_driver_location dl ON dl.MOBILE = pc.DRIVER_PHONE
+					WHERE pc.IS_DELETE = 0
+					AND pu.USER_TYPE = 1
+					<if test="queryFlag != null and userId !=null">
+						AND NOT EXISTS (
+						SELECT
+							0
+						FROM
+							pisp_user_car_monitor ucm
+						WHERE
+							ucm.MONITOR_PERSON = #{userId}
+						AND pc.CAR_ID = ucm.MONITOR_CAR_ID
+						)
+					</if>
+					<if test="driver != null and driver != ''">AND pc.DRIVER LIKE '%${driver}%'</if>
+					<if test="driverPhone != null and driverPhone != ''">AND pc.DRIVER_PHONE LIKE '%${driverPhone}%'</if>
+					<if test="firstNo != null">AND pc.FIRST_NO = #{firstNo}</if>
+					<if test="secondNo != null">AND pc.SECOND_NO = #{secondNo}</if>
+					<if test="thirdNo != null and thirdNo != ''">AND pc.THIRD_NO LIKE '%${thirdNo}%'</if>
+		ORDER BY 
+		<if test="(slng!=null and slng!='') and (slat!=null and slat!='')">DISTANCE_NUM is NULL,cast(DISTANCE_NUM AS unsigned),</if>
+				pc.CREATE_TIME DESC) rec
+	</select>
+</mapper>
